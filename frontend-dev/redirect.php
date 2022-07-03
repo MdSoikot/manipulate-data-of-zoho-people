@@ -1,0 +1,1 @@
+<?php header("Location: /wp-admin/admin.php?page=bitwelzp#/?source=pwa")?>

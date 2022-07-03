@@ -1,0 +1,174 @@
+.dropdown-wrp {
+  position: relative;
+  float: right;
+  width: 30px;
+  height: 30px;
+}
+
+.menu-btn {
+  display: grid;
+  place-content: center;
+  width: 30px;
+  height: 30px;
+  outline: 0;
+  background-color: var(--white-100);
+  border: none;
+  border-radius: 50%;
+  float: right;
+  cursor: pointer;
+  z-index: 2;
+  position: absolute;
+  top: 0;
+  right: 0;
+  color: black;
+}
+
+.menu-btn:hover {
+  background: var(--white-0-97);
+}
+
+.menu-btn:focus-visible {
+  box-shadow: 0 0 0 2px var(--b-50) inset;
+}
+
+.btn-active {
+  box-shadow: none;
+}
+
+.drop-down {
+  position: absolute;
+  top: 0;
+  right: 0;
+  background-color: var(--white-100);
+  box-shadow: 0 1px 6px -3px var(--white-0-31);
+  width: 30px;
+  height: 30px;
+  border-radius: 20px;
+  overflow: hidden;
+  transition: width 400ms cubic-bezier(0.37, -0.79, 0.57, 0.55),
+    height 400ms cubic-bezier(0.37, -0.79, 0.57, 0.55),
+    border-radius 400ms ease,
+    padding 400ms ease,
+    box-shadow 400ms ease;
+}
+
+.drop-down-show {
+  padding: 10px;
+  border-radius: 12px;
+  box-shadow: 0 3px 9px -4px var(--white-0-0-17),
+    0 3px 25px -7px var(--white-0-86);
+  transition: width 400ms cubic-bezier(0.16, 0.04, 0.58, 1.47),
+    height 400ms cubic-bezier(0.16, 0.04, 0.58, 1.47),
+    border-radius 400ms ease,
+    padding 400ms ease;
+}
+
+.drop-down-title {
+  transition: opacity 400ms;
+  transition-delay: 200ms;
+  opacity: 0;
+  border-bottom: 1px solid var(--white-0-97);
+  padding-bottom: 5px;
+  margin-bottom: 5px;
+  font-weight: 600;
+  color: var(--b-54-12);
+}
+
+.drop-down-show .drop-down-title {
+  opacity: 1;
+  transition-delay: 300ms;
+}
+
+.items-wrp {
+  visibility: hidden;
+  transition: opacity 200ms ease, visibility 0s ease 300ms;
+  margin: 0;
+  opacity: 0;
+}
+
+.drop-down-show .items-wrp {
+  transition: opacity 400ms ease 400ms;
+  opacity: 1;
+  visibility: visible;
+}
+
+.items-wrp :is(button, a) {
+  color: var(--b-37-18);
+  display: flex;
+  border: none;
+  background: transparent;
+  align-items: center;
+  font-weight: 500;
+  cursor: pointer;
+  height: 30px;
+  padding: 5px;
+  margin: 0;
+  border-radius: 8px;
+  transition: background 400ms;
+  outline: none;
+  width: 100%;
+}
+
+
+.items-wrp :is(button, a):focus-visible {
+  box-shadow: 0 0 0 2px var(--b-50);
+}
+
+.items-wrp :is(button, a):hover {
+  background: var(--b-79-96);
+  color: var(--b-37-18);
+}
+
+.hamburger {
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  padding: 0;
+}
+
+.hamburger .line {
+  fill: none;
+  stroke: var(--b-50);
+  stroke-width: 10;
+  transition: stroke-dasharray 600ms cubic-bezier(0.4, 0, 0.2, 1),
+    stroke-dashoffset 600ms cubic-bezier(0.4, 0, 0.2, 1),
+    stroke 500ms;
+}
+
+.hamburger.open .line {
+  stroke: var(--white-0-31);
+}
+
+.hamburger .line1 {
+  stroke-dasharray: 60 207;
+  stroke-width: 6;
+}
+
+.hamburger .line2 {
+  stroke-dasharray: 60 60;
+  stroke-width: 6;
+}
+
+.hamburger .line3 {
+  stroke-dasharray: 60 207;
+  stroke-width: 6;
+}
+
+.hamburger.open .line1 {
+  stroke-dasharray: 90 207;
+  stroke-dashoffset: -134;
+  stroke-width: 6;
+}
+
+.hamburger.open .line2 {
+  stroke-dasharray: 1 60;
+  stroke-dashoffset: -30;
+  stroke-width: 6;
+}
+
+.hamburger.open .line3 {
+  stroke-dasharray: 90 207;
+  stroke-dashoffset: -134;
+  stroke-width: 6;
+}

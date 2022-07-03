@@ -1,0 +1,6 @@
+composer.lock
+frontend-dev/locale.pot
+frontend-dev/node_modules/
+frontend-dev/yarn.lock
+vendor/
+assets
