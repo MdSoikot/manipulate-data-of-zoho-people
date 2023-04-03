@@ -12,7 +12,9 @@ namespace BitCode\WELZP\Integration;
 
 use BitCode\WELZP\Core\Util\Route;
 use FilesystemIterator;
- use WP_Error;
+use WP_Error;
+use WP_REST_Request;
+use WP_REST_Server;
 
 final class Integrations
 {
@@ -22,10 +24,10 @@ final class Integrations
         foreach ($dirs as $dirInfo) {
             if ($dirInfo->isDir()) {
                 $integartionBaseName = basename($dirInfo);
-                if (file_exists(__DIR__.'/'.$integartionBaseName)
-                    && file_exists(__DIR__.'/'.$integartionBaseName.'/'.$integartionBaseName.'Handler.php')
+                if (file_exists(__DIR__ . '/' . $integartionBaseName)
+                    && file_exists(__DIR__ . '/' . $integartionBaseName . '/' . $integartionBaseName . 'Handler.php')
                 ) {
-                    $integration = __NAMESPACE__. "\\{$integartionBaseName}\\{$integartionBaseName}Handler";
+                    $integration = __NAMESPACE__ . "\\{$integartionBaseName}\\{$integartionBaseName}Handler";
                     if (method_exists($integration, 'registerAjax')) {
                         $integration::registerAjax();
                     }
@@ -36,6 +38,7 @@ final class Integrations
 
     public function registerHooks()
     {
+        add_action('rest_api_init', [$this, 'loadApi']);
         Route::post('integration/save', [$this, 'save']);
         Route::post('integration/update', [$this, 'update']);
         Route::post('integration/delete', [$this, 'delete']);
@@ -44,15 +47,45 @@ final class Integrations
         foreach ($dirs as $dirInfo) {
             if ($dirInfo->isDir()) {
                 $integartionBaseName = basename($dirInfo);
-                if (file_exists(__DIR__.'/'.$integartionBaseName)
-                    && file_exists(__DIR__.'/'.$integartionBaseName.'/'.$integartionBaseName.'Handler.php')
+                if (file_exists(__DIR__ . '/' . $integartionBaseName)
+                    && file_exists(__DIR__ . '/' . $integartionBaseName . '/' . $integartionBaseName . 'Handler.php')
                 ) {
-                    $integration = __NAMESPACE__. "\\{$integartionBaseName}\\{$integartionBaseName}Handler";
+                    $integration = __NAMESPACE__ . "\\{$integartionBaseName}\\{$integartionBaseName}Handler";
                     if (method_exists($integration, 'registerHooks')) {
                         $integration::registerHooks();
                     }
                 }
             }
+        }
+    }
+
+    public function loadApi()
+    {
+        $args = [
+            'methods'             => WP_REST_Server::READABLE,
+            'callback'            => [$this, 'handleRedirect'],
+            'permission_callback' => '__return_true',
+        ];
+        register_rest_route(
+            'bitwelzp',
+            '/redirect',
+            [$args]
+        );
+    }
+
+    public function handleRedirect(WP_REST_Request $request)
+    {
+        $state = $request->get_param('state');
+        $parsed_url = parse_url(get_site_url());
+        $site_url = $parsed_url['scheme'] . '://' . $parsed_url['host'];
+        $site_url .= empty($parsed_url['port']) ? null : ':' . $parsed_url['port'];
+        if (strpos($state, $site_url) === false) {
+            return new WP_Error('404');
+        }
+        $params = $request->get_params();
+        unset($params['rest_route'], $params['state']);
+        if (wp_redirect($state . '&' . http_build_query($params), 302)) {
+            exit;
         }
     }
 
@@ -144,7 +177,7 @@ final class Integrations
         }
         wp_send_json_success(__('Integration deleted successfully', 'bitwelzp'));
     }
-    
+
     public function toggle_status($data)
     {
         $missing_field = null;
@@ -164,7 +197,6 @@ final class Integrations
         }
         wp_send_json_success(__('Integration status changed successfully', 'bitwelzp'));
     }
-    
 
     /**
      * This function helps to execute Integration

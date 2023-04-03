@@ -70,7 +70,7 @@ function Integrations() {
       })
     console.log(tempIntegration[id].status, ev, id, data)
   }
-console.log(formFields)
+
   const removeInteg = i => {
     const tempIntegration = { ...integrations[i] }
     const newInteg = [...integrations]

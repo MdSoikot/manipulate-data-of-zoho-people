@@ -21,7 +21,6 @@ function Settings() {
         setSnackbar({ ...{ show: true, msg: __('Failed to toggle', 'bitwelzp') } })
       })
   }
-  console.log('erase',erase)
 
   return (
     <div className="btcd-f-settings">

@@ -17,6 +17,10 @@ export default function Authorization() {
     const [error, setError] = useState({ dataCenter: '', clientId: '', clientSecret: '' })
     const [isAuthorized, setisAuthorized] = useState(false)
     const [isSaved, setIsSaved] = useState(integConfig?.integ_config?.auth_details?.isAuthorized)
+    // let location = window.location.toString()
+    // location = bitwelzp?.redirect
+
+
 
     useEffect(() => {
         window.opener && setGrantTokenResponse('zohoPeople')
@@ -64,7 +68,7 @@ export default function Authorization() {
     return (
         <div className="btcd-stp-page" style={{ ...{ width: 900 }, ...{ height: `${100}%` }, 'padding': '40px' }}>
             <div className="mt-3"><b>{__('Data Center:', 'bitwelzp')}</b></div>
-            <select name="dataCenter" onChange={handleInput} value={integConfig.integ_config.auth_details.dataCenter} className="btcd-paper-inp w-9 mt-1">
+            <select name="dataCenter" onChange={handleInput} value={integConfig.integ_config.auth_details.dataCenter} className="btcd-paper-inp w-6 mt-1">
                 <option value="">{__('--Select a data center--', 'bitwelzp')}</option>
                 <option value="com">zoho.com</option>
                 <option value="eu">zoho.eu</option>
@@ -78,7 +82,7 @@ export default function Authorization() {
             <CopyText value={`${window.location.origin}`} setSnackbar={setSnackbar} className="field-key-cpy w-6 ml-0" />
 
             <div className="mt-3"><b>{__('Authorized Redirect URIs:', 'bitwelzp')}</b></div>
-            <CopyText value={`${window.location.href}/redirect`} setSnackbar={setSnackbar} className="field-key-cpy w-6 ml-0" />
+            <CopyText value={bitwelzp?.redirect} setSnackbar={setSnackbar} className="field-key-cpy w-6 ml-0" />
 
             <small className="d-blk mt-5">
                 {__('To get Client ID and SECRET , Please Visit', 'bitwelzp')}

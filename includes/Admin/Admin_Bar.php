@@ -118,7 +118,9 @@ class Admin_Bar
                 'integration_details' => $auth_details,
                 'auth_details' => count((array)$auth_details)>0 ?$auth_details->auth_details : '',
                 'all_employees' => $get_all_employees,
-                'reviewsDetails' => $get_form_details
+                'reviewsDetails' => $get_form_details,
+                'redirect' => get_rest_url() . 'bitwelzp/redirect',
+
             )
         );
 

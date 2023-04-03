@@ -14,7 +14,7 @@ export const handleAuthorize = (confTmp, setConf, setError, setisAuthorized, set
 
     setisLoading(true)
     const scopes = 'ZOHOPEOPLE.forms.ALL'
-    const apiEndpoint = `https://accounts.zoho.${confTmp.integ_config.auth_details.dataCenter}/oauth/v2/auth?scope=${scopes}&response_type=code&client_id=${confTmp.integ_config.auth_details.clientId}&prompt=Consent&access_type=offline&redirect_uri=${encodeURIComponent(window.location.href)}/redirect`
+    const apiEndpoint = `https://accounts.zoho.${confTmp.integ_config.auth_details.dataCenter}/oauth/v2/auth?scope=${scopes}&response_type=code&client_id=${confTmp.integ_config.auth_details.clientId}&prompt=Consent&access_type=offline&redirect_uri=${bitwelzp?.redirect}&state=${encodeURIComponent(window.location.href)}/redirect`
     const authWindow = window.open(apiEndpoint, 'zohoPeople', 'width=400,height=609,toolbar=off')
     const popupURLCheckTimer = setInterval(() => {
         if (authWindow.closed) {
@@ -22,6 +22,7 @@ export const handleAuthorize = (confTmp, setConf, setError, setisAuthorized, set
             let grantTokenResponse = {}
             let isauthRedirectLocation = false
             const zohoPeople = localStorage.getItem('zohoPeople')
+
             if (zohoPeople) {
                 isauthRedirectLocation = true
                 grantTokenResponse = JSON.parse(zohoPeople)
@@ -45,7 +46,8 @@ const tokenHelper = (grantToken, confTmp, setConf, setisAuthorized, setisLoading
     tokenRequestParams.dataCenter = confTmp.integ_config.auth_details.dataCenter
     tokenRequestParams.clientId = confTmp.integ_config.auth_details.clientId
     tokenRequestParams.clientSecret = confTmp.integ_config.auth_details.clientSecret
-    tokenRequestParams.redirectURI = `${encodeURIComponent(window.location.href)}/redirect`
+    tokenRequestParams.redirectURI = bitwelzp?.redirect
+
     bitsFetch(tokenRequestParams, 'generate_token')
         .then(result => result)
         .then(result => {
