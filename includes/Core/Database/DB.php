@@ -72,6 +72,7 @@ final class DB
                 `headshot_download_url` varchar(255) DEFAULT NULL,
                 `fname` varchar(255) DEFAULT NULL,
                 `lname` varchar(255) DEFAULT NULL,
+                `preferred_name_nickname` varchar(255) DEFAULT NULL,
                 `clinical_title` varchar(255) DEFAULT NULL,
                 `medical_qualification` LONGTEXT DEFAULT NULL,
                 `designation` LONGTEXT DEFAULT NULL,

@@ -20,7 +20,6 @@ use BitCode\WELZP\Integration\Integrations;
 
 final class Plugin
 {
-
     /**
      * Main instance of the plugin.
      *
@@ -36,16 +35,18 @@ final class Plugin
      */
     public function initialize()
     {
-        add_action('plugins_loaded', array($this, 'init_plugin'), 12);
+        global $wpdb;
+        add_action('plugins_loaded', [$this, 'init_plugin'], 12);
         (new Activation())->activate();
         (new Deactivation())->register();
         (new Uninstallation())->register();
+        $wpdb->query("ALTER TABLE {$wpdb->prefix}bitwelzp_zoho_people_employee_info ADD preferred_name_nickname varchar(255) DEFAULT NULL AFTER lname");
     }
 
     public function init_plugin()
     {
-        add_action('init', array($this, 'init_classes'), 11);
-        add_filter('plugin_action_links_' . plugin_basename(BITWELZP_PLUGIN_MAIN_FILE), array($this, 'plugin_action_links'));
+        add_action('init', [$this, 'init_classes'], 11);
+        add_filter('plugin_action_links_' . plugin_basename(BITWELZP_PLUGIN_MAIN_FILE), [$this, 'plugin_action_links']);
     }
 
     /**
@@ -97,11 +98,12 @@ final class Plugin
             return;
         }
         global $bitwelzp_db_version;
-        $installed_db_version = get_site_option("bitwelzp_db_version");
+        $installed_db_version = get_site_option('bitwelzp_db_version');
         if ($installed_db_version != $bitwelzp_db_version) {
             DB::migrate();
         }
     }
+
     /**
      * Loads the plugin main instance and initializes it.
      *

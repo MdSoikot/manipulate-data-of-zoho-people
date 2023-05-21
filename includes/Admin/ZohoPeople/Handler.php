@@ -6,7 +6,6 @@ use BitCode\WELZP\Core\Util\HttpHelper;
 use BitCode\WELZP\Core\Database\IntegrationModel;
 use BitCode\WELZP\Core\Database\ZohoPeoplesEmployeesModel;
 use BitCode\WELZP\Core\Database\FormDetailsModel;
-
 use WP_Error;
 use wpdb;
 
@@ -27,67 +26,69 @@ final class Handler
             Self::$data = json_decode($result->auth_details);
         }
     }
+
     public function analyticsGenerateToken()
     {
-        $requestParams = array(
-            "grant_type" => "refresh_token",
-            "client_id" => '1000.WQOJA0E726OCJ4966AEHAG47RW3J0G',
-            "client_secret" => '0bb35b82c29700d3051aecc679246527c35247adaf',
-            "refresh_token" => '1000.fce138b2f9b0e944368a551c10e3162f.c27696c57732d6d64e029fcdceea61c5',
-        );
-        $refreshToken = HttpHelper::post("https://accounts.zoho.com/oauth/v2/token", $requestParams);
+        $requestParams = [
+            'grant_type'    => 'refresh_token',
+            'client_id'     => '1000.WQOJA0E726OCJ4966AEHAG47RW3J0G',
+            'client_secret' => '0bb35b82c29700d3051aecc679246527c35247adaf',
+            'refresh_token' => '1000.fce138b2f9b0e944368a551c10e3162f.c27696c57732d6d64e029fcdceea61c5',
+        ];
+        $refreshToken = HttpHelper::post('https://accounts.zoho.com/oauth/v2/token', $requestParams);
         return $refreshToken;
     }
 
     public function insertReviewIntoAnalytics($requestData, $type)
     {
         $lastReviewId = static::$_formDetailsModel->get('id', [], 1, null, 'id', 'DESC');
-        $refreshToken=$this->analyticsGenerateToken();
-        $data = array(
-            "Employee Id" => $requestData->employee_id,
-            "Star" => $requestData->star,
-            "First Name" => $requestData->fname,
-            "Last Name" => $requestData->lname,
-            "Phrases" => implode(", ", $requestData->phrases),
-            "Title" => $requestData->title,
-            "Title Description" => $requestData->desc,
-            "Age Range" => $requestData->age,
-            "Gender" => $requestData->gender,
-            "Status" => $requestData->status,
-            "Empathetic" => $requestData->empathetic,
-            "Review Id"=>$type==='insert' ? $lastReviewId[0]->id:$requestData->editRowId,
-            "Created At" => date('d M,Y h:i:s'),
-        );
-    
+        $refreshToken = $this->analyticsGenerateToken();
+        $data = [
+            'Employee Id'       => $requestData->employee_id,
+            'Star'              => $requestData->star,
+            'First Name'        => $requestData->fname,
+            'Last Name'         => $requestData->lname,
+            'Phrases'           => implode(', ', $requestData->phrases),
+            'Title'             => $requestData->title,
+            'Title Description' => $requestData->desc,
+            'Age Range'         => $requestData->age,
+            'Gender'            => $requestData->gender,
+            'Status'            => $requestData->status,
+            'Empathetic'        => $requestData->empathetic,
+            'Review Id'         => $type === 'insert' ? $lastReviewId[0]->id : $requestData->editRowId,
+            'Created At'        => date('d M,Y h:i:s'),
+        ];
+
         if ($refreshToken) {
             $apiEndpoint = 'https://analyticsapi.zoho.com/api/mdshakhawathosen122@gmail.com/Developer_space/Patient Review Data?ZOHO_ACTION=ADDROW&ZOHO_OUTPUT_FORMAT=JSON&ZOHO_ERROR_FORMAT=JSON&ZOHO_API_VERSION=1.0';
-            $authorizationHeader["Authorization"] = "Zoho-oauthtoken " . $refreshToken->access_token;
+            $authorizationHeader['Authorization'] = 'Zoho-oauthtoken ' . $refreshToken->access_token;
             $apiResponse = HttpHelper::post($apiEndpoint, $data, $authorizationHeader);
         }
         return $apiResponse;
     }
+
     public function updateReviewIntoAnalytics($requestData)
     {
-        $data = array(
-            "Employee Id" => $requestData->employee_id,
-            "Star" => $requestData->star,
-            "First Name" => $requestData->fname,
-            "Last Name" => $requestData->lname,
-            "Phrases" => implode(", ", $requestData->phrases),
-            "Title" => $requestData->title,
-            "Title Description" => $requestData->desc,
-            "Age Range" => $requestData->age,
-            "Gender" => $requestData->gender,
-            "Status" => $requestData->status,
-            "Empathetic" => $requestData->empathetic,
-            "Updated At" => date('d M,Y h:i:s'),
-        );
+        $data = [
+            'Employee Id'       => $requestData->employee_id,
+            'Star'              => $requestData->star,
+            'First Name'        => $requestData->fname,
+            'Last Name'         => $requestData->lname,
+            'Phrases'           => implode(', ', $requestData->phrases),
+            'Title'             => $requestData->title,
+            'Title Description' => $requestData->desc,
+            'Age Range'         => $requestData->age,
+            'Gender'            => $requestData->gender,
+            'Status'            => $requestData->status,
+            'Empathetic'        => $requestData->empathetic,
+            'Updated At'        => date('d M,Y h:i:s'),
+        ];
 
-        $criteria="(\"Review Id\"='$requestData->editRowId')";
-        $refreshToken=$this->analyticsGenerateToken();
+        $criteria = "(\"Review Id\"='$requestData->editRowId')";
+        $refreshToken = $this->analyticsGenerateToken();
         if ($refreshToken) {
             $apiEndpoint = "https://analyticsapi.zoho.com/api/mdshakhawathosen122@gmail.com/Developer_space/Patient Review Data?ZOHO_ACTION=UPDATE&ZOHO_OUTPUT_FORMAT=JSON&ZOHO_ERROR_FORMAT=JSON&ZOHO_API_VERSION=1.0&ZOHO_CRITERIA={$criteria}";
-            $authorizationHeader["Authorization"] = "Zoho-oauthtoken " . $refreshToken->access_token;
+            $authorizationHeader['Authorization'] = 'Zoho-oauthtoken ' . $refreshToken->access_token;
             $apiResponse = HttpHelper::post($apiEndpoint, $data, $authorizationHeader);
         }
         return $apiResponse;
@@ -113,14 +114,14 @@ final class Handler
             );
         }
         $apiEndpoint = \urldecode($requestsParams->{'accounts-server'}) . '/oauth/v2/token';
-        $requestParams = array(
+        $requestParams = [
 
-            "grant_type" => "authorization_code",
-            "client_id" => $requestsParams->clientId,
-            "client_secret" => $requestsParams->clientSecret,
-            "redirect_uri" => \urldecode($requestsParams->redirectURI),
-            "code" => $requestsParams->code
-        );
+            'grant_type'    => 'authorization_code',
+            'client_id'     => $requestsParams->clientId,
+            'client_secret' => $requestsParams->clientSecret,
+            'redirect_uri'  => \urldecode($requestsParams->redirectURI),
+            'code'          => $requestsParams->code
+        ];
         $apiResponse = HttpHelper::post($apiEndpoint, $requestParams);
         if (is_wp_error($apiResponse) || !empty($apiResponse->error)) {
             wp_send_json_error(
@@ -135,12 +136,12 @@ final class Handler
     public function integration_save($data)
     {
         $result = static::$_integrationModel->insert(
-            array(
+            [
                 'auth_details' => wp_json_encode($data)
-            )
+            ]
         );
         if (is_wp_error($result)) {
-            wp_send_json_error("Saving Failed");
+            wp_send_json_error('Saving Failed');
         }
         wp_send_json_success($result, 200);
     }
@@ -148,15 +149,15 @@ final class Handler
     public function review_data_save($request)
     {
         $result = static::$_formDetailsModel->insert(
-            array(
+            [
                 'form_details' => wp_json_encode($request),
-                'created_at' => date("Y-m-d:h:i:sa")
-            )
+                'created_at'   => date('Y-m-d:h:i:sa')
+            ]
         );
         $this->insertReviewIntoAnalytics($request, 'insert');
         $this->get_peoples_forms();
         if (is_wp_error($result)) {
-            wp_send_json_error("Data Insertion Failed");
+            wp_send_json_error('Data Insertion Failed');
         }
         wp_send_json_success($result, 200);
     }
@@ -164,15 +165,15 @@ final class Handler
     public function integration_update($data)
     {
         $result = static::$_integrationModel->update(
-            array(
+            [
                 'auth_details' => wp_json_encode($data)
-            ),
-            array(
-                "id" => $data->integrationId
-            )
+            ],
+            [
+                'id' => $data->integrationId
+            ]
         );
         if (is_wp_error($result)) {
-            wp_send_json_error("Updating Failed");
+            wp_send_json_error('Updating Failed');
         }
         wp_send_json_success($result, 200);
     }
@@ -185,11 +186,12 @@ final class Handler
         }
         return $auth_details[0];
     }
+
     public function get_employee_data()
     {
         $employee_data = static::$_zohoPeoplesEmployeesModel->get('*', [], null, null, 'id', 'DESC');
         if (is_wp_error($employee_data)) {
-            wp_send_json_error("Failed to fetch");
+            wp_send_json_error('Failed to fetch');
         }
         wp_send_json_success($employee_data, 200);
     }
@@ -220,11 +222,11 @@ final class Handler
 
     public function get_peoples_forms()
     {
-        $upload_dir  = wp_upload_dir();
+        $upload_dir = wp_upload_dir();
         global $wpdb;
         $requestData = Self::$data;
         $isTokenExpired = false;
-        $_apiDomain = "https://people.zoho.com/people/api/forms/employee/getRecords";
+        $_apiDomain = 'https://people.zoho.com/people/api/forms/employee/getRecords';
         if ((intval($requestData->tokenDetails->generates_on) + (55 * 60)) < time()) {
             $refreshedToken = $this::_refreshAccessToken($requestData);
             if ($refreshedToken) {
@@ -241,6 +243,7 @@ final class Handler
         if ($isTokenExpired && !empty($requestData->integrationId)) {
             $this::_saveRefreshedToken($requestData->integrationId, $requestData);
         }
+
         $apiResponse = HttpHelper::get($_apiDomain, [], $_defaultHeader);
 
         $getAllRiviews = static::$_formDetailsModel->get('*', [], null, null, 'id', 'DESC');
@@ -254,36 +257,38 @@ final class Handler
                 foreach ($apiResponse->response->result as  $data) {
                     foreach ((array)$data as  $employee) {
                         $recordId = $employee[0]->Zoho_ID;
-                        $profileUrl = "https://wellqor.com/" . $employee[0]->fname[0] . "" . $employee[0]->lname . "";
-                        $reviewUrl = "https://wellqor.com/therapist-review-form/?employee_id=" . $employee[0]->employee_id . "";
+                        $profileUrl = 'https://wellqor.com/' . $employee[0]->fname[0] . '' . $employee[0]->lname . '';
+                        $reviewUrl = 'https://wellqor.com/therapist-review-form/?employee_id=' . $employee[0]->employee_id . '';
                         $headshot_url = $employee[0]->Headshot_downloadUrl;
                         $headshot_response = HttpHelper::get($headshot_url, [], $_defaultHeader);
                         $fileName = $employee[0]->Headshot;
-                        file_put_contents($upload_dir['basedir'] . "/" . $fileName, $headshot_response);
-                        $insertData =   array(
-                            'email_Id' => $employee[0]->EmailID,
-                            'employee_id' => $employee[0]->EmployeeID,
-                            'headshot_download_url' => $fileName,
-                            'employee_status' => $employee[0]->Employeestatus,
-                            'fname' => $employee[0]->FirstName,
-                            'lname' => $employee[0]->LastName,
-                            'clinical_title' => $employee[0]->Clinical_Title,
-                            'medical_qualification' => $employee[0]->Degree1,
-                            'designation' => $employee[0]->Designation,
-                            'skills' => $employee[0]->Skills,
-                            'advanced_degree_from' => $employee[0]->Advanced_Degree_from,
-                            'languages' => $employee[0]->Languages,
-                            'certifications' => $employee[0]->Certifications,
-                            'cultural_competency' => $employee[0]->Cultural_Competency,
-                            'public_bio' => $employee[0]->AboutMe,
-                            'licensed_in' => $employee[0]->Licensed_In,
-                            'allow_telehealth_access' => $employee[0]->Allow_Telehealth_Access,
-                        );
+                        file_put_contents($upload_dir['basedir'] . '/' . $fileName, $headshot_response);
+
+                        $arraValues = static::getClinicianFormData($employee, $_defaultHeader);
+                        $insertData = [
+                            'email_Id'                                  => $employee[0]->EmailID,
+                            'employee_id'                               => $employee[0]->EmployeeID,
+                            'headshot_download_url'                     => $fileName,
+                            'employee_status'                           => $employee[0]->Employeestatus,
+                            'fname'                                     => $employee[0]->FirstName,
+                            'lname'                                     => $employee[0]->LastName,
+                            'preferred_name_nickname'                   => $employee[0]->Preferred_Name_Nickname,
+                            'clinical_title'                            => $employee[0]->Clinical_Title,
+                            'medical_qualification'                     => $employee[0]->Cultural_Competency,
+                            'designation'                               => $employee[0]->Designation,
+                            'skills'                                    => !empty($arraValues) ? $arraValues->Clinical_Competencies : '',
+                            'advanced_degree_from'                      => $employee[0]->Advanced_Degree_from,
+                            'languages'                                 => !empty($arraValues) ? $arraValues->Languages : '',
+                            'certifications'                            => !empty($arraValues) ? $arraValues->Clinician_Profile_Treatment_Modalities : '',
+                            'cultural_competency'                       => !empty($arraValues) ? $arraValues->Cultural_Competencies : '',
+                            'public_bio'                                => !empty($arraValues) ? $arraValues->Public_Bio : '',
+                            'licensed_in'                               => $employee[0]->Licensed_In,
+                            'allow_telehealth_access'                   => $employee[0]->Allow_Telehealth_Access,
+                        ];
 
                         static::$_zohoPeoplesEmployeesModel->insert(
                             $insertData
                         );
-
 
                         if ($employee[0]->Employeestatus === 'Active' && ($employee[0]->Designation === 'Clinical Therapist' || $employee[0]->Designation === 'Clinical Director') && $employee[0]->Allow_Telehealth_Access === 'true') {
                             $this::programmatically_create_post(
@@ -301,36 +306,39 @@ final class Handler
                 foreach ($apiResponse->response->result as  $data) {
                     foreach ((array)$data as  $employee) {
                         $recordId = $employee[0]->Zoho_ID;
-                        $profileUrl = "https://wellqor.com/" . $employee[0]->FirstName[0] . "" . $employee[0]->LastName . "";
-                        $reviewUrl = "https://wellqor.com/therapist-review-form/?employee_id=" . $employee[0]->EmployeeID . "";
+                        $profileUrl = 'https://wellqor.com/' . $employee[0]->FirstName[0] . '' . $employee[0]->LastName . '';
+                        $reviewUrl = 'https://wellqor.com/therapist-review-form/?employee_id=' . $employee[0]->EmployeeID . '';
                         $headshot_url = $employee[0]->Headshot_downloadUrl;
                         $headshot_response = HttpHelper::get($headshot_url, [], $_defaultHeader);
                         $fileName = $employee[0]->Headshot;
-                        file_put_contents($upload_dir['basedir'] . "/" . $fileName, $headshot_response);
-                        $updateData =   array(
-                            'email_Id' => $employee[0]->EmailID,
-                            'employee_id' => $employee[0]->EmployeeID,
-                            'headshot_download_url' => $fileName,
-                            'employee_status' => $employee[0]->Employeestatus,
-                            'fname' => $employee[0]->FirstName,
-                            'lname' => $employee[0]->LastName,
-                            'clinical_title' => $employee[0]->Clinical_Title,
-                            'medical_qualification' => $employee[0]->Degree1,
-                            'designation' => $employee[0]->Designation,
-                            'skills' => $employee[0]->Skills,
-                            'advanced_degree_from' => $employee[0]->Advanced_Degree_from,
-                            'languages' => $employee[0]->Languages,
-                            'certifications' => $employee[0]->Certifications,
-                            'cultural_competency' => $employee[0]->Cultural_Competency,
-                            'public_bio' => $employee[0]->AboutMe,
-                            'licensed_in' => $employee[0]->Licensed_In,
-                            'allow_telehealth_access' => $employee[0]->Allow_Telehealth_Access,
+                        file_put_contents($upload_dir['basedir'] . '/' . $fileName, $headshot_response);
 
-                        );
+                        $arraValues = static::getClinicianFormData($employee, $_defaultHeader);
+                        $updateData = [
+                            'email_Id'                                  => $employee[0]->EmailID,
+                            'employee_id'                               => $employee[0]->EmployeeID,
+                            'headshot_download_url'                     => $fileName,
+                            'employee_status'                           => $employee[0]->Employeestatus,
+                            'fname'                                     => $employee[0]->FirstName,
+                            'lname'                                     => $employee[0]->LastName,
+                            'preferred_name_nickname'                   => $employee[0]->Preferred_Name_Nickname,
+                            'clinical_title'                            => $employee[0]->Clinical_Title,
+                            'medical_qualification'                     => $employee[0]->Degree1,
+                            'designation'                               => $employee[0]->Designation,
+                            'skills'                                    => !empty($arraValues) ? $arraValues->Clinical_Competencies : '',
+                            'advanced_degree_from'                      => $employee[0]->Advanced_Degree_from,
+                            'languages'                                 => !empty($arraValues) ? $arraValues->Languages : '',
+                            'certifications'                            => !empty($arraValues) ? $arraValues->Clinician_Profile_Treatment_Modalities : '',
+                            'cultural_competency'                       => !empty($arraValues) ? $arraValues->Cultural_Competencies : '',
+                            'public_bio'                                => !empty($arraValues) ? $arraValues->Public_Bio : '',
+                            'licensed_in'                               => $employee[0]->Licensed_In,
+                            'allow_telehealth_access'                   => $employee[0]->Allow_Telehealth_Access,
+
+                        ];
                         if (in_array($employee[0]->EmployeeID, $allEmployesId)) {
                             static::$_zohoPeoplesEmployeesModel->update(
                                 $updateData,
-                                array('employee_id' => $employee[0]->EmployeeID)
+                                ['employee_id' => $employee[0]->EmployeeID]
                             );
 
                             $queryId = $employee[0]->EmployeeID;
@@ -366,7 +374,6 @@ final class Handler
                 };
             }
 
-
             $all_employees = $this->get_all_employees();
             wp_send_json_success($all_employees, 200);
         } else {
@@ -375,6 +382,22 @@ final class Handler
                 400
             );
         }
+    }
+
+    public static function getClinicianFormData($employeeData, $_defaultHeader)
+    {
+        $clinicialFormParams = [
+            'searchField'   => 'Clinician_Name',
+            'searchOperator'=> 'Contains',
+            'searchText'    => $employeeData[0]->EmployeeID
+        ];
+        $clinicialFormResponse = HttpHelper::get('https://people.zoho.com/people/api/forms/Clinician_Profile/getRecords?searchParams=' . json_encode($clinicialFormParams) . '', [], $_defaultHeader);
+        $arraValues = '';
+        if (isset($clinicialFormResponse->response->result)) {
+            $responseData = (array) $clinicialFormResponse->response->result[0];
+            $arraValues = array_values($responseData)[0][0];
+        }
+        return $arraValues;
     }
 
     protected static function _refreshAccessToken($apiData)
@@ -391,12 +414,12 @@ final class Handler
 
         $dataCenter = $apiData->dataCenter;
         $apiEndpoint = "https://accounts.zoho.{$dataCenter}/oauth/v2/token";
-        $requestParams = array(
-            "grant_type" => "refresh_token",
-            "client_id" => $apiData->clientId,
-            "client_secret" => $apiData->clientSecret,
-            "refresh_token" => $tokenDetails->refresh_token,
-        );
+        $requestParams = [
+            'grant_type'    => 'refresh_token',
+            'client_id'     => $apiData->clientId,
+            'client_secret' => $apiData->clientSecret,
+            'refresh_token' => $tokenDetails->refresh_token,
+        ];
 
         $apiResponse = HttpHelper::post($apiEndpoint, $requestParams);
         if (is_wp_error($apiResponse) || !empty($apiResponse->error)) {
@@ -413,46 +436,49 @@ final class Handler
             return;
         }
         $result = static::$_integrationModel->update(
-            array(
+            [
                 'auth_details' => wp_json_encode($data)
-            ),
-            array(
-                "id" => $integrationID
-            )
+            ],
+            [
+                'id' => $integrationID
+            ]
         );
         return $result;
     }
 
     public function get_all_employees()
     {
-        $all_employees = static::$_zohoPeoplesEmployeesModel->get("*", ['employee_status' => 'Active', 'designation' => ['Clinical Therapist', 'Clinical Director'], 'allow_telehealth_access' => 'true'], null, null, 'id', 'DESC');
+        $all_employees = static::$_zohoPeoplesEmployeesModel->get('*', ['employee_status' => 'Active', 'designation' => ['Clinical Therapist', 'Clinical Director'], 'allow_telehealth_access' => 'true'], null, null, 'id', 'DESC');
         if (is_wp_error($all_employees)) {
             return  [];
         }
         return $all_employees;
     }
+
     public function delete_employees($Ids)
     {
         global $wpdb;
         $result = '';
         foreach ($Ids as $id) {
-            $result = $wpdb->delete($wpdb->prefix . 'bitwelzp_zoho_people_employee_info', array('id' => $id));
+            $result = $wpdb->delete($wpdb->prefix . 'bitwelzp_zoho_people_employee_info', ['id' => $id]);
         }
         wp_send_json_success($result);
     }
+
     public function delete_form_details($Ids)
     {
         global $wpdb;
         $result = '';
         foreach ($Ids as $id) {
-            $result = $wpdb->delete($wpdb->prefix . 'bitwelzp_form_details', array('id' => $id));
+            $result = $wpdb->delete($wpdb->prefix . 'bitwelzp_form_details', ['id' => $id]);
         }
 
         wp_send_json_success($result);
     }
+
     public function review_approve($id)
     {
-        $get_form_details = static::$_formDetailsModel->get("*", ['id' => $id]);
+        $get_form_details = static::$_formDetailsModel->get('*', ['id' => $id]);
         $new_form_details = json_decode($get_form_details[0]->form_details);
         if ($new_form_details->status === 'pending') {
             $new_form_details->status = 'approved';
@@ -460,22 +486,21 @@ final class Handler
             $new_form_details->status = 'pending';
         }
 
-
         $result = static::$_formDetailsModel->update(
-            array(
+            [
                 'form_details' => wp_json_encode($new_form_details),
-                'updated_at' => date("Y-m-d:h:i:sa")
-            ),
-            array(
-                "id" => $id
-            )
+                'updated_at'   => date('Y-m-d:h:i:sa')
+            ],
+            [
+                'id' => $id
+            ]
         );
 
         if (is_wp_error($result)) {
-            wp_send_json_error("Updating Failed");
+            wp_send_json_error('Updating Failed');
         }
         if (count($get_form_details)) {
-            $new_form_details->editRowId=$id;
+            $new_form_details->editRowId = $id;
             $this->updateReviewIntoAnalytics($new_form_details);
         }
         $get_updated_form_details = static::$_formDetailsModel->get('*', [], null, null, 'id', 'DESC');
@@ -485,22 +510,22 @@ final class Handler
     public function review_update($requestData)
     {
         $result = static::$_formDetailsModel->update(
-            array(
+            [
                 'form_details' => wp_json_encode($requestData->inputData),
-                'updated_at' => date("Y-m-d:h:i:sa")
+                'updated_at'   => date('Y-m-d:h:i:sa')
 
-            ),
-            array(
-                "id" => $requestData->editRowId
-            )
+            ],
+            [
+                'id' => $requestData->editRowId
+            ]
         );
         if (is_wp_error($result)) {
-            wp_send_json_error("Updating Failed");
+            wp_send_json_error('Updating Failed');
         } else {
             $form_details = static::$_formDetailsModel->get('*', [], null, null, 'id', 'DESC');
-            $requestData->inputData->editRowId=$requestData->editRowId;
-            $updateReview=$this->updateReviewIntoAnalytics($requestData->inputData);
-            $updateReview=json_decode(preg_replace("/\\\'/", "'", $updateReview));
+            $requestData->inputData->editRowId = $requestData->editRowId;
+            $updateReview = $this->updateReviewIntoAnalytics($requestData->inputData);
+            $updateReview = json_decode(preg_replace("/\\\'/", "'", $updateReview));
 
             if ($updateReview->response->result->updatedRows === '0') {
                 $this->insertReviewIntoAnalytics($requestData->inputData, 'update');
@@ -521,41 +546,42 @@ final class Handler
     public function page_active($id)
     {
         global $wpdb;
-        $employee_data_by_id = static::$_zohoPeoplesEmployeesModel->get("*", ['id' => $id], null, null, 'id', 'DESC');
+        $employee_data_by_id = static::$_zohoPeoplesEmployeesModel->get('*', ['id' => $id], null, null, 'id', 'DESC');
         $status = '';
         if ($employee_data_by_id[0]->page_status === 'inactive') {
             $status = 'active';
             $term_id = $wpdb->get_row("SELECT term_id FROM wp_terms WHERE name ='Active Profile Page'");
             if ($term_id) {
-                $wpdb->update("wp_term_relationships", ['term_taxonomy_id' => $term_id->term_id], ['object_id' => $employee_data_by_id[0]->post_id]);
+                $wpdb->update('wp_term_relationships', ['term_taxonomy_id' => $term_id->term_id], ['object_id' => $employee_data_by_id[0]->post_id]);
             }
         } else {
             $status = 'inactive';
             $term_id = $wpdb->get_row("SELECT term_id FROM wp_terms WHERE name ='InActive Profile Page'");
             if ($term_id) {
-                $wpdb->update("wp_term_relationships", ['term_taxonomy_id' => $term_id->term_id], ['object_id' => $employee_data_by_id[0]->post_id]);
+                $wpdb->update('wp_term_relationships', ['term_taxonomy_id' => $term_id->term_id], ['object_id' => $employee_data_by_id[0]->post_id]);
             }
         }
 
         $result = static::$_zohoPeoplesEmployeesModel->update(
-            array('page_status' => $status),
-            array("id" => $id)
+            ['page_status' => $status],
+            ['id' => $id]
         );
         if (is_wp_error($result)) {
-            wp_send_json_error("Updating Failed");
+            wp_send_json_error('Updating Failed');
         }
-        $employee_data = static::$_zohoPeoplesEmployeesModel->get("*", ['employee_status' => 'Active', 'designation' => ['Clinical Therapist', 'Clinical Director'], 'allow_telehealth_access' => 'true'], null, null, 'id', 'DESC');
+        $employee_data = static::$_zohoPeoplesEmployeesModel->get('*', ['employee_status' => 'Active', 'designation' => ['Clinical Therapist', 'Clinical Director'], 'allow_telehealth_access' => 'true'], null, null, 'id', 'DESC');
         wp_send_json_success($employee_data, 200);
     }
 
     public static function programmatically_create_post($data, $id, $getAllReviews)
     {
         global $wpdb;
-        $upload_dir  = wp_upload_dir();
+        $upload_dir = wp_upload_dir();
         $employee_id = $data['employee_id'];
         //         $page_status = $data['page_status'];
         $fname = $data['fname'];
         $lname = $data['lname'];
+        $preferred_name_nickname = $data['preferred_name_nickname'];
         $medical_qualification = $data['medical_qualification'];
         $clinical_title = $data['clinical_title'];
         $skills = $data['skills'];
@@ -570,13 +596,13 @@ final class Handler
         if ($headshot_download_url == '') {
             $new_headshot_download_url = 'https://wellqor.com/wp-content/uploads/2021/11/bioPicplaceholder.jpg';
         } else {
-            $new_headshot_download_url = $upload_dir['baseurl'] . "/" . $headshot_download_url;
+            $new_headshot_download_url = $upload_dir['baseurl'] . '/' . $headshot_download_url;
         }
-        $skillArray = explode(";", $skills);
-        $languagesArray = explode(";", $languages);
-        $certificationsArray = explode(";", $certifications);
-        $culturalCompetencyArray = explode(";", $cultural_competency);
-        $licensedArray = explode(";", $licensed_in);
+        $skillArray = explode(';', $skills);
+        $languagesArray = explode(';', $languages);
+        $certificationsArray = explode(';', $certifications);
+        $culturalCompetencyArray = explode(';', $cultural_competency);
+        $licensedArray = explode(';', $licensed_in);
 
         $map = function ($a, $f) {
             return join("\n", array_map($f, $a, array_keys($a)));
@@ -585,10 +611,10 @@ final class Handler
         $author_id = 1;
         $firstCharfName = substr($fname, 0, 1);
         $slug = $firstCharfName . $lname;
-        $title = $fname . " " . $lname . " " . "info";
+        $title = $fname . ' ' . $lname . ' ' . 'info';
 
-        $reviewsData = array();
-        $phrasesArray = array();
+        $reviewsData = [];
+        $phrasesArray = [];
         $totalStars = 0;
         foreach ($getAllReviews as $review) {
             $form_details = json_decode($review->form_details);
@@ -608,14 +634,12 @@ final class Handler
         $page_status = $wpdb->get_row("SELECT page_status FROM wp_bitwelzp_zoho_people_employee_info WHERE employee_id ='$employee_id'");
         if ($page_status == null) {
             static::$_zohoPeoplesEmployeesModel->update(
-                array('page_status' => 'active'),
-                array('employee_id' => $employee_id)
+                ['page_status' => 'active'],
+                ['employee_id' => $employee_id]
             );
         }
-
-
-
-        $content =  <<<HTML
+        //Style in Code Snippets Footer
+        $content = <<<HTML
           <div class="employee-details">
 <div class="profile-heading" style="">
 <div class="container" style="">
@@ -624,7 +648,7 @@ final class Handler
     </div>
     <div class="title" style="">
         <div class="name">
-            <h2 style=""><span>$fname</span> <span>$lname, </span><span>$medical_qualification</span></h2>
+            <h2 style=""><span>$preferred_name_nickname</span> <span>$lname, </span><span>$medical_qualification</span></h2>
         </div>
         <div class="designation">
         $clinical_title
@@ -637,17 +661,37 @@ final class Handler
     <div class="profile-content">
 		<div class="container" style="">
     <div class="left" style="">
-        <div class="new-patient" style="">
-            <h4>Accepting New Patients</h4>
-            <span style="">Yes</span>
-        </div>
-        <div class="line"></div>
         <div class="specialities" style="">
             <h4>Specialities</h4>
             <ul>
             	       {$map($skillArray, function ($skill) {
             return "
                 <li>$skill</li>
+ ";
+        })}
+            </ul>
+        </div>
+        <div class="line"></div>
+
+        <div class="certifications" style="">
+            <h4>Treatment Modalities</h4>
+            <ul>
+             {$map($certificationsArray, function ($certification) {
+            return "
+                <li>$certification</li>
+ ";
+        })}
+            </ul>
+        </div>
+		
+       
+        <div class="line"></div>
+        <div class="cultural-competencies" style="">
+            <h4>Cultural Competencies</h4>
+            <ul style="">
+                 {$map($culturalCompetencyArray, function ($culturalCompetency) {
+            return "
+                <li>$culturalCompetency</li>
  ";
         })}
             </ul>
@@ -664,30 +708,8 @@ final class Handler
         })}
             </ul>
         </div>
-        <div class="line"></div>
 		
-        <div class="certifications" style="">
-            <h4>Certifications</h4>
-            <ul>
-             {$map($certificationsArray, function ($certification) {
-            return "
-                <li>$certification</li>
- ";
-        })}
-            </ul>
-        </div>
-        <div class="line"></div>
-		
-        <div class="cultural-competencies" style="">
-            <h4>Cultural Competencies</h4>
-            <ul style="">
-                 {$map($culturalCompetencyArray, function ($culturalCompetency) {
-            return "
-                <li>$culturalCompetency</li>
- ";
-        })}
-            </ul>
-        </div>
+
     </div>
     <div class="right" style="">
         <div class="professional-bio" style="">
@@ -737,7 +759,7 @@ final class Handler
 <h4><span>Featured Reviews</span></h4>
 {$map($reviewsData, function ($reviews, $index) {
             return "
-           <a href='javascript:void(0)' onclick='redirectUrl($reviews->employee_id)' id='show-all-reviews-btn'>
+           <a href='https://wellqor.com/show-all-reviews?employee_id={$reviews->employee_id}'  id='show-all-reviews-btn'>
                              <div class='reviews-list'>
                                 <div class='reviews-accordion'> 
                                     <div class='reviewer-info'>
@@ -762,7 +784,9 @@ final class Handler
 
         
         <div class='all-reviews'>
-<button onclick="redirectUrl($employee_id)" id='show-all-reviews-btn'>Read All $totalVerifiedReviews Reviews</button>
+       <a href='https://wellqor.com/show-all-reviews?employee_id={$employee_id}' id='show-all-reviews-btn'>Read All $totalVerifiedReviews Reviews</a>
+       <!-- <a href='javascript:void(0)' onclick='redirectUrl($employee_id)' id='show-all-reviews-btn'> -->
+<!-- <button onclick="redirectUrl($employee_id)" id='show-all-reviews-btn'>Read All $totalVerifiedReviews Reviews</button> -->
                             </div>
 
 </div>
@@ -773,53 +797,53 @@ final class Handler
 HTML;
         if ($id === '' || $id === null) {
             $post_id = wp_insert_post(
-                array(
+                [
                     'comment_status' => 'closed',
-                    'ping_status' => 'closed',
-                    'post_author' => $author_id,
-                    'post_name' => $slug,
-                    'post_title' => $title,
-                    'post_status' => 'publish',
-                    'post_type' => 'page',
-                    'post_content' => $content,
-                )
+                    'ping_status'    => 'closed',
+                    'post_author'    => $author_id,
+                    'post_name'      => $slug,
+                    'post_title'     => $title,
+                    'post_status'    => 'publish',
+                    'post_type'      => 'page',
+                    'post_content'   => $content,
+                ]
             );
             $term_id = $wpdb->get_row("SELECT term_id FROM wp_terms WHERE name ='Active Profile Page'");
             if ($term_id) {
                 $exist_object = $wpdb->get_row("SELECT * FROM wp_term_relationships where object_id=$post_id");
                 if ($exist_object) {
-                    $wpdb->update("wp_term_relationships", ['term_taxonomy_id' => $term_id->term_id], ['object_id' => $post_id]);
+                    $wpdb->update('wp_term_relationships', ['term_taxonomy_id' => $term_id->term_id], ['object_id' => $post_id]);
                 } else {
-                    $wpdb->insert("wp_term_relationships", ['term_taxonomy_id' => $term_id->term_id, 'object_id' => $post_id]);
+                    $wpdb->insert('wp_term_relationships', ['term_taxonomy_id' => $term_id->term_id, 'object_id' => $post_id]);
                 }
             }
             $data['post_id'] = $post_id;
             static::$_zohoPeoplesEmployeesModel->update(
                 $data,
-                array('employee_id' => $employee_id)
+                ['employee_id' => $employee_id]
             );
         } else {
             wp_update_post(
-                array(
-                    'ID' => $id,
+                [
+                    'ID'             => $id,
                     'comment_status' => 'closed',
-                    'ping_status' => 'closed',
-                    'post_author' => $author_id,
-                    'post_name' => $slug,
-                    'post_title' => $title,
-                    'post_status' => 'publish',
-                    'post_type' => 'page',
-                    'post_content' => $content,
-                )
+                    'ping_status'    => 'closed',
+                    'post_author'    => $author_id,
+                    'post_name'      => $slug,
+                    'post_title'     => $title,
+                    'post_status'    => 'publish',
+                    'post_type'      => 'page',
+                    'post_content'   => $content,
+                ]
             );
 
             $term_id = $wpdb->get_row("SELECT term_id FROM wp_terms WHERE name ='Active Profile Page'");
             if ($term_id) {
                 $exist_object = $wpdb->get_row("SELECT * FROM wp_term_relationships where object_id=$id");
                 if ($exist_object) {
-                    $wpdb->update("wp_term_relationships", ['term_taxonomy_id' => $term_id->term_id], ['object_id' => $id]);
+                    $wpdb->update('wp_term_relationships', ['term_taxonomy_id' => $term_id->term_id], ['object_id' => $id]);
                 } else {
-                    $wpdb->insert("wp_term_relationships", ['term_taxonomy_id' => $term_id->term_id, 'object_id' => $id]);
+                    $wpdb->insert('wp_term_relationships', ['term_taxonomy_id' => $term_id->term_id, 'object_id' => $id]);
                 }
             }
         }

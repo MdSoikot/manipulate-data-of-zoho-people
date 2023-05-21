@@ -17,6 +17,8 @@ function AllEmployees({ newFormId }) {
   const [isLoading, setisLoading] = useState(false)
   const [tableData, setTableData] = useState(bitwelzp.all_employees)
 
+
+
   const [cols, setCols] = useState([
     { width: 150, minWidth: 80, Header: __('Employee ID', 'bitwelzp'), accessor: 'employee_id', Cell: e => e.row.original.page_status === 'active' ? <a className="btcd-tabl-lnk" href={`https://wellqor.com/${e.row.original.fname.charAt(0)}${e.row.original.lname}`} target="_blank">{e.row.original.employee_id}</a> : e.row.original.employee_id },
     { width: 300, minWidth: 80, Header: __('Review Form Link', 'bitwelzp'), accessor: 'review_form_link', Cell: e => <CopyText value={`https://wellqor.com/therapist-review-form/?employee_id=${e.row.original.employee_id}`} setSnackbar={setSnackbar} className="cpyTxt" readOnly={true} /> },
@@ -30,7 +32,7 @@ function AllEmployees({ newFormId }) {
     { width: 250, minWidth: 80, Header: __('Cultural Competency', 'bitwelzp'), accessor: 'cultural_competency', Cell: e => e.row.original.page_status === 'active' ? <a className="btcd-tabl-lnk" href={`https://wellqor.com/${e.row.original.fname.charAt(0)}${e.row.original.lname}`} target="_blank">{e.row.original.cultural_competency}</a> : e.row.original.cultural_competency },
     { width: 250, minWidth: 80, Header: __('Public Bio', 'bitwelzp'), accessor: 'public_bio', Cell: e => e.row.original.page_status === 'active' ? <a className="btcd-tabl-lnk" href={`https://wellqor.com/${e.row.original.fname.charAt(0)}${e.row.original.lname}`} target="_blank">{e.row.original.public_bio}</a> : e.row.original.public_bio },
     { width: 250, minWidth: 80, Header: __('Licensed In', 'bitwelzp'), accessor: 'licensed_in', Cell: e => e.row.original.page_status === 'active' ? <a className="btcd-tabl-lnk" href={`https://wellqor.com/${e.row.original.fname.charAt(0)}${e.row.original.lname}`} target="_blank">{e.row.original.licensed_in}</a> : e.row.original.licensed_in },
-    { width: 150, minWidth: 20, Header: __('Page Status', 'bitwelzp'), accessor: 'page_status', Cell: e => <button type='button' className={`btn btcd-btn-lg ${e.row.original.page_status === 'inactive' ? 'red' : 'green'} sh-sm flx`} onClick={() => handleActive(e.row.original.id)}>{e.row.original.page_status}</button> },
+    { width: 150, minWidth: 20, Header: __('Page Status', 'bitwelzp'), accessor: 'page_status', Cell: e => <button type='button' className={`btn btcd-btn-lg ${e.row.original.page_status === 'active' ? 'green' : 'red'} sh-sm flx`} onClick={() => handleActive(e.row.original.id)}>{e.row.original.page_status === 'active' ? 'active' : 'inActive'}</button> },
 
 
   ])
@@ -45,7 +47,6 @@ function AllEmployees({ newFormId }) {
         }
       })
   }
-
 
 
 
