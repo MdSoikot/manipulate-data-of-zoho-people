@@ -1,6 +1,6 @@
 <?php
 if (!defined('ABSPATH') || !defined('BITWELZP_ASSET_URI')) {
-    exit;
+  exit;
 }
 ?>
 <noscript>You need to enable JavaScript to run this app.</noscript>

@@ -40,7 +40,7 @@ final class Plugin
         (new Activation())->activate();
         (new Deactivation())->register();
         (new Uninstallation())->register();
-        $wpdb->query("ALTER TABLE {$wpdb->prefix}bitwelzp_zoho_people_employee_info ADD preferred_name_nickname varchar(255) DEFAULT NULL AFTER lname");
+        // $wpdb->query("ALTER TABLE {$wpdb->prefix}bitwelzp_zoho_people_employee_info ADD preferred_name_nickname varchar(255) DEFAULT NULL AFTER lname");
     }
 
     public function init_plugin()

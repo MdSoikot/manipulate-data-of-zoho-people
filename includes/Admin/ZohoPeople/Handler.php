@@ -18,12 +18,12 @@ final class Handler
 
     public function __construct()
     {
-        Self::$_integrationModel = new IntegrationModel();
-        Self::$_zohoPeoplesEmployeesModel = new ZohoPeoplesEmployeesModel();
-        Self::$_formDetailsModel = new FormDetailsModel();
+        self::$_integrationModel = new IntegrationModel();
+        self::$_zohoPeoplesEmployeesModel = new ZohoPeoplesEmployeesModel();
+        self::$_formDetailsModel = new FormDetailsModel();
         $result = $this->get_auth_details();
         if (count((array)$result) > 0) {
-            Self::$data = json_decode($result->auth_details);
+            self::$data = json_decode($result->auth_details);
         }
     }
 
@@ -198,7 +198,7 @@ final class Handler
 
     public function updateZohoPeoplesFields($recordId, $profileUrl, $reviewUrl)
     {
-        $requestData = Self::$data;
+        $requestData = self::$data;
         $isTokenExpired = false;
         $_apiDomain = "https://people.zoho.com/people/api/forms/json/employee/updateRecord?inputData={Profile_URL:'$profileUrl', Review_URL:'$reviewUrl'}&recordId=$recordId";
         if ((intval($requestData->tokenDetails->generates_on) + (55 * 60)) < time()) {
@@ -224,7 +224,7 @@ final class Handler
     {
         $upload_dir = wp_upload_dir();
         global $wpdb;
-        $requestData = Self::$data;
+        $requestData = self::$data;
         $isTokenExpired = false;
         $_apiDomain = 'https://people.zoho.com/people/api/forms/employee/getRecords';
         if ((intval($requestData->tokenDetails->generates_on) + (55 * 60)) < time()) {
@@ -280,7 +280,7 @@ final class Handler
                             'advanced_degree_from'                      => $employee[0]->Advanced_Degree_from,
                             'languages'                                 => !empty($arraValues) ? $arraValues->Languages : '',
                             'certifications'                            => !empty($arraValues) ? $arraValues->Clinician_Profile_Treatment_Modalities : '',
-                            'cultural_competency'                       => !empty($arraValues) ? $arraValues->Cultural_Competencies : '',
+                            'cultural_competency'                       => !empty($arraValues) ? $arraValues->Cultural_Competencies1 : '',
                             'public_bio'                                => !empty($arraValues) ? $arraValues->Public_Bio : '',
                             'licensed_in'                               => $employee[0]->Licensed_In,
                             'allow_telehealth_access'                   => $employee[0]->Allow_Telehealth_Access,
@@ -329,7 +329,7 @@ final class Handler
                             'advanced_degree_from'                      => $employee[0]->Advanced_Degree_from,
                             'languages'                                 => !empty($arraValues) ? $arraValues->Languages : '',
                             'certifications'                            => !empty($arraValues) ? $arraValues->Clinician_Profile_Treatment_Modalities : '',
-                            'cultural_competency'                       => !empty($arraValues) ? $arraValues->Cultural_Competencies : '',
+                            'cultural_competency'                       => !empty($arraValues) ? $arraValues->Cultural_Competencies1 : '',
                             'public_bio'                                => !empty($arraValues) ? $arraValues->Public_Bio : '',
                             'licensed_in'                               => $employee[0]->Licensed_In,
                             'allow_telehealth_access'                   => $employee[0]->Allow_Telehealth_Access,
@@ -785,8 +785,7 @@ final class Handler
         
         <div class='all-reviews'>
        <a href='https://wellqor.com/show-all-reviews?employee_id={$employee_id}' id='show-all-reviews-btn'>Read All $totalVerifiedReviews Reviews</a>
-       <!-- <a href='javascript:void(0)' onclick='redirectUrl($employee_id)' id='show-all-reviews-btn'> -->
-<!-- <button onclick="redirectUrl($employee_id)" id='show-all-reviews-btn'>Read All $totalVerifiedReviews Reviews</button> -->
+      
                             </div>
 
 </div>

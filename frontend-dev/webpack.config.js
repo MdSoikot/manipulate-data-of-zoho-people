@@ -3,12 +3,12 @@ const webpack = require('webpack')
 const MiniCssExtractPlugin = require('mini-css-extract-plugin')
 const { CleanWebpackPlugin } = require('clean-webpack-plugin')
 const CopyPlugin = require('copy-webpack-plugin')
-const WorkboxPlugin = require('workbox-webpack-plugin')
 const TerserPlugin = require('terser-webpack-plugin')
 const OptimizeCSSAssetsPlugin = require('optimize-css-assets-webpack-plugin')
 const safePostCssParser = require('postcss-safe-parser')
 const svgToMiniDataURI = require('mini-svg-data-uri')
 const ReactRefreshWebpackPlugin = require('@pmmmwh/react-refresh-webpack-plugin')
+const GenerateSW = require('workbox-build');
 
 module.exports = (env, argv) => {
   const production = argv.mode !== 'development'
@@ -121,7 +121,7 @@ module.exports = (env, argv) => {
         },
       })]),
       ...(!production ? [] : [
-        new WorkboxPlugin.GenerateSW({
+        new GenerateSW({
           clientsClaim: production,
           skipWaiting: production,
           dontCacheBustURLsMatching: /\.[0-9a-f]{8}\./,

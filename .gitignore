@@ -2,5 +2,6 @@ composer.lock
 frontend-dev/locale.pot
 frontend-dev/node_modules/
 frontend-dev/yarn.lock
+frontend-dev/pnpm-lock.yaml
 vendor/
 assets

@@ -16,7 +16,7 @@ function AllEmployees({ newFormId }) {
   const integConfig = integrationDetails.integ_config
   const [isLoading, setisLoading] = useState(false)
   const [tableData, setTableData] = useState(bitwelzp.all_employees)
-
+  console.log(bitwelzp.all_employees)
 
 
   const [cols, setCols] = useState([
