@@ -60,7 +60,7 @@ final class Handler
         ];
 
         if ($refreshToken) {
-            $apiEndpoint = 'https://analyticsapi.zoho.com/api/mdshakhawathosen122@gmail.com/Developer_space/Patient Review Data?ZOHO_ACTION=ADDROW&ZOHO_OUTPUT_FORMAT=JSON&ZOHO_ERROR_FORMAT=JSON&ZOHO_API_VERSION=1.0';
+            $apiEndpoint = 'https://analyticsapi.zoho.com/api/dschwam@wellqor.com/Developer_space/Patient Review Data?ZOHO_ACTION=ADDROW&ZOHO_OUTPUT_FORMAT=JSON&ZOHO_ERROR_FORMAT=JSON&ZOHO_API_VERSION=1.0';
             $authorizationHeader['Authorization'] = 'Zoho-oauthtoken ' . $refreshToken->access_token;
             $apiResponse = HttpHelper::post($apiEndpoint, $data, $authorizationHeader);
         }
@@ -87,7 +87,7 @@ final class Handler
         $criteria = "(\"Review Id\"='$requestData->editRowId')";
         $refreshToken = $this->analyticsGenerateToken();
         if ($refreshToken) {
-            $apiEndpoint = "https://analyticsapi.zoho.com/api/mdshakhawathosen122@gmail.com/Developer_space/Patient Review Data?ZOHO_ACTION=UPDATE&ZOHO_OUTPUT_FORMAT=JSON&ZOHO_ERROR_FORMAT=JSON&ZOHO_API_VERSION=1.0&ZOHO_CRITERIA={$criteria}";
+            $apiEndpoint = "https://analyticsapi.zoho.com/api/dschwam@wellqor.com/Developer_space/Patient Review Data?ZOHO_ACTION=UPDATE&ZOHO_OUTPUT_FORMAT=JSON&ZOHO_ERROR_FORMAT=JSON&ZOHO_API_VERSION=1.0&ZOHO_CRITERIA={$criteria}";
             $authorizationHeader['Authorization'] = 'Zoho-oauthtoken ' . $refreshToken->access_token;
             $apiResponse = HttpHelper::post($apiEndpoint, $data, $authorizationHeader);
         }
@@ -305,6 +305,7 @@ final class Handler
                 }
                 foreach ($apiResponse->response->result as  $data) {
                     foreach ((array)$data as  $employee) {
+
                         $recordId = $employee[0]->Zoho_ID;
                         $profileUrl = 'https://wellqor.com/' . $employee[0]->FirstName[0] . '' . $employee[0]->LastName . '';
                         $reviewUrl = 'https://wellqor.com/therapist-review-form/?employee_id=' . $employee[0]->EmployeeID . '';
@@ -342,6 +343,7 @@ final class Handler
                             );
 
                             $queryId = $employee[0]->EmployeeID;
+
                             $post_id = $wpdb->get_row("SELECT post_id FROM wp_bitwelzp_zoho_people_employee_info WHERE employee_id ='$queryId'");
                             if ($employee[0]->Employeestatus === 'Active' && ($employee[0]->Designation === 'Clinical Therapist' || $employee[0]->Designation === 'Clinical Director') && $employee[0]->Allow_Telehealth_Access === 'true') {
                                 $this::programmatically_create_post(
@@ -358,6 +360,8 @@ final class Handler
                                 $updateData
                             );
                             $queryId = $employee[0]->EmployeeID;
+
+
                             $post_id = $wpdb->get_row("SELECT post_id FROM wp_bitwelzp_zoho_people_employee_info WHERE employee_id ='$queryId'");
                             if ($employee[0]->Employeestatus === 'Active' && ($employee[0]->Designation === 'Clinical Therapist' || $employee[0]->Designation === 'Clinical Director') && $employee[0]->Allow_Telehealth_Access === 'true') {
                                 $this::programmatically_create_post(
@@ -448,6 +452,9 @@ final class Handler
 
     public function get_all_employees()
     {
+
+        // global $wpdb;
+        // $wpdb->query("ALTER TABLE wp_bitwelzp_zoho_people_employee_info ADD preferred_name_nickname varchar(255) DEFAULT NULL After lname");
         $all_employees = static::$_zohoPeoplesEmployeesModel->get('*', ['employee_status' => 'Active', 'designation' => ['Clinical Therapist', 'Clinical Director'], 'allow_telehealth_access' => 'true'], null, null, 'id', 'DESC');
         if (is_wp_error($all_employees)) {
             return  [];
@@ -759,7 +766,7 @@ final class Handler
 <h4><span>Featured Reviews</span></h4>
 {$map($reviewsData, function ($reviews, $index) {
             return "
-           <a href='https://wellqor.com/show-all-reviews?employee_id={$reviews->employee_id}'  id='show-all-reviews-btn'>
+           <a href='https://wellqor.com/show-all-reviews?employee_id={$reviews->employee_id}'>
                              <div class='reviews-list'>
                                 <div class='reviews-accordion'> 
                                     <div class='reviewer-info'>
@@ -783,9 +790,8 @@ final class Handler
         
 
         
-        <div class='all-reviews'>
-       <a href='https://wellqor.com/show-all-reviews?employee_id={$employee_id}' id='show-all-reviews-btn'>Read All $totalVerifiedReviews Reviews</a>
-      
+      <div class='all-reviews' id='show-all-reviews-btn'>
+       <a href='https://wellqor.com/show-all-reviews?employee_id={$employee_id}' >Read All $totalVerifiedReviews Reviews</a>
                             </div>
 
 </div>
