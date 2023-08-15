@@ -356,12 +356,12 @@ final class Handler
                                 }
                             }
                         } else {
-                            static::$_zohoPeoplesEmployeesModel->insert(
+                        static::$_zohoPeoplesEmployeesModel->insert(
                                 $updateData
                             );
                             $queryId = $employee[0]->EmployeeID;
-
-
+							 
+							
                             $post_id = $wpdb->get_row("SELECT post_id FROM wp_bitwelzp_zoho_people_employee_info WHERE employee_id ='$queryId'");
                             if ($employee[0]->Employeestatus === 'Active' && ($employee[0]->Designation === 'Clinical Therapist' || $employee[0]->Designation === 'Clinical Director') && $employee[0]->Allow_Telehealth_Access === 'true') {
                                 $this::programmatically_create_post(
@@ -452,8 +452,8 @@ final class Handler
 
     public function get_all_employees()
     {
-
-        // global $wpdb;
+		   
+// global $wpdb;
         // $wpdb->query("ALTER TABLE wp_bitwelzp_zoho_people_employee_info ADD preferred_name_nickname varchar(255) DEFAULT NULL After lname");
         $all_employees = static::$_zohoPeoplesEmployeesModel->get('*', ['employee_status' => 'Active', 'designation' => ['Clinical Therapist', 'Clinical Director'], 'allow_telehealth_access' => 'true'], null, null, 'id', 'DESC');
         if (is_wp_error($all_employees)) {
@@ -645,6 +645,13 @@ final class Handler
                 ['employee_id' => $employee_id]
             );
         }
+		
+		      $showAllReviewsBtn = '';
+        if($totalVerifiedReviews > 0) {
+            $showAllReviewsBtn = "   <div class='all-reviews' id='show-all-reviews-btn'>
+<a href='https://wellqor.com/show-all-reviews?employee_id={$employee_id}' >Read All $totalVerifiedReviews Reviews</a>
+                     </div>";
+        }
         //Style in Code Snippets Footer
         $content = <<<HTML
           <div class="employee-details">
@@ -788,11 +795,9 @@ final class Handler
         })}
         
         
-
+ $showAllReviewsBtn
         
-      <div class='all-reviews' id='show-all-reviews-btn'>
-       <a href='https://wellqor.com/show-all-reviews?employee_id={$employee_id}' >Read All $totalVerifiedReviews Reviews</a>
-                            </div>
+ 
 
 </div>
 </div>

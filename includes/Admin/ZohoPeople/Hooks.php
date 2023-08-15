@@ -13,10 +13,10 @@ final class Hooks
 
     public function __construct()
     {
-        self::$_zohoPeoplesEmployeesModel=new ZohoPeoplesEmployeesModel();
-        self::$_formDetailsModel=new FormDetailsModel();
+        self::$_zohoPeoplesEmployeesModel = new ZohoPeoplesEmployeesModel();
+        self::$_formDetailsModel = new FormDetailsModel();
         if (isset($_GET['employee_id'])) {
-            self::$_empoyeeId=$_GET['employee_id'];
+            self::$_empoyeeId = $_GET['employee_id'];
         }
     }
 
@@ -30,9 +30,9 @@ final class Hooks
     public function renderReview($attributes)
     {
         $default = array(
-            'type'=>'primary',
-            'title'=>__("Button", 'philosophy'),
-            'url'=>'',
+            'type' => 'primary',
+            'title' => __("Button", 'philosophy'),
+            'url' => '',
         );
 
         $button_attributes = shortcode_atts($default, $attributes);
@@ -46,8 +46,8 @@ final class Hooks
 
     public function showReviewForm()
     {
-        $id=static::$_empoyeeId;
-        $employeeData=static::$_zohoPeoplesEmployeesModel->get("*", array('employee_id'=>$id), null, null, 'id', 'DESC');
+        $id = static::$_empoyeeId;
+        $employeeData = static::$_zohoPeoplesEmployeesModel->get("*", array('employee_id' => $id), null, null, 'id', 'DESC');
         $upload_dir  = wp_upload_dir();
         $headshot_download_url = $employeeData[0]->headshot_download_url;
         $new_headshot_download_url = '';
@@ -930,9 +930,9 @@ final class Hooks
 
     public function showAllReviews()
     {
-        $employee_id=static::$_empoyeeId;
-        $employeeData=static::$_zohoPeoplesEmployeesModel->get("*", array('employee_id'=>$employee_id), null, null, 'id', 'DESC');
-        $getAllReviews=static::$_formDetailsModel->get("*", [], null, null, 'id', 'DESC');
+        $employee_id = static::$_empoyeeId;
+        $employeeData = static::$_zohoPeoplesEmployeesModel->get("*", array('employee_id' => $employee_id), null, null, 'id', 'DESC');
+        $getAllReviews = static::$_formDetailsModel->get("*", [], null, null, 'id', 'DESC');
 
         $upload_dir  = wp_upload_dir();
         $headshot_download_url = $employeeData[0]->headshot_download_url;
@@ -942,18 +942,18 @@ final class Hooks
         } else {
             $new_headshot_download_url = $upload_dir['baseurl']."/" . $employeeData[0]->headshot_download_url;
         }
-        $reviewsData=array();
-        $totalStars=0;
+        $reviewsData = array();
+        $totalStars = 0;
         foreach ($getAllReviews as $review) {
-            $form_details=json_decode($review->form_details);
-            if ($employee_id ==$form_details->employee_id && $form_details->status=='approved') {
+            $form_details = json_decode($review->form_details);
+            if ($employee_id == $form_details->employee_id && $form_details->status == 'approved') {
                 $form_details->created_at = $review->created_at;
                 array_push($reviewsData, $form_details);
-                $totalStars = $totalStars+ $form_details->star;
+                $totalStars = $totalStars + $form_details->star;
             }
         }
 
-        $totalVerifiedReviews=count($reviewsData);
+        $totalVerifiedReviews = count($reviewsData);
 
 
         ob_start(); ?>
@@ -1311,7 +1311,7 @@ final class Hooks
       </div>
       <?php } ?>
       <div class='all-reviews'>
-        <button id='show-all-reviews-btn' onClick='showAllReviews()'>Read More</button>
+        <button id='read-more-btn' onClick='showAllReviews()'>Read More</button>
       </div>
     </div>
 
@@ -1331,7 +1331,7 @@ final class Hooks
 
     public function thankYouPage()
     {
-        $id=static::$_empoyeeId;
+        $id = static::$_empoyeeId;
         ob_start(); ?>
 
 <head>
