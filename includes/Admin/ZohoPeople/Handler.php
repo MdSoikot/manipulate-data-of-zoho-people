@@ -146,21 +146,7 @@ final class Handler
         wp_send_json_success($result, 200);
     }
 
-    public function review_data_save($request)
-    {
-        $result = static::$_formDetailsModel->insert(
-            [
-                'form_details' => wp_json_encode($request),
-                'created_at'   => date('Y-m-d:h:i:sa')
-            ]
-        );
-        $this->insertReviewIntoAnalytics($request, 'insert');
-        $this->get_peoples_forms();
-        if (is_wp_error($result)) {
-            wp_send_json_error('Data Insertion Failed');
-        }
-        wp_send_json_success($result, 200);
-    }
+
 
     public function integration_update($data)
     {
@@ -356,12 +342,12 @@ final class Handler
                                 }
                             }
                         } else {
-                        static::$_zohoPeoplesEmployeesModel->insert(
+                            static::$_zohoPeoplesEmployeesModel->insert(
                                 $updateData
                             );
                             $queryId = $employee[0]->EmployeeID;
-							 
-							
+
+
                             $post_id = $wpdb->get_row("SELECT post_id FROM wp_bitwelzp_zoho_people_employee_info WHERE employee_id ='$queryId'");
                             if ($employee[0]->Employeestatus === 'Active' && ($employee[0]->Designation === 'Clinical Therapist' || $employee[0]->Designation === 'Clinical Director') && $employee[0]->Allow_Telehealth_Access === 'true') {
                                 $this::programmatically_create_post(
@@ -392,7 +378,7 @@ final class Handler
     {
         $clinicialFormParams = [
             'searchField'   => 'Clinician_Name',
-            'searchOperator'=> 'Contains',
+            'searchOperator' => 'Contains',
             'searchText'    => $employeeData[0]->EmployeeID
         ];
         $clinicialFormResponse = HttpHelper::get('https://people.zoho.com/people/api/forms/Clinician_Profile/getRecords?searchParams=' . json_encode($clinicialFormParams) . '', [], $_defaultHeader);
@@ -452,8 +438,8 @@ final class Handler
 
     public function get_all_employees()
     {
-		   
-// global $wpdb;
+
+        // global $wpdb;
         // $wpdb->query("ALTER TABLE wp_bitwelzp_zoho_people_employee_info ADD preferred_name_nickname varchar(255) DEFAULT NULL After lname");
         $all_employees = static::$_zohoPeoplesEmployeesModel->get('*', ['employee_status' => 'Active', 'designation' => ['Clinical Therapist', 'Clinical Director'], 'allow_telehealth_access' => 'true'], null, null, 'id', 'DESC');
         if (is_wp_error($all_employees)) {
@@ -470,6 +456,23 @@ final class Handler
             $result = $wpdb->delete($wpdb->prefix . 'bitwelzp_zoho_people_employee_info', ['id' => $id]);
         }
         wp_send_json_success($result);
+    }
+
+    public function review_data_save($request)
+    {
+        $result = static::$_formDetailsModel->insert(
+            [
+                'form_details' => wp_json_encode($request),
+                'created_at'   => date('Y-m-d:h:i:sa')
+            ]
+        );
+
+        $this->insertReviewIntoAnalytics($request, 'insert');
+        $this->get_peoples_forms();
+        if (is_wp_error($result)) {
+            wp_send_json_error('Data Insertion Failed');
+        }
+        wp_send_json_success($result, 200);
     }
 
     public function delete_form_details($Ids)
@@ -516,6 +519,14 @@ final class Handler
 
     public function review_update($requestData)
     {
+        $employee_data_by_id = static::$_zohoPeoplesEmployeesModel->get('*', ['employee_id' => $requestData->inputData->employee_id], null, null, 'id', 'DESC');
+        $employee_name = '';
+
+        if (!is_wp_error($employee_data_by_id)) {
+            $employee_name = $employee_data_by_id[0]->fname.' '.$employee_data_by_id[0]->lname;
+        }
+        $requestData->inputData->employee_name = $employee_name;
+
         $result = static::$_formDetailsModel->update(
             [
                 'form_details' => wp_json_encode($requestData->inputData),
@@ -526,6 +537,7 @@ final class Handler
                 'id' => $requestData->editRowId
             ]
         );
+
         if (is_wp_error($result)) {
             wp_send_json_error('Updating Failed');
         } else {
@@ -555,7 +567,8 @@ final class Handler
         global $wpdb;
         $employee_data_by_id = static::$_zohoPeoplesEmployeesModel->get('*', ['id' => $id], null, null, 'id', 'DESC');
         $status = '';
-        if ($employee_data_by_id[0]->page_status === 'inactive') {
+
+        if ($employee_data_by_id[0]->page_status === 'inactive' || $employee_data_by_id[0]->page_status === null) {
             $status = 'active';
             $term_id = $wpdb->get_row("SELECT term_id FROM wp_terms WHERE name ='Active Profile Page'");
             if ($term_id) {
@@ -645,8 +658,8 @@ final class Handler
                 ['employee_id' => $employee_id]
             );
         }
-		
-		      $showAllReviewsBtn = '';
+
+        $showAllReviewsBtn = '';
         if($totalVerifiedReviews > 0) {
             $showAllReviewsBtn = "   <div class='all-reviews' id='show-all-reviews-btn'>
 <a href='https://wellqor.com/show-all-reviews?employee_id={$employee_id}' >Read All $totalVerifiedReviews Reviews</a>

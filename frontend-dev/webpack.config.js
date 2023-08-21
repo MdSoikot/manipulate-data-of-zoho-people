@@ -8,7 +8,6 @@ const OptimizeCSSAssetsPlugin = require('optimize-css-assets-webpack-plugin')
 const safePostCssParser = require('postcss-safe-parser')
 const svgToMiniDataURI = require('mini-svg-data-uri')
 const ReactRefreshWebpackPlugin = require('@pmmmwh/react-refresh-webpack-plugin')
-const GenerateSW = require('workbox-build');
 
 module.exports = (env, argv) => {
   const production = argv.mode !== 'development'
@@ -120,13 +119,6 @@ module.exports = (env, argv) => {
           sockPort: 3000,
         },
       })]),
-      ...(!production ? [] : [
-        new GenerateSW({
-          clientsClaim: production,
-          skipWaiting: production,
-          dontCacheBustURLsMatching: /\.[0-9a-f]{8}\./,
-          exclude: [/\.map$/, /asset-manifest\.json$/, /LICENSE/, /view-root.php/],
-        })]),
     ],
 
     resolve: { extensions: ['.js', '.jsx', '.json', '.css'] },

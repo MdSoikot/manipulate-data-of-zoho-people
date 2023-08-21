@@ -48,6 +48,7 @@ export default function ReviewsEdit(props) {
         data.editRowId = props.rowId
         bitsFetch(data, 'review_update')
             .then(response => {
+                console.log(response)
                 props.setTableData(response.data)
                 setisLoading(false)
                 if (response.success) {

@@ -75,7 +75,7 @@ final class Plugin
      */
     public function plugin_action_links($links)
     {
-        $links[] = '<a href="https://bitpress.pro/documentation" target="_blank">' . __('Docs', 'bitwelzp') . '</a>';
+        $links[] = '<a href="https://wellqor.com/" target="_blank">' . __('Site', 'bitwelzp') . '</a>';
 
         return $links;
     }

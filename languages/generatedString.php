@@ -111,6 +111,10 @@ $bitwelzp_i18n_strings = array(
 
     'Fetch data' => __('Fetch data', 'bitwelzp'),
 
+    'Authorized ✔' => __('Authorized ✔', 'bitwelzp'),
+
+    'Authorize' => __('Authorize', 'bitwelzp'),
+
     'Update' => __('Update', 'bitwelzp'),
 
     'Save' => __('Save', 'bitwelzp'),
@@ -143,10 +147,6 @@ $bitwelzp_i18n_strings = array(
 
     'Client secret...' => __('Client secret...', 'bitwelzp'),
 
-    'Authorized ✔' => __('Authorized ✔', 'bitwelzp'),
-
-    'Authorize' => __('Authorize', 'bitwelzp'),
-
     'Lost In Space' => __('Lost In Space', 'bitwelzp'),
 
     'Redirecting Home in' => __('Redirecting Home in', 'bitwelzp'),
@@ -154,6 +154,8 @@ $bitwelzp_i18n_strings = array(
     'Go Home' => __('Go Home', 'bitwelzp'),
 
     'Employee Id' => __('Employee Id', 'bitwelzp'),
+
+    'Employee Name' => __('Employee Name', 'bitwelzp'),
 
     'Rating' => __('Rating', 'bitwelzp'),
 

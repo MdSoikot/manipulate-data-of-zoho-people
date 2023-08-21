@@ -50,7 +50,7 @@ final class Hooks
         $employeeData = static::$_zohoPeoplesEmployeesModel->get("*", array('employee_id' => $id), null, null, 'id', 'DESC');
         $upload_dir  = wp_upload_dir();
 
-        $employee_name = $employeeData[0]->fname.' '.$employeeData[0]->lname;
+        $employee_name = $employeeData[0]->fname.'_'.$employeeData[0]->lname;
         $headshot_download_url = $employeeData[0]->headshot_download_url;
         $new_headshot_download_url = '';
         if ($headshot_download_url === '') {
@@ -825,7 +825,7 @@ final class Hooks
 
         <div class="form-button">
           <button class="btn"
-            onclick="handleSubmit(event,<?php echo $employeeData[0]->employee_id?>,<?php echo $employee_name?>)">Submit</button>
+            onclick="handleSubmit(event,<?php echo $employeeData[0]->employee_id?>,'<?php echo $employee_name?>')">Submit</button>
           <button class="btn" type="reset">
             Reset
           </button>
@@ -902,14 +902,13 @@ final class Hooks
       [name]: value
     };
     data.phrases = phrasesArrays
-    console.log(data)
 
   }
 
 
   const handleSubmit = (e, id,employee_name) => {
     e.preventDefault();
-    data.employee_name=employee_name
+    data.employee_name=employee_name.replace("_", " ")
     bodyOptions = {
       method: "POST",
       body: JSON.stringify(data)
@@ -917,10 +916,8 @@ final class Hooks
     fetch(
         '<?php echo admin_url('admin-ajax.php'); ?>?action=bitwelzp_review_data_save&_ajax_nonce=<?php echo wp_create_nonce('bitcffp_nonce'); ?>',
         bodyOptions)
-      .then(response => console.log(response))
-      .then(json => {
-        console.log(json)
-      })
+      .then(res => console.log(res))
+     .catch(err=>console.log(err))
     window.location.href = 'https://wellqor.com/thank-you-page/?employee_id=' + id
   }
 </script>

@@ -2,11 +2,11 @@
 
 /**
  * Plugin Name: Integration of Zoho People
- * Plugin URI:  bitwelzp.bitapps.pro
+ * Plugin URI:  https://wellqor.com/
  * Description:
  * Version:     1.0.2
- * Author:      BitApps
- * Author URI:  bitapps.pro
+ * Author:      WellQor
+ * Author URI:  https://wellqor.com/
  * Text Domain: bitwelzp
  * Requires PHP: 5.6
  * Domain Path: /languages
