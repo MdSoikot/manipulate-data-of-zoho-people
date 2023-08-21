@@ -1,13 +1,12 @@
 /* eslint-disable no-nested-ternary */
 /* eslint-disable react/jsx-props-no-spreading */
 
-import { memo, useContext, useEffect, useState, useRef, forwardRef } from 'react'
+import { memo, useEffect, useState, useRef, forwardRef } from 'react'
 import { Scrollbars } from 'react-custom-scrollbars'
 import { ReactSortable } from 'react-sortablejs'
 import { useColumnOrder, useFilters, useFlexLayout, useGlobalFilter, usePagination, useResizeColumns, useRowSelect, useSortBy, useTable } from 'react-table'
 import { useSticky } from 'react-table-sticky'
 import { __ } from '../../Utils/i18nwrap'
-import { AllFormContext } from '../../Utils/AllFormContext'
 import ConfirmModal from './ConfirmModal'
 import Menu from './Menu'
 import TableCheckBox from './TableCheckBox'
@@ -70,7 +69,6 @@ function ColumnHide({ cols, setCols, tableCol, tableAllCols }) {
 }
 
 function Table(props) {
-  console.log('%c $render Table', 'background:blue;padding:3px;border-radius:5px;color:white')
   const [confMdl, setconfMdl] = useState({ show: false, btnTxt: '' })
   const { columns, data, fetchData, report,handleDelete } = props
   const { getTableProps,
@@ -132,8 +130,7 @@ function Table(props) {
         ])
       }) : '',
     )
-  const [reportID, setreportID] = useState(parseInt(report, 10))
-  const [stateSavable, setstateSavable] = useState(false)
+    
   const [search, setSearch] = useState(globalFilter)
   useEffect(() => {
     if (fetchData) {

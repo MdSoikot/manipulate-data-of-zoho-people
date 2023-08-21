@@ -1,17 +1,14 @@
 import { useState } from 'react'
-// import Scrollbars from 'react-custom-scrollbars-2'
 import bitsFetch from '../Utils/bitsFetch'
 import { __ } from '../Utils/i18nwrap'
 import LoaderSm from './Loaders/LoaderSm'
 import Modal from './Utilities/Modal'
 import ReactStars from "react-rating-stars-component";
-import SnackMsg from './Utilities/SnackMsg'
 import { $integrationDetails } from '../Utils/GlobalStates'
 import { useRecoilState } from 'recoil'
 
 
 export default function ReviewsEdit(props) {
-    const [snack, setSnackbar] = useState({ show: false })
     const [isLoading, setisLoading] = useState(false)
     const [integConfig, setIntegConfig] = useRecoilState($integrationDetails);
     const [formDetails, setFormDetails] = useState(() => {
