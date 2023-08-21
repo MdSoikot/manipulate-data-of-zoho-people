@@ -49,6 +49,8 @@ final class Hooks
         $id = static::$_empoyeeId;
         $employeeData = static::$_zohoPeoplesEmployeesModel->get("*", array('employee_id' => $id), null, null, 'id', 'DESC');
         $upload_dir  = wp_upload_dir();
+
+        $employee_name = $employeeData[0]->fname.' '.$employeeData[0]->lname;
         $headshot_download_url = $employeeData[0]->headshot_download_url;
         $new_headshot_download_url = '';
         if ($headshot_download_url === '') {
@@ -823,7 +825,7 @@ final class Hooks
 
         <div class="form-button">
           <button class="btn"
-            onclick="handleSubmit(event,<?php echo $employeeData[0]->employee_id?>)">Submit</button>
+            onclick="handleSubmit(event,<?php echo $employeeData[0]->employee_id?>,<?php echo $employee_name?>)">Submit</button>
           <button class="btn" type="reset">
             Reset
           </button>
@@ -894,7 +896,7 @@ final class Hooks
       name,
       value
     } = e.target
-    console.log(typeof(data.star))
+  
     data = {
       ...data,
       [name]: value
@@ -905,8 +907,9 @@ final class Hooks
   }
 
 
-  const handleSubmit = (e, id) => {
+  const handleSubmit = (e, id,employee_name) => {
     e.preventDefault();
+    data.employee_name=employee_name
     bodyOptions = {
       method: "POST",
       body: JSON.stringify(data)
@@ -1172,6 +1175,9 @@ final class Hooks
 
 
     @media(max-width: 767px) {
+		.composer_content .span12 {
+        width: 100% !important;
+      }
       .pharases-desc {
         display: flex;
         flex-direction: column !important;
@@ -1205,10 +1211,14 @@ final class Hooks
         max-width: 90% !important;
         width: 90% !important;
       }
+		
+	.composer_content .span12 {
+        width: 100% !important;
+      }
 
       .reviews-details {
         background-image: none !important;
-        margin-top: 10px;
+        margin-top: 70px;
 
       }
 
@@ -1218,8 +1228,6 @@ final class Hooks
       }
 
       .profile-img .lazy {
-        /*         max-width: 104px !important;
-        max-height: 93px !important; */
         margin-top: -17px;
       }
 
@@ -1423,6 +1431,7 @@ final class Hooks
 
 
     @media(max-width: 767px) {
+
       .pharases-desc {
         display: flex;
         flex-direction: column !important;
@@ -1458,8 +1467,6 @@ final class Hooks
     }
 
     @media(max-width: 400px) {
- 
-
       #footer .container {
         max-width: 90% !important;
       }
