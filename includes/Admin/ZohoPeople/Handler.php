@@ -6,8 +6,6 @@ use BitCode\WELZP\Core\Util\HttpHelper;
 use BitCode\WELZP\Core\Database\IntegrationModel;
 use BitCode\WELZP\Core\Database\ZohoPeoplesEmployeesModel;
 use BitCode\WELZP\Core\Database\FormDetailsModel;
-use WP_Error;
-use wpdb;
 
 final class Handler
 {
@@ -225,22 +223,40 @@ final class Handler
                 );
             }
         }
+    
         $_defaultHeader['Authorization'] = "Zoho-oauthtoken {$requestData->tokenDetails->access_token}";
         if ($isTokenExpired && !empty($requestData->integrationId)) {
             $this::_saveRefreshedToken($requestData->integrationId, $requestData);
         }
 
-        $apiResponse = HttpHelper::get($_apiDomain, [], $_defaultHeader);
+        // $apiResponse = HttpHelper::get($_apiDomain, [], $_defaultHeader);
+        $apiResponse = [] ;
+        $totalEmployees = [];
+        try {
+            while (!isset($apiResponse->response->errors)) {
+                $sIndex = count($totalEmployees) > 0 ? count($totalEmployees) + 1 : 1;
+                $apiEndpoint = 'https://people.zoho.com/people/api/forms/employee/getRecords?sIndex=' . $sIndex . '&limit=100';
+                $apiResponse = HttpHelper::get($apiEndpoint, [], $_defaultHeader);
 
-        $getAllRiviews = static::$_formDetailsModel->get('*', [], null, null, 'id', 'DESC');
-        $recordId = '';
-        $profileUrl = '';
-        $reviewUrl = '';
-        if (!$apiResponse->error) {
+                if (!isset($apiResponse->response->errors)) {
+                    if (count($totalEmployees) > 0) {
+                        $totalEmployees = array_merge($totalEmployees, $apiResponse->response->result);
+                    } else {
+                        $totalEmployees = $apiResponse->response->result;
+                    }
+                }
+            }
+
+            $getAllRiviews = static::$_formDetailsModel->get('*', [], null, null, 'id', 'DESC');
+            $recordId = '';
+            $profileUrl = '';
+            $reviewUrl = '';
+
             $employee_details = static::$_zohoPeoplesEmployeesModel->get();
+
             $allEmployesId = [];
             if (is_wp_error($employee_details)) {
-                foreach ($apiResponse->response->result as  $data) {
+                foreach ($totalEmployees as  $data) {
                     foreach ((array)$data as  $employee) {
                         $recordId = $employee[0]->Zoho_ID;
                         $profileUrl = 'https://wellqor.com/' . $employee[0]->fname[0] . '' . $employee[0]->lname . '';
@@ -289,7 +305,8 @@ final class Handler
                 foreach ($employee_details as $employee) {
                     array_push($allEmployesId, $employee->employee_id);
                 }
-                foreach ($apiResponse->response->result as  $data) {
+                foreach ($totalEmployees as  $data) {
+
                     foreach ((array)$data as  $employee) {
 
                         $recordId = $employee[0]->Zoho_ID;
@@ -366,12 +383,14 @@ final class Handler
 
             $all_employees = $this->get_all_employees();
             wp_send_json_success($all_employees, 200);
-        } else {
+
+        } catch (\Throwable $e) {
             wp_send_json_error(
-                empty($apiResponse->error) ? 'Unknown' : $apiResponse->error,
+                empty($apiResponse->response->errors) ? 'Unknown' : $apiResponse->response->errors,
                 400
             );
         }
+
     }
 
     public static function getClinicianFormData($employeeData, $_defaultHeader)
