@@ -223,13 +223,12 @@ final class Handler
                 );
             }
         }
-    
+
         $_defaultHeader['Authorization'] = "Zoho-oauthtoken {$requestData->tokenDetails->access_token}";
         if ($isTokenExpired && !empty($requestData->integrationId)) {
             $this::_saveRefreshedToken($requestData->integrationId, $requestData);
         }
 
-        // $apiResponse = HttpHelper::get($_apiDomain, [], $_defaultHeader);
         $apiResponse = [] ;
         $totalEmployees = [];
         try {
@@ -458,8 +457,6 @@ final class Handler
     public function get_all_employees()
     {
 
-        // global $wpdb;
-        // $wpdb->query("ALTER TABLE wp_bitwelzp_zoho_people_employee_info ADD preferred_name_nickname varchar(255) DEFAULT NULL After lname");
         $all_employees = static::$_zohoPeoplesEmployeesModel->get('*', ['employee_status' => 'Active', 'designation' => ['Clinical Therapist', 'Clinical Director'], 'allow_telehealth_access' => 'true'], null, null, 'id', 'DESC');
         if (is_wp_error($all_employees)) {
             return  [];
@@ -614,10 +611,10 @@ final class Handler
 
     public static function programmatically_create_post($data, $id, $getAllReviews)
     {
+
         global $wpdb;
         $upload_dir = wp_upload_dir();
         $employee_id = $data['employee_id'];
-        //         $page_status = $data['page_status'];
         $fname = $data['fname'];
         $lname = $data['lname'];
         $preferred_name_nickname = $data['preferred_name_nickname'];

@@ -1,0 +1,28 @@
+ // To update existing review if employee Id change
+ 
+ $employee_data_by_id = static::$_formDetailsModel->get('*', [], null, null, 'id', 'DESC');
+
+        foreach($employee_data_by_id as $item) {
+            $form_details = json_decode($item->form_details);
+            $employee_id = $form_details->employee_id;
+
+            if($employee_id == 9995) {
+                $form_details->employee_id = 1011;
+                static::$_formDetailsModel->update(
+                    [
+                       'form_details' => wp_json_encode($form_details),
+                       'updated_at'   => date('Y-m-d:h:i:sa')
+
+                    ],
+                    [
+                       'id' => $item->id
+                    ]
+                );
+
+            }
+        }
+
+//To alter table
+        global $wpdb;
+        $wpdb->query("Update wp_bitwelzp_zoho_people_employee_info set employee_id='1011' where employee_id='9995'");
+        $wpdb->query("ALTER TABLE wp_bitwelzp_zoho_people_employee_info ADD preferred_name_nickname varchar(255) DEFAULT NULL After lname");
