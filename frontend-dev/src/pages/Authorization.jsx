@@ -17,9 +17,6 @@ export default function Authorization() {
     const [error, setError] = useState({ dataCenter: '', clientId: '', clientSecret: '' })
     const [isAuthorized, setisAuthorized] = useState(false)
     const [isSaved, setIsSaved] = useState(integConfig?.integ_config?.auth_details?.isAuthorized)
-    // let location = window.location.toString()
-    // location = bitwelzp?.redirect
-
 
 
     useEffect(() => {

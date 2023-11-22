@@ -16,7 +16,6 @@ function AllEmployees({ newFormId }) {
   const integConfig = integrationDetails.integ_config
   const [isLoading, setisLoading] = useState(false)
   const [tableData, setTableData] = useState(bitwelzp.all_employees)
-  console.log(bitwelzp.all_employees)
 
 
   const [cols, setCols] = useState([
@@ -33,8 +32,6 @@ function AllEmployees({ newFormId }) {
     { width: 250, minWidth: 80, Header: __('Public Bio', 'bitwelzp'), accessor: 'public_bio', Cell: e => e.row.original.page_status === 'active' ? <a className="btcd-tabl-lnk" href={`https://wellqor.com/${e.row.original.fname.charAt(0)}${e.row.original.lname}`} target="_blank">{e.row.original.public_bio}</a> : e.row.original.public_bio },
     { width: 250, minWidth: 80, Header: __('Licensed In', 'bitwelzp'), accessor: 'licensed_in', Cell: e => e.row.original.page_status === 'active' ? <a className="btcd-tabl-lnk" href={`https://wellqor.com/${e.row.original.fname.charAt(0)}${e.row.original.lname}`} target="_blank">{e.row.original.licensed_in}</a> : e.row.original.licensed_in },
     { width: 150, minWidth: 20, Header: __('Page Status', 'bitwelzp'), accessor: 'page_status', Cell: e => <button type='button' className={`btn btcd-btn-lg ${e.row.original.page_status === 'active' ? 'green' : 'red'} sh-sm flx`} onClick={() => handleActive(e.row.original.id)}>{e.row.original.page_status === 'active' ? 'active' : 'inActive'}</button> },
-
-
   ])
 
 
