@@ -23,7 +23,11 @@ final class Handler
         if (count((array)$result) > 0) {
             self::$data = json_decode($result->auth_details);
         }
+
+    
     }
+
+  
 
     public function analyticsGenerateToken()
     {
@@ -456,7 +460,6 @@ final class Handler
 
     public function get_all_employees()
     {
-
         $all_employees = static::$_zohoPeoplesEmployeesModel->get('*', ['employee_status' => 'Active', 'designation' => ['Clinical Therapist', 'Clinical Director'], 'allow_telehealth_access' => 'true'], null, null, 'id', 'DESC');
         if (is_wp_error($all_employees)) {
             return  [];
@@ -539,7 +542,7 @@ final class Handler
         $employee_name = '';
 
         if (!is_wp_error($employee_data_by_id)) {
-            $employee_name = $employee_data_by_id[0]->fname.' '.$employee_data_by_id[0]->lname;
+            $employee_name = $employee_data_by_id[0]->fname . ' ' . $employee_data_by_id[0]->lname;
         }
         $requestData->inputData->employee_name = $employee_name;
 
@@ -684,14 +687,15 @@ final class Handler
         //Style in Code Snippets Footer
         $content = <<<HTML
           <div class="employee-details">
-<div class="profile-heading" style="">
-<div class="container" style="">
+<div class="profile-heading">
+<div class="container">
     <div class="profile-img">
-        <img src='$new_headshot_download_url' style="">
+        <img src='https://wellqor.com/wp-content/uploads/2023/11/animated_petal_bulletsArtboard-2-copy-7.svg'>
+        <img src='$new_headshot_download_url'>
     </div>
-    <div class="title" style="">
+    <div class="title">
         <div class="name">
-            <h2 style=""><span>$preferred_name_nickname</span> <span>$lname, </span><span>$medical_qualification</span></h2>
+            <h2 ><span>$preferred_name_nickname</span> <span>$lname, </span><span>$medical_qualification</span></h2>
         </div>
         <div class="designation">
         $clinical_title
@@ -702,9 +706,9 @@ final class Handler
 		  
 
     <div class="profile-content">
-		<div class="container" style="">
-    <div class="left" style="">
-        <div class="specialities" style="">
+		<div class="container">
+    <div class="left">
+        <div class="specialities">
             <h4>Specialities</h4>
             <ul>
             	       {$map($skillArray, function ($skill) {
@@ -714,9 +718,8 @@ final class Handler
         })}
             </ul>
         </div>
-        <div class="line"></div>
 
-        <div class="certifications" style="">
+        <div class="certifications">
             <h4>Treatment Modalities</h4>
             <ul>
              {$map($certificationsArray, function ($certification) {
@@ -728,10 +731,9 @@ final class Handler
         </div>
 		
        
-        <div class="line"></div>
-        <div class="cultural-competencies" style="">
+        <div class="cultural-competencies">
             <h4>Cultural Competencies</h4>
-            <ul style="">
+            <ul>
                  {$map($culturalCompetencyArray, function ($culturalCompetency) {
             return "
                 <li>$culturalCompetency</li>
@@ -739,9 +741,8 @@ final class Handler
         })}
             </ul>
         </div>
-        <div class="line"></div>
 		
-        <div class="language-spoken" style="">
+        <div class="language-spoken">
             <h4>Languages Spoken</h4>
             <ul>
                {$map($languagesArray, function ($language) {
@@ -754,24 +755,20 @@ final class Handler
 		
 
     </div>
-    <div class="right" style="">
-        <div class="professional-bio" style="">
+    <div class="right">
+        <div class="professional-bio">
             <h4>Professional Bio</h4>
                       <span>$public_bio</span>
 
         </div>
-        <div class="line" style="height: 1.5px;
-        background-color: #e9e1e1;margin-bottom: 20px;"></div>
-        <div class="education-license" style="">
-            <div class="education" style="">
+
+        <div class="education-license">
+            <div class="education">
                 <h4>Education</h4>
                <span>$advanced_degree_from</span>
             </div>
-            <div class="line" style="
-        background-color: #e9e1e1;
-        width: 1.5px;"></div>
-            <div class="license" style="">
-                <h4 style="">Licensed in</h4>
+            <div class="license">
+                <h4>Licensed in</h4>
            {$map($licensedArray, function ($license_in) {
             return "
             <span>$license_in</span>
@@ -779,26 +776,26 @@ final class Handler
         })}
             </div>
         </div>
-        <div class="line" style="height: 1px;
-        background-color: #e9e1e1;margin-bottom: 20px;margin-top: 20px;"></div>
-  <div class="patient-satisfaction" style="">
-<div class="education">
+        <div class="review-section">
+  <div class="patient-satisfaction">
 <div class="verified-reviews">
-<h4 style="">Patient Satisfaction</span></h4>
-<span style=""> $totalVerifiedReviews Verified Reviews</span>
-<div class="stars"><img class="" src="https://wellqor.com/wp-content/uploads/2021/11/stars.png" width="137" height="26" /></div>
+<h4>Patient Satisfaction</span></h4>
+<span> $totalVerifiedReviews Verified Reviews</span>
+<div class="stars">
+<img  src="https://wellqor.com/wp-content/uploads/2021/11/stars.png" width="137" height="26" />
 </div>
-<div class="line" style="background-color: #e9e1e1; width: 1.5px;"></div>
+</div>
 <div class="highlights">
-<h4><span style="">Review Highlights</span></h4>
+</div>
+<h4><span>Review Highlights</span></h4>
 <span>$show_phrases[0]</span>
 <span>$show_phrases[1]</span>
 <span>$show_phrases[2]</span>
 <span>$show_phrases[3]</span>
 </div>
-</div>
-<div class="featured-FPO" style="">
-<div class="featured-content-FPO" style="">
+<div class="line"></div>
+<div class="featured-FPO">
+<div class="featured-content-FPO">
 <h4><span>Featured Reviews</span></h4>
 {$map($reviewsData, function ($reviews, $index) {
             return "
@@ -817,6 +814,7 @@ final class Handler
                                     </div>
                     
                             </div>
+</div>
 </a>
 
                          
@@ -833,6 +831,35 @@ final class Handler
 </div>
 </div>
 </div>
+
+     <div class="patient-form">
+                <div class="form-info">
+                    <div class="title">
+
+                        <h1>Not yet in touch with a patient liasion? Get matched with a therapist!</h1>
+                    </div>
+                    <div class="contact">
+
+                        <h2>Tell us about you!</h2>
+                        <p>If you prefer providing information over the phone, call(646) 687-4646</p>
+                    </div>
+                    <div class="option">
+                        <h2>Tell us about you!</h2>
+                        <p>If you prefer providing information over the phone, call(646) 687-4646</p>
+                    </div>
+                    <div class="pick-time">
+                        <h2>Tell us about you!</h2>
+                        <p>If you prefer providing information over the phone, call(646) 687-4646</p>
+                    </div>
+
+                </div>
+                <div class="form">
+                    <iframe aria-label='2024 Get Started Form' frameborder="0"
+                        style="height:750px;width:100%;border:none;"
+                        src='https://forms.wellqor.com/wellqor/form/2024GetStartedForm/formperma/gsievJJFZAdSwOy89usPO9sBqaBQSn30XGf6mpdmlaQ'></iframe>
+                </div>
+            </div>
+			</div>
 HTML;
         if ($id === '' || $id === null) {
             $post_id = wp_insert_post(

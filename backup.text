@@ -26,3 +26,73 @@
         global $wpdb;
         $wpdb->query("Update wp_bitwelzp_zoho_people_employee_info set employee_id='1011' where employee_id='9995'");
         $wpdb->query("ALTER TABLE wp_bitwelzp_zoho_people_employee_info ADD preferred_name_nickname varchar(255) DEFAULT NULL After lname");
+
+
+//Analytics to Database
+  public function test()
+    {
+        $requestParams = [
+            'grant_type'    => 'refresh_token',
+            'client_id'     => '1000.ZN9G5DTP21GYDHB07YZT64YHDZC2LJ',
+            'client_secret' => '7d6614d23aeb7c538ac79d69d06f4cbb6908f93479',
+            'refresh_token' => '1000.d934b24599f59de9b51aaa446a77054b.03d8bab772f3196de72ee3967cd75a87',
+        ];
+        $refreshToken = HttpHelper::post('https://accounts.zoho.com/oauth/v2/token', $requestParams);
+        if ($refreshToken) {
+            $apiEndpoint = 'https://analyticsapi.zoho.com/api/dchumsky@wellqor.com/WellQor Billing/Patient Review Data?ZOHO_ACTION=EXPORT&ZOHO_OUTPUT_FORMAT=JSON&ZOHO_ERROR_FORMAT=JSON&ZOHO_API_VERSION=1.0&KEY_VALUE_FORMAT=true';
+            $authorizationHeader['Authorization'] = 'Zoho-oauthtoken ' . $refreshToken->access_token;
+            $apiResponse = HttpHelper::get($apiEndpoint, [], $authorizationHeader);
+            $response = json_decode(preg_replace("/\\\'/", "'", $apiResponse));
+            $data = $response->data;
+
+            foreach ($data as  $row) {
+                $employee_details = static::$_zohoPeoplesEmployeesModel->get();
+                foreach ($employee_details as $employee) {
+                    if($employee->employee_id == $row->{"Employee Id"}) {
+                        $row->employee_name = $employee->fname . ' ' . $employee->lname;
+                    }
+                }
+                $row->star = $row->Star;
+                if(isset($row->Phrases) && !empty($row->Phrases)) {
+                    $row->phrases = explode(", ", $row->Phrases);
+                }
+                $row->title = $row->Title;
+                $row->desc = $row->{'Title Description'};
+                $row->age = str_replace(" ","",$row->{'Age Range'});
+                $row->gender = $row->Gender;
+                $row->fname = $row->{'First Name'};
+                $row->lname = $row->{'Last Name'};
+                $row->status = $row->Status;
+                $row->employee_id = $row->{"Employee Id"};
+                $row->empathetic = $row->Empathetic;
+
+                unset($row->Star);
+                unset($row->Phrases);
+                unset($row->Title);
+                unset($row->{'Title Description'});
+                unset($row->{'Age Range'});
+                unset($row->Gender);
+                unset($row->{'First Name'});
+                unset($row->{'Last Name'});
+                unset($row->Status);
+                unset($row->{"Employee Id"});
+                unset($row->Empathetic);
+                unset($row->{'Review Id'});
+
+                $created_at = DateTime::createFromFormat('d M, Y h:i:s', $row->{'Created At'})->format('Y-m-d:h:i:sa');
+                $updated_at='';
+                if(!empty($row->{'Updated At'})) {
+                    $updated_at = DateTime::createFromFormat('d M, Y h:i:s', $row->{'Updated At'})->format('Y-m-d:h:i:sa');
+                }
+                static::$_formDetailsModel->insert(
+                    [
+                       'form_details' => wp_json_encode($row),
+                       'created_at'   => $created_at,
+                       'updated_at'   => $updated_at,
+
+                    ]
+                );
+
+            }
+        }
+    }        

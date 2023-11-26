@@ -50,13 +50,13 @@ final class Hooks
         $employeeData = static::$_zohoPeoplesEmployeesModel->get("*", array('employee_id' => $id), null, null, 'id', 'DESC');
         $upload_dir  = wp_upload_dir();
 
-        $employee_name = $employeeData[0]->fname.'_'.$employeeData[0]->lname;
+        $employee_name = $employeeData[0]->fname . '_' . $employeeData[0]->lname;
         $headshot_download_url = $employeeData[0]->headshot_download_url;
         $new_headshot_download_url = '';
         if ($headshot_download_url === '') {
             $new_headshot_download_url = 'https://wellqor.com/wp-content/uploads/2021/11/bioPicplaceholder.jpg';
         } else {
-            $new_headshot_download_url = $upload_dir['baseurl']."/" . $employeeData[0]->headshot_download_url;
+            $new_headshot_download_url = $upload_dir['baseurl'] . "/" . $employeeData[0]->headshot_download_url;
         }
 
         ob_start(); ?>
@@ -940,7 +940,7 @@ final class Hooks
         if ($headshot_download_url === '') {
             $new_headshot_download_url = 'https://wellqor.com/wp-content/uploads/2021/11/bioPicplaceholder.jpg';
         } else {
-            $new_headshot_download_url = $upload_dir['baseurl']."/" . $employeeData[0]->headshot_download_url;
+            $new_headshot_download_url = $upload_dir['baseurl'] . "/" . $employeeData[0]->headshot_download_url;
         }
         $reviewsData = array();
         $totalStars = 0;
@@ -1297,7 +1297,7 @@ final class Hooks
           </div>
 
           <div class='title'>
-            <img class='' src='https://wellqor.com/wp-content/uploads/2021/11/stars.png' width='137' height='26' />
+            <img class='' src='https://wellqor.com/wp-content/uploads/2023/11/rating.png' width='137' height='26' />
           </div>
           <h4><span>Review Highlights</span></h4>
           <div class='pharases-desc'>
