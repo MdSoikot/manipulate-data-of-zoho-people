@@ -23,11 +23,7 @@ final class Handler
         if (count((array)$result) > 0) {
             self::$data = json_decode($result->auth_details);
         }
-
-    
     }
-
-  
 
     public function analyticsGenerateToken()
     {
@@ -460,6 +456,7 @@ final class Handler
 
     public function get_all_employees()
     {
+
         $all_employees = static::$_zohoPeoplesEmployeesModel->get('*', ['employee_status' => 'Active', 'designation' => ['Clinical Therapist', 'Clinical Director'], 'allow_telehealth_access' => 'true'], null, null, 'id', 'DESC');
         if (is_wp_error($all_employees)) {
             return  [];
@@ -681,7 +678,7 @@ final class Handler
         $showAllReviewsBtn = '';
         if($totalVerifiedReviews > 0) {
             $showAllReviewsBtn = "   <div class='all-reviews' id='show-all-reviews-btn'>
-<a href='https://wellqor.com/show-all-reviews?employee_id={$employee_id}' >Read All $totalVerifiedReviews Reviews</a>
+<a href='https://wellqor.com/show-all-reviews?employee_id={$employee_id}' >Read More</a>
                      </div>";
         }
         //Style in Code Snippets Footer
@@ -782,22 +779,23 @@ final class Handler
 <h4>Patient Satisfaction</span></h4>
 <span> $totalVerifiedReviews Verified Reviews</span>
 <div class="stars">
-<img  src="https://wellqor.com/wp-content/uploads/2021/11/stars.png" width="137" height="26" />
+<img src="https://wellqor.com/wp-content/uploads/2023/11/rating.png" />
 </div>
 </div>
 <div class="highlights">
-</div>
+
 <h4><span>Review Highlights</span></h4>
 <span>$show_phrases[0]</span>
 <span>$show_phrases[1]</span>
 <span>$show_phrases[2]</span>
 <span>$show_phrases[3]</span>
 </div>
+</div>
 <div class="line"></div>
 <div class="featured-FPO">
 <div class="featured-content-FPO">
 <h4><span>Featured Reviews</span></h4>
-{$map($reviewsData, function ($reviews, $index) {
+{$map($reviewsData, function ($reviews) {
             return "
            <a href='https://wellqor.com/show-all-reviews?employee_id={$reviews->employee_id}'>
                              <div class='reviews-list'>
@@ -808,19 +806,19 @@ final class Handler
                                     </div>
                                         
                                         <div class='title'>
-                                            <img class='' src='https://wellqor.com/wp-content/uploads/2021/11/stars.png' width='137' height='26' />
+                                            <img src='https://wellqor.com/wp-content/uploads/2023/11/rating.png' />
                                             <span> $reviews->title</span>
                                         </div>
-                                    </div>
+                                </div>
                     
                             </div>
-</div>
 </a>
 
                          
 ";
         })}
         
+</div>
         
  $showAllReviewsBtn
         
@@ -844,12 +842,12 @@ final class Handler
                         <p>If you prefer providing information over the phone, call(646) 687-4646</p>
                     </div>
                     <div class="option">
-                        <h2>Tell us about you!</h2>
-                        <p>If you prefer providing information over the phone, call(646) 687-4646</p>
+                        <h2>Get options in a few hours!</h2>
+                        <p>We'll send you therapist profiles, including their clinical experience, approach,  and patient reviews.</p>
                     </div>
                     <div class="pick-time">
-                        <h2>Tell us about you!</h2>
-                        <p>If you prefer providing information over the phone, call(646) 687-4646</p>
+                        <h2>Pick your therapist & time.</h2>
+                        <p>Let us know which therapist you like and what appointment slot yout prefer.</p>
                     </div>
 
                 </div>

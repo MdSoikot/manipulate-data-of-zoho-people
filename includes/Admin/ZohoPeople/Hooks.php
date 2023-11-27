@@ -63,568 +63,439 @@ final class Hooks
 
 <head>
   <style>
-    * {
-      transition: 0.25s ease-in-out;
-      box-sizing: border-box;
+  .profile-heading {
+    height: 250px;
+    display: flex;
+
+    .container {
+        background-color: #304575;
+        width: 100% !important;
+        display: flex;
+        position: relative;
+
+        &::before {
+            content: "";
+            position: absolute;
+            width: 240px;
+            height: 240px;
+            top: 5%;
+            right: -3%;
+            background: url(https://wellqor.com/wp-content/uploads/2023/11/WellQor_heart.svg) 0 0 no-repeat;
+            transform: rotate(349deg);
+            opacity: 8%;
+        }
+
+        .profile-img {
+            margin-left: 40px;
+            margin-top: 40px;
+            position: relative;
+
+            >img:nth-child(1) {
+                rotate: 90deg;
+                max-width: 300px;
+                height: 280px;
+            }
+
+            >img:nth-child(2) {
+                width: 250px;
+                height: 260px;
+                border-radius: 100% 100% 100% 0;
+                position: absolute;
+                top: 16px;
+                left: 33px;
+                object-fit: cover;
+                object-position: 17% 9%;
+            }
+
+        }
+
+        .title {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            color: #fff;
+            justify-content: center;
+            padding-left: 60px;
+
+            & h2 {
+                font-weight: bold;
+                color: #fff;
+                font-size: 30px;
+            }
+
+            & p {
+                margin-bottom: 0;
+            }
+
+            .designation {
+                font-size: 16px;
+            }
+
+        }
+    }
+}
+
+.reviews-form {
+    .container {
+        max-width: 52% !important;
     }
 
-    h1 {
-      text-align: center;
-      font-family: helvetica neue, helvetica, arial, sans-serif;
-      font-weight: 100;
-      font-size: 50px;
-      line-height: 50px;
+    display: flex;
+    flex-direction: column;
+    margin-top: 100px;
+    gap: 15px;
+
+    & h3 {
+        margin-top: 15px;
+        font-size: 30px;
+        font-weight: 600;
     }
 
-
-    .reviews .profile-heading .title {
-      height: 100%;
-      display: flex;
-      color: #fff;
-      justify-content: center;
+    & label {
+        margin-right: 0 !important;
     }
 
-    .reviews .title h2 {
-      color: #fff;
-    }
-
-    .reviews .description {
-      color: black;
-      font-weight: 500;
-      opacity: .9;
-    }
-
-    .reviews h3 {
-      margin-top: 15px;
-    }
-
-    .reviews-form {
-      background-size: 550px 600px;
-      background-image: url(https://wellqor.com/wp-content/uploads/2020/04/WellQor_iconBG_overlay2.png);
-      background-repeat: no-repeat;
-      background-position: 551px -1px;
-    }
-
-    .reviews-form form {
-      display: flex;
-      flex-direction: column;
-      margin-top: 20px;
-      gap: 15px;
-
-    }
-
-    input[type="radio"],
-    input[type="checkbox"] {
-      margin: 2px 0 0 !important;
-    }
-
-    .reviews-form .container {
-      max-width: 52% !important;
-    }
-
-    .reviews-form label {
-      margin-bottom: 0 !important;
-    }
-
-    .reviews-form .star-input {
-      width: 0;
-      height: 0;
-      position: absolute;
-      left: -5000px;
-    }
-
-    .reviews-form .star-input:checked+.star-input-label .orange {
-      animation: enlarge 0.5s ease-in-out forwards;
-    }
-
-    .reviews-form .star-input:checked+.star-input-label:nth-of-type(2) .orange {
-      animation-delay: 0.1s;
-    }
-
-    .reviews-form .star-input:checked+.star-input-label:nth-of-type(3) .orange {
-      animation-delay: 0.2s;
-    }
-
-    .reviews-form .star-input:checked+.star-input-label:nth-of-type(4) .orange {
-      animation-delay: 0.3s;
-    }
-
-    .reviews-form .star-input:checked+.star-input-label:nth-of-type(5) .orange {
-      animation-delay: 0.4s;
-    }
-
-    .reviews-form .star-input-label {
-      display: inline-block;
-      padding: 8px 2px;
-      text-indent: -5000px;
-      line-height: 0;
-      color: #dcdcdc;
-      position: relative;
-      cursor: pointer;
-    }
-
-    .reviews-form .star-input-label:hover,
-    .reviews-form .star-input-label.hovered {
-      color: #a7a7a7;
-    }
-
-    .reviews-form .star-input-label i {
-      display: block;
-      font-size: 20px;
-      line-height: 20px;
-      text-indent: 0;
-      color: #ccc;
-    }
-
-    .reviews-form .star-input-label i.orange {
-      position: absolute;
-      display: block;
-      padding: 8px 2px;
-      top: 0;
-      left: 0;
-      text-align: center;
-      width: 100%;
-      color: orange;
-      transform: scale(0);
-    }
-
-    @keyframes enlarge {
-      0% {
-        transform: scale(0);
-      }
-
-      70% {
-        transform: scale(1.25);
-      }
-
-      100% {
-        transform: scale(1);
-      }
+    & form {
+        display: flex;
+        flex-direction: column;
+        margin-top: 20px;
+        gap: 15px;
 
     }
 
-    .reviews-form {
-      display: flex;
-      flex-direction: column;
-      margin-top: 20px;
-      gap: 15px;
-    }
-
-    .reviews-form .control_indicator {
-      display: flex;
-      gap: 5px;
+    .control_indicator {
+        display: flex;
+        gap: 5px;
     }
 
     .rating-title {
-      display: block;
+        display: block;
     }
 
     .age-option {
-      display: flex;
-      gap: 4px;
+        display: flex;
+        gap: 4px;
     }
 
+    .gender {
+        display: flex;
+        gap: 20px;
+
+    }
 
     .gender-option {
-      display: flex;
-      gap: 4px;
-    }
-
-    .reviews-form input[type="text"] {
-      width: 90%;
-      border-radius: 7px;
-      padding: 17px;
-      border: 1px solid #cacaca;
-    }
-
-    .reviews-form input[type="text"]::placeholder {
-      color: #747981;
-    }
-
-    .reviews-form textarea {
-      width: 90%;
-      border-radius: 7px;
-      padding: 12px;
-      border: 1px solid #cacaca;
-      resize: none;
-    }
-
-    .reviews-form textarea:focus {
-      outline: none;
-    }
-
-    .reviews-form input[type="text"]:focus {
-      outline: none;
-    }
-
-    .reviews-form textarea:hover {
-      border: 1px solid #345ac2;
-    }
-
-    .reviews-form input[type="text"]:hover {
-      border: 1px solid #345ac2;
-    }
-
-    .reviews-form input[type="email"]:hover {
-      border: 1px solid #345ac2;
-    }
-
-    .reviews-form input[type="radio"] {
-      width: 15;
-      height: 15px;
-      border: 4px solid #3367f5;
-    }
-
-    .reviews-form input[type="radio"]:after {
-      left: 1px;
-      top: 2px;
-      width: 9px;
-      height: 9px;
-      background: var(--form--color-text);
-    }
-
-
-    .reviews-form .form-button {
-      width: 85%;
-      text-align: left;
-      display: flex;
-      gap: 10px;
-      margin: 14px 0 20px 0;
-    }
-
-    .name input {
-      margin-top: 15px;
-    }
-
-    .reviews-form .form-button button:first-child {
-      background: #1286ff;
-    }
-
-    .reviews-form .form-button button:last-child {
-      background: #909090;
-    }
-
-    .reviews-form .age-range {
-      display: flex;
-      gap: 20px;
-
-    }
-
-
-    .reviews-form .gender {
-      display: flex;
-      gap: 20px;
-
-    }
-
-    .btn {
-      border: none;
-      border-radius: 5px;
-      color: #fff;
-      cursor: pointer;
-      display: inline-block;
-      padding: 10px 30px;
-    }
-
-    .btn:hover {
-      color: white;
-    }
-
-
-
-
-
-    .line {
-      height: 1.5px;
-      background-color: #e9e1e1;
-      margin-bottom: 20px;
-    }
-
-    .composer_content .container.fullwidth {
-      width: 100% !important;
-    }
-
-    #header .container {
-      max-width: 1200px !important;
-    }
-
-
-
-    #content {
-      padding-top: 0 !important;
-    }
-
-    #content .row br {
-      display: none !important;
-    }
-
-
-    .profile-heading {
-      height: 100px;
-      background-color: #0088cc;
-      padding: 20px 0;
-      margin-bottom: 30px;
-      display: flex;
-    }
-
-    .profile-heading .container {
-      max-width: 1200px !important;
-      display: flex
-    }
-
-    .reviews .profile-img img {
-      max-width: 150px;
-      max-height: 150px;
-      border-radius: 15px;
-      border: 1px solid #ccc;
-    }
-
-    .profile-heading .title {
-      display: flex;
-      flex-direction: column;
-      height: 100%;
-      color: #fff;
-      justify-content: center;
-      padding-left: 15px;
-    }
-
-    .profile-heading .title h2 {
-      margin: 0;
-      font-weight: bold;
-      color: #fff;
-      font-size: 28px;
-    }
-
-    .profile-heading .title span:nth-child(3) {
-      font-weight: 400;
-    }
-
-    .riview-form .container {
-      padding: 0 20px;
-      display: flex;
-      padding: 20px 0;
-      color: #0d1239;
-      max-width: 75% !important;
-      width: 100%;
+        display: flex;
+        gap: 4px;
     }
 
     .name {
-      display: flex;
+        display: flex;
+
+        & input {
+            margin-top: 15px;
+        }
     }
 
-    .title-label {
-      font-weight: 600;
-      opacity: .9;
-
+    .form-button {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 30px;
     }
 
-    /*--snackbar--*/
-    #snackbar {
-      visibility: hidden;
-      min-width: 250px;
-      margin-left: -125px;
-      background-color: #383838;
-      color: #fff;
-      text-align: center;
-      border-radius: 10px;
-      padding: 13px;
-      position: fixed;
-      z-index: 20000000000;
-      right: 0;
-      bottom: 30px;
-      font-size: 17px;
+}
+
+input[type="radio"],
+input[type="checkbox"] {
+    margin: 2px 0 0 !important;
+}
+
+.reviews-form .star-input {
+    width: 0;
+    height: 0;
+    position: absolute;
+    left: -5000px;
+}
+
+.reviews-form .star-input:checked+.star-input-label .orange {
+    animation: enlarge 0.5s ease-in-out forwards;
+}
+
+.reviews-form .star-input:checked+.star-input-label:nth-of-type(2) .orange {
+    animation-delay: 0.1s;
+}
+
+.reviews-form .star-input:checked+.star-input-label:nth-of-type(3) .orange {
+    animation-delay: 0.2s;
+}
+
+.reviews-form .star-input:checked+.star-input-label:nth-of-type(4) .orange {
+    animation-delay: 0.3s;
+}
+
+.reviews-form .star-input:checked+.star-input-label:nth-of-type(5) .orange {
+    animation-delay: 0.4s;
+}
+
+.reviews-form .star-input-label {
+    display: inline-block;
+    padding: 8px 2px;
+    text-indent: -5000px;
+    line-height: 0;
+    color: #dcdcdc;
+    position: relative;
+    cursor: pointer;
+}
+
+.reviews-form .star-input-label:hover,
+.reviews-form .star-input-label.hovered {
+    color: #a7a7a7;
+}
+
+.reviews-form .star-input-label i {
+    display: block;
+    font-size: 20px;
+    line-height: 20px;
+    text-indent: 0;
+    color: #ccc;
+}
+
+.reviews-form .star-input-label i.orange {
+    position: absolute;
+    display: block;
+    padding: 8px 2px;
+    top: 0;
+    left: 0;
+    text-align: center;
+    width: 100%;
+    color: orange;
+    transform: scale(0);
+}
+
+@keyframes enlarge {
+    0% {
+        transform: scale(0);
     }
 
-    #snackbar.show {
-      visibility: visible;
-      -webkit-animation: fadein 0.5s, fadeout 0.5s 2.5s;
-      animation: fadein 0.5s, fadeout 0.5s 2.5s;
+    70% {
+        transform: scale(1.25);
     }
 
-    @-webkit-keyframes fadein {
-      from {
+    100% {
+        transform: scale(1);
+    }
+
+}
+
+
+
+.reviews-form input[type="text"] {
+    width: 90%;
+    border-radius: 7px;
+    padding: 17px;
+    border: 1px solid #cacaca;
+}
+
+.reviews-form input[type="text"]::placeholder {
+    color: #747981;
+}
+
+.reviews-form textarea {
+    width: 90%;
+    border-radius: 7px;
+    padding: 12px;
+    border: 1px solid #cacaca;
+    resize: none;
+}
+
+.reviews-form textarea:focus {
+    outline: none;
+}
+
+.reviews-form input[type="text"]:focus {
+    outline: none;
+}
+
+.reviews-form textarea:hover {
+    border: 1px solid #345ac2;
+}
+
+.reviews-form input[type="text"]:hover {
+    border: 1px solid #345ac2;
+}
+
+.reviews-form input[type="email"]:hover {
+    border: 1px solid #345ac2;
+}
+
+.reviews-form input[type="radio"] {
+    width: 15;
+    height: 15px;
+    border: 4px solid #3367f5;
+}
+
+.reviews-form input[type="radio"]:after {
+    left: 1px;
+    top: 2px;
+    width: 9px;
+    height: 9px;
+    background: var(--form--color-text);
+}
+
+
+.reviews-form .form-button button:last-child {
+     background: #909090;
+    color: #fff;
+}
+
+.reviews-form .age-range {
+    display: flex;
+    gap: 20px;
+
+}
+
+
+.btn:hover {
+    color: white;
+}
+
+
+/*--snackbar--*/
+#snackbar {
+    visibility: hidden;
+    min-width: 250px;
+    margin-left: -125px;
+    background-color: #383838;
+    color: #fff;
+    text-align: center;
+    border-radius: 10px;
+    padding: 13px;
+    position: fixed;
+    z-index: 20000000000;
+    right: 0;
+    bottom: 30px;
+    font-size: 17px;
+}
+
+#snackbar.show {
+    visibility: visible;
+    -webkit-animation: fadein 0.5s, fadeout 0.5s 2.5s;
+    animation: fadein 0.5s, fadeout 0.5s 2.5s;
+}
+
+@-webkit-keyframes fadein {
+    from {
         bottom: 0;
         opacity: 0;
-      }
-
-      to {
-        bottom: 30px;
-        opacity: 1;
-      }
     }
 
-    @keyframes fadein {
-      from {
+    to {
+        bottom: 30px;
+        opacity: 1;
+    }
+}
+
+@keyframes fadein {
+    from {
         bottom: 0;
         opacity: 0;
-      }
-
-      to {
-        bottom: 30px;
-        opacity: 1;
-      }
     }
 
-    @-webkit-keyframes fadeout {
-      from {
+    to {
         bottom: 30px;
         opacity: 1;
-      }
+    }
+}
 
-      to {
+@-webkit-keyframes fadeout {
+    from {
+        bottom: 30px;
+        opacity: 1;
+    }
+
+    to {
         bottom: 0;
         opacity: 0;
-      }
     }
+}
 
-    @keyframes fadeout {
-      from {
+@keyframes fadeout {
+    from {
         bottom: 30px;
         opacity: 1;
-      }
+    }
 
-      to {
+    to {
         bottom: 0;
         opacity: 0;
-      }
+    }
+}
+
+@media(max-width: 500px) {
+    #content {
+        padding-inline-start: 0;
+        padding-inline-end: 0;
     }
 
-    /*--snackbar--*/
+    .reviews {
+        .profile-heading {
+            .container {
+                &::before {
+                    content: none;
+                }
 
+                flex-direction: column;
 
+                .title {
+                    margin-top: 20px;
+                    padding: 0 20px;
+                    color: #292337;
 
+                    & h2 {
+                        font-size: 26px;
+                        margin-bottom: 0;
+                        color: #292337;
+                    }  
+                 
+                }
 
-    @media (min-width: 981px) {
-      .composer_content .container.fullwidth {
-        max-width: 100% !important;
-        width: 100% !important;
-      }
+                .profile-img {
+                    margin: auto;
+                }
+            }
+        }
+
+        .reviews-form {
+            .container {
+                max-width: 100% !important;
+                padding: 30px 20px;
+            }
+            & h3 {
+                        font-size: 24px;
+                    }
+            .age-range {
+                display: flex;
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .name {
+                flex-direction: column;
+            }
+        }
     }
 
-    @media(max-width: 1300px) {}
-
-    @media(max-width: 1100px) {
-      .reviews-form .age-range {
-        flex-direction: column;
-      }
-
-      .reviews-form {
-        background-position: top !important;
-        background-size: 487px 480px;
-      }
-    }
-
-    @media(max-width: 900px) {
-      .name {
-        flex-direction: column;
-      }
-
-    }
-
-    @media(max-width: 980px) {
-      .profile-img .lazy {
-        max-width: 120px !important;
-        max-height: 130px !important;
-        margin-top: 10px;
-      }
-
-      .profile-heading .container {
-        max-width: 90% !important;
-        width: 90% !important;
-      }
-
-      #header .container {
-        max-width: 94% !important;
-        width: 94% !important;
-      }
-
-      .profile-content .container {
-        max-width: 90% !important;
-      }
-
-    }
-
-    @media(max-width: 767px) {
-      .reviews-form .container {
-        max-width: 70% !important;
-        margin-top: 20px;
-      }
-
-      .profile-heading .title h2 {
-        font-size: 23px;
-      }
-
-      .composer_content .container.fullwidth {
-        max-width: 100% !important;
-      }
-
-      .top_wrapper .span12 {
-        width: 100% !important;
-      }
-
-      .reviews-form {
-        margin-top: 50px;
-      }
-    }
-
-    @media(max-width: 550px) {
-      .reviews-form .container {
-        max-width: 80% !important;
-      }
-    }
-
-    @media(max-width: 500px) {
-      #header .container {
-        max-width: 90% !important;
-        width: 90% !important;
-      }
-
-      .reviews-form {
-        background-image: none !important;
-        margin-top: 10px;
-
-      }
-
-
-      .profile-heading .title h2 {
-        font-size: 14px;
-      }
-
-      .profile-img .lazy {
-        /*         max-width: 104px !important;
-        max-height: 93px !important; */
-        margin-top: -17px;
-      }
-
-      .riview-form .container {
-        max-width: 80% !important;
-        flex-direction: column;
-      }
-
-      .designation {
+    .designation {
         font-size: 12px;
-      }
-
     }
-
-    @media(max-width: 400px) {
-      #header .span12 {
-        width: 100% !important;
-      }
-
-      #footer .container {
-        max-width: 90% !important;
-      }
-    }
+}
   </style>
 </head>
 <div class="reviews">
   <div class="profile-heading">
     <div class="container">
       <div class="profile-img">
+      <img src='https://wellqor.com/wp-content/uploads/2023/11/animated_petal_bulletsArtboard-2-copy-7.svg'>
         <img src="<?php echo $new_headshot_download_url?>
-				  
-				  
 			">
 
       </div>
@@ -959,301 +830,218 @@ final class Hooks
         ob_start(); ?>
 
 <head>
-  <style>
-    * {
-      transition: 0.25s ease-in-out;
-      box-sizing: border-box;
-    }
-
-    h1 {
-      text-align: center;
-      font-family: helvetica neue, helvetica, arial, sans-serif;
-      font-weight: 100;
-      font-size: 50px;
-      line-height: 50px;
-    }
-
-
-    .reviews .profile-heading .title {
-      height: 100%;
-      display: flex;
-      color: #fff;
-      justify-content: center;
-    }
-
-    .reviews .title h2 {
-      color: #fff;
-    }
-
-    .reviews .description {
-      color: black;
-      font-weight: 500;
-      opacity: .9;
-    }
-
-    .reviews h3 {
-      margin-top: 15px;
-    }
-
-    .reviews-details {
-      background-size: 550px 600px;
-      background-image: url(https://wellqor.com/wp-content/uploads/2020/04/WellQor_iconBG_overlay2.png);
-      background-repeat: no-repeat;
-      background-position: 551px -1px;
-      min-height: 700px;
-    }
-
-    .reviews-details .verified-reviews {
-      display: flex;
-      flex-direction: column;
-      margin-bottom: 20px;
-    }
-
-    .reviews-details .container {
-      max-width: 52% !important;
-    }
-
-    .reviews-list {
-      margin-bottom: 35px;
-    }
-
-
-
-
-    .reviews-details {
-      display: flex;
-      flex-direction: column;
-      margin-top: 20px;
-      gap: 15px;
-    }
-
-    .reviews-accordion .title {
-      margin-bottom: 15px;
-    }
-
-    .reviews-accordion h5 {
-      color: #2d2a2a;
-      font-weight: 600;
-      font-size: 19px;
-      margin-bottom: 10px;
-    }
-
-    .composer_content .container.fullwidth {
-      width: 100% !important;
-    }
-
-    #header .container {
-      max-width: 1200px !important;
-    }
-
-
-
-    #content {
-      padding-top: 0 !important;
-    }
-
-    #content .row br {
-      display: none !important;
-    }
-
+      <style>
+.reviews {
+    color: #292337;
+    font-size: 16px;
 
     .profile-heading {
-      height: 100px;
-      background-color: #0088cc;
-      padding: 20px 0;
-      margin-bottom: 30px;
-      display: flex;
+        height: 250px;
+        display: flex;
+
+        .container {
+            background-color: #304575;
+            width: 100% !important;
+            display: flex;
+            position: relative;
+
+            &::before {
+                content: "";
+                position: absolute;
+                width: 240px;
+                height: 240px;
+                top: 5%;
+                right: -3%;
+                background: url(https://wellqor.com/wp-content/uploads/2023/11/WellQor_heart.svg) 0 0 no-repeat;
+                transform: rotate(349deg);
+                opacity: 8%;
+            }
+
+            .profile-img {
+                margin-left: 40px;
+                margin-top: 40px;
+                position: relative;
+
+                >img:nth-child(1) {
+                    rotate: 90deg;
+                    max-width: 300px;
+                    height: 280px;
+                }
+
+                >img:nth-child(2) {
+                    width: 250px;
+                    height: 260px;
+                    border-radius: 100% 100% 100% 0;
+                    position: absolute;
+                    top: 16px;
+                    left: 33px;
+                    object-fit: cover;
+                    object-position: 17% 9%;
+                }
+
+            }
+
+            .title {
+                display: flex;
+                flex-direction: column;
+                height: 100%;
+                color: #fff;
+                justify-content: center;
+                padding-left: 60px;
+
+                & h2 {
+                    font-weight: bold;
+                    color: #fff;
+                    font-size: 30px;
+                }
+
+                & p {
+                    margin-bottom: 0;
+                }
+
+                .designation {
+                    font-size: 16px;
+                }
+
+            }
+        }
     }
 
-    .profile-heading .container {
-      max-width: 75% !important;
-      display: flex
-    }
 
-    .reviews .profile-img img {
-      max-width: 150px;
-      max-height: 150px;
-      border-radius: 15px;
-      border: 1px solid #ccc;
-    }
 
-    .profile-heading .title {
-      display: flex;
-      flex-direction: column;
-      height: 100%;
-      color: #fff;
-      justify-content: center;
-      padding-left: 15px;
-    }
+    .reviews-details {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+        padding: 100px 0 0 60px;
+        width: 70%;
+        & h4 {
+            font-weight: bold;
+            margin-bottom: 0;
+        }
 
-    .profile-heading .title h2 {
-      margin: 0;
-      font-weight: bold;
-      color: #fff;
-      font-size: 28px;
-    }
+        & h5 {
+            font-weight: bold;
+            margin-bottom: 0;
+        }
 
-    .profile-heading .title span:nth-child(3) {
-      font-weight: 400;
+        .verified-reviews {
+            display: flex;
+            flex-direction: column;
+        }
     }
-
+    .reviews-accordion {
+      margin-top: 30px;
+        & h4 {
+            margin-top: 20px;
+            ;
+        }
+    }
     .pharases-desc {
-      display: flex;
-      margin-top: 10px;
-    }
-
-    .all-reviews {
-      float: right;
-	  margin-bottom: 20px;
-		
-    }
-
-    .all-reviews button {
-      background: linear-gradient(145deg, #0069ff, #097fe6);
-      border: none;
-      border-radius: 5px;
-      padding: 10px 15px;
-      color: #fff;
-      font-size: 15px;
-    }
-
-    .all-reviews button:hover {
-      background: linear-gradient(145deg, #0065f5, #005fe6) !important;
+        display: flex;
     }
 
     .phrases {
-      display: flex;
-      flex-direction: column;
-      min-width: 40%;
+        display: flex;
+        flex-direction: column;
+        min-width: 40%;
     }
 
-    .d-none {
-      display: none;
+    .all-reviews {
+      width: 100%;
+      margin: 30px 0;
+
+        & button {
+            width: 120px;
+            height: 40px;
+            background-color: #7ACDFE;
+            border: none;
+            border-radius: 20px;
+            font-size: 15px;
+            cursor: pointer;
+            transition: all .1s;
+            padding: 0;
+
+            &:hover {
+                background-color: transparent;
+                border: 2px solid #292337;
+            }
+        }
     }
+}
 
 
-    @media (min-width: 981px) {
-      .composer_content .container.fullwidth {
-        max-width: 100% !important;
-        width: 100% !important;
-      }
-    }
+
+.d-none {
+    display: none;
+}
 
 
-    @media(max-width: 1100px) {
-      .reviews-details {
-        background-position: top !important;
-        background-size: 487px 480px;
-      }
-    }
+@media(max-width: 767px) {
 
-    @media(max-width: 980px) {
-      .profile-img .lazy {
-        max-width: 120px !important;
-        max-height: 130px !important;
-        margin-top: 10px;
-      }
-
-      .profile-heading .container {
-        max-width: 90% !important;
-        width: 90% !important;
-      }
-
-      #header .container {
-        max-width: 94% !important;
-        width: 94% !important;
-      }
-
-      .profile-content .container {
-        max-width: 90% !important;
-      }
-
-    }
-
-
-    @media(max-width: 767px) {
-		.composer_content .span12 {
-        width: 100% !important;
-      }
-      .pharases-desc {
+    .pharases-desc {
         display: flex;
         flex-direction: column !important;
         gap: 20px !important;
-      }
+    }
 
-      .reviews-details {
+    .reviews-details {
         margin-top: 50px;
-      }
+    }
 
-      .reviews-details .container {
-        max-width: 80% !important;
-        margin-top: 20px;
-      }
-
-      .profile-heading .title h2 {
+    .profile-heading .title h2 {
         font-size: 23px;
-      }
-
-      .composer_content .container.fullwidth {
-        max-width: 100% !important;
-      }
-
-      .top_wrapper .span12 {
-        width: 100% !important;
-      }
     }
 
-    @media(max-width: 500px) {
-      #header .container {
-        max-width: 90% !important;
-        width: 90% !important;
-      }
-		
-	.composer_content .span12 {
-        width: 100% !important;
-      }
+}
 
-      .reviews-details {
-        background-image: none !important;
-        margin-top: 70px;
+@media(max-width: 500px) {
+    .reviews {
+        .profile-heading {
+            .container {
+              &::before{
+                content: none;
+              }
+                flex-direction: column;
 
-      }
+                .title {
+                    margin-top: 20px;
+                    padding: 0 20px;
+                    color: #292337;
 
+                    & h2 {
+                      font-size: 26px;
+                        margin-bottom: 0;
+                        color: #292337;
+                    }
+                }
 
-      .profile-heading .title h2 {
-        font-size: 14px;
-      }
+                .profile-img {
+                    margin: auto;
+                }
+            }
+        }
 
-      .profile-img .lazy {
-        margin-top: -17px;
-      }
-
-      .riview-details .container {
-        max-width: 80% !important;
-        flex-direction: column;
-      }
-
-      .designation {
-        font-size: 12px;
-      }
-
+        .reviews-details {
+          padding: 80px 20px 0;
+          width: 100%;
+            .all-reviews {
+              width: 100%;
+             text-align: center;
+             margin-top: 30px;
+            }
+        }
     }
 
-    @media(max-width: 400px) {
-      #header .span12 {
-        width: 100% !important;
-      }
 
-      #footer .container {
-        max-width: 90% !important;
-      }
-    }
-  </style>
+}
+</style>
 </head>
 <div class="reviews">
   <div class="profile-heading">
     <div class="container">
       <div class="profile-img">
+      <img src='https://wellqor.com/wp-content/uploads/2023/11/animated_petal_bulletsArtboard-2-copy-7.svg'>
         <img src="<?php echo $new_headshot_download_url?>
         
         
@@ -1267,9 +1055,6 @@ final class Hooks
         </div>
         <div class="designation">
           <?php echo $employeeData[0]->clinical_title?>
-
-
-
         </div>
       </div>
     </div>
@@ -1296,9 +1081,7 @@ final class Hooks
             <span> <?php echo $review->age?> (Verified) on <?php echo $review->created_at?><span>
           </div>
 
-          <div class='title'>
             <img class='' src='https://wellqor.com/wp-content/uploads/2023/11/rating.png' width='137' height='26' />
-          </div>
           <h4><span>Review Highlights</span></h4>
           <div class='pharases-desc'>
             <div class="phrases">
@@ -1341,34 +1124,6 @@ final class Hooks
 
 <head>
   <style>
-    * {
-      transition: 0.25s ease-in-out;
-      box-sizing: border-box;
-    }
-
-
-    .composer_content .container.fullwidth {
-      width: 100% !important;
-    }
-
-    .composer_content {
-      padding-bottom: 0 !important;
-    }
-
-    #header .container {
-      max-width: 75% !important;
-    }
-
-
-
-    #content {
-      padding-top: 0 !important;
-    }
-
-    #content .row br {
-      display: none !important;
-    }
-
     .thank-you-page {
       min-height: 700px;
       display: flex;
@@ -1391,88 +1146,27 @@ final class Hooks
       width: 250px;
     }
 
-    .thank-you-page .btn {
-      background: linear-gradient(145deg, #0069ff, #097fe6);
-      padding: 5px 20px;
-      border-radius: 8px;
-      border: none;
-      color: wheat;
-    }
-
-    .btn:focus {
-      outline: none;
-    }
-
-    .btn:hover {
-      background: linear-gradient(145deg, #0065f5, #005fe6) !important;
-    }
-
-
-    @media (min-width: 981px) {
-      .composer_content .container.fullwidth {
-        max-width: 100% !important;
-        width: 100% !important;
-      }
-    }
-
-
-
-    @media(max-width: 980px) {
-      #header .container {
-        max-width: 90% !important;
-        width: 90% !important;
-      }
-
-
-    }
-
-
     @media(max-width: 767px) {
-
       .pharases-desc {
         display: flex;
         flex-direction: column !important;
         gap: 20px !important;
       }
-
-      .composer_content .container.fullwidth {
-        max-width: 100% !important;
-        margin-top: 20px;
-      }
-
-      .top_wrapper .span12 {
-        width: 100% !important;
-      }
-
       h1 {
         font-size: 30px;
       }
     }
 
     @media(max-width: 500px) {
-		   .composer_content .span12 {
-        width: 100% !important;
-      }
-      #header .container {
-        max-width: 100% !important;
-        width: 100% !important;
-      }
-
       .thank-you-page {
         background-image: none;
-      }
-    }
-
-    @media(max-width: 400px) {
-      #footer .container {
-        max-width: 90% !important;
       }
     }
   </style>
 </head>
 <div class="thank-you-page">
 
-  <img src='https://wellqor.com/wp-content/uploads/2022/01/WellQorLogoColor_RGB.png'>
+  <img src='https://wellqor.com/wp-content/uploads/2023/11/5tenets.png'>
   <h1>Thank you for providing your feedback!</h1>
   <button class="btn" onclick='thankYouBack(<?php echo $id?>)'>
     Back
