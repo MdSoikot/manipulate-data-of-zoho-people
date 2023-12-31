@@ -34,28 +34,6 @@ final class DB
             }
         }
         $table_schema = array(
-            "CREATE TABLE IF NOT EXISTS `{$wpdb->prefix}bitwelzp_log_details` (
-                `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
-                `form_id` bigint(20) NOT NULL,
-                `integration_id` bigint(20) DEFAULT NULL,
-                `api_type` varchar(255) DEFAULT NULL,
-                `response_type` varchar(50) DEFAULT NULL,
-                `response_obj` LONGTEXT DEFAULT NULL,
-                `created_at` DATETIME NOT NULL,
-                PRIMARY KEY (`id`),
-                KEY `integration_id` (`integration_id`)
-            ) $collate;",
-
-            "CREATE TABLE IF NOT EXISTS `{$wpdb->prefix}bitwelzp_people` (
-                `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-                `post_id` bigint(20) unsigned DEFAULT NULL, /* form_id = 0 means all/app */
-                `type` varchar(20) DEFAULT NULL,
-                `details` LONGTEXT DEFAULT NULL,
-                `created_at` datetime DEFAULT NULL,
-                `updated_at` datetime DEFAULT NULL,
-                PRIMARY KEY (`id`)
-            ) $collate;",
-
             "CREATE TABLE IF NOT EXISTS `{$wpdb->prefix}bitwelzp_zoho_people_auth_details` (
                 `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
                 `auth_details` LONGTEXT DEFAULT NULL, /* form_id = 0 means all/app */

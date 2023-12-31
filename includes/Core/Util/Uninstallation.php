@@ -25,10 +25,10 @@ final class Uninstallation
     {
         global $wpdb;
         $tableArray = [
-            // $wpdb->prefix . "bitwelzp_log_details",
+            $wpdb->prefix . "bitwelzp_log_details",
             $wpdb->prefix . "bitwelzp_people",
             // $wpdb->prefix . "bitwelzp_zoho_people_auth_details",
-            // $wpdb->prefix . "bitwelzp_zoho_people_employee_info",
+            $wpdb->prefix . "bitwelzp_zoho_people_employee_info",
         ];
         foreach ($tableArray as $tablename) {
             $wpdb->query("DROP TABLE IF EXISTS $tablename");
