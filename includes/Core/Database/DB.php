@@ -44,6 +44,7 @@ final class DB
 
             "CREATE TABLE IF NOT EXISTS `{$wpdb->prefix}bitwelzp_zoho_people_employee_info` (
                 `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+                `zoho_id` varchar(255) DEFAULT NULL,
                 `employee_id` varchar(255) DEFAULT NULL,
                 `email_Id` varchar(255) DEFAULT NULL,
                 `employee_status` varchar(255) DEFAULT NULL,
