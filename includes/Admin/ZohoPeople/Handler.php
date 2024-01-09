@@ -20,9 +20,10 @@ final class Handler
         self::$_zohoPeoplesEmployeesModel = new ZohoPeoplesEmployeesModel();
         self::$_formDetailsModel = new FormDetailsModel();
         $result = $this->get_auth_details();
-        if (count((array)$result) > 0) {
+        if (count((array) $result) > 0) {
             self::$data = json_decode($result->auth_details);
         }
+
     }
 
     public function analyticsGenerateToken()
@@ -173,6 +174,7 @@ final class Handler
 
     public function get_employee_data()
     {
+
         $employee_data = static::$_zohoPeoplesEmployeesModel->get('*', [], null, null, 'id', 'DESC');
         if (is_wp_error($employee_data)) {
             wp_send_json_error('Failed to fetch');
@@ -210,7 +212,6 @@ final class Handler
         global $wpdb;
         $requestData = self::$data;
         $isTokenExpired = false;
-        $_apiDomain = 'https://people.zoho.com/people/api/forms/employee/getRecords';
         if ((intval($requestData->tokenDetails->generates_on) + (55 * 60)) < time()) {
             $refreshedToken = $this::_refreshAccessToken($requestData);
             if ($refreshedToken) {
@@ -252,128 +253,94 @@ final class Handler
             $reviewUrl = '';
 
             $employee_details = static::$_zohoPeoplesEmployeesModel->get();
-
             $allEmployesId = [];
-            if (is_wp_error($employee_details)) {
-                foreach ($totalEmployees as  $data) {
-                    foreach ((array)$data as  $employee) {
-                        $recordId = $employee[0]->Zoho_ID;
-                        $profileUrl = 'https://wellqor.com/' . $employee[0]->fname[0] . '' . $employee[0]->lname . '';
-                        $reviewUrl = 'https://wellqor.com/therapist-review-form/?employee_id=' . $employee[0]->employee_id . '';
-                        $headshot_url = $employee[0]->Headshot_downloadUrl;
-                        $headshot_response = HttpHelper::get($headshot_url, [], $_defaultHeader);
-                        $fileName = $employee[0]->Headshot;
-                        file_put_contents($upload_dir['basedir'] . '/' . $fileName, $headshot_response);
-
-                        $arraValues = static::getClinicianFormData($employee, $_defaultHeader);
-                        $insertData = [
-                            'email_Id'                                  => $employee[0]->EmailID,
-                            'employee_id'                               => $employee[0]->EmployeeID,
-                            'headshot_download_url'                     => $fileName,
-                            'employee_status'                           => $employee[0]->Employeestatus,
-                            'fname'                                     => $employee[0]->FirstName,
-                            'lname'                                     => $employee[0]->LastName,
-                            'preferred_name_nickname'                   => $employee[0]->Preferred_Name_Nickname,
-                            'clinical_title'                            => $employee[0]->Clinical_Title,
-                            'medical_qualification'                     => $employee[0]->Cultural_Competency,
-                            'designation'                               => $employee[0]->Designation,
-                            'skills'                                    => !empty($arraValues) ? $arraValues->Clinical_Competencies : '',
-                            'advanced_degree_from'                      => $employee[0]->Advanced_Degree_from,
-                            'languages'                                 => !empty($arraValues) ? $arraValues->Languages : '',
-                            'certifications'                            => !empty($arraValues) ? $arraValues->Clinician_Profile_Treatment_Modalities : '',
-                            'cultural_competency'                       => !empty($arraValues) ? $arraValues->Cultural_Competencies1 : '',
-                            'public_bio'                                => !empty($arraValues) ? $arraValues->Public_Bio : '',
-                            'licensed_in'                               => $employee[0]->Licensed_In,
-                            'allow_telehealth_access'                   => $employee[0]->Allow_Telehealth_Access,
-                        ];
-
-                        static::$_zohoPeoplesEmployeesModel->insert(
-                            $insertData
-                        );
-
-                        if ($employee[0]->Employeestatus === 'Active' && ($employee[0]->Designation === 'Clinical Therapist' || $employee[0]->Designation === 'Clinical Director') && $employee[0]->Allow_Telehealth_Access === 'true') {
-                            $this::programmatically_create_post(
-                                $insertData,
-                                '',
-                                $getAllRiviews
-                            );
-                        }
+            if (count($totalEmployees)) {
+                if (is_array($employee_details) && count($employee_details)) {
+                    foreach ($employee_details as $employee) {
+                        array_push($allEmployesId, $employee->employee_id);
                     }
-                };
-            } else {
-                foreach ($employee_details as $employee) {
-                    array_push($allEmployesId, $employee->employee_id);
                 }
+
                 foreach ($totalEmployees as  $data) {
+                    foreach ((array) $data as  $employee) {
 
-                    foreach ((array)$data as  $employee) {
+                        if ($this::isEmployeeActive($employee[0])) {
+                            $recordId = $employee[0]->Zoho_ID;
+                            $profileUrl = 'https://wellqor.com/' . $employee[0]->fname[0] . '' . $employee[0]->lname . '';
+                            $reviewUrl = 'https://wellqor.com/therapist-review-form/?employee_id=' . $employee[0]->employee_id . '';
+                            $headshot_url = $employee[0]->Headshot_downloadUrl;
+                            $headshot_response = HttpHelper::get($headshot_url, [], $_defaultHeader);
+                            $fileName = $employee[0]->Headshot;
+                            file_put_contents($upload_dir['basedir'] . '/' . $fileName, $headshot_response);
 
-                        $recordId = $employee[0]->Zoho_ID;
-                        $profileUrl = 'https://wellqor.com/' . $employee[0]->FirstName[0] . '' . $employee[0]->LastName . '';
-                        $reviewUrl = 'https://wellqor.com/therapist-review-form/?employee_id=' . $employee[0]->EmployeeID . '';
-                        $headshot_url = $employee[0]->Headshot_downloadUrl;
-                        $headshot_response = HttpHelper::get($headshot_url, [], $_defaultHeader);
-                        $fileName = $employee[0]->Headshot;
-                        file_put_contents($upload_dir['basedir'] . '/' . $fileName, $headshot_response);
+                            $arraValues = static::getClinicianFormData($employee, $_defaultHeader);
+                            $insertData = [
+                                'email_Id'                                  => $employee[0]->EmailID,
+                                'zoho_Id'                                   => $employee[0]->Zoho_ID,
+                                'employee_id'                               => $employee[0]->EmployeeID,
+                                'headshot_download_url'                     => $fileName,
+                                'employee_status'                           => $employee[0]->Employeestatus,
+                                'fname'                                     => $employee[0]->FirstName,
+                                'lname'                                     => $employee[0]->LastName,
+                                'preferred_name_nickname'                   => $employee[0]->Preferred_Name_Nickname,
+                                'clinical_title'                            => $employee[0]->Clinical_Title,
+                                'medical_qualification'                     => $employee[0]->Cultural_Competency,
+                                'designation'                               => $employee[0]->Designation,
+                                'skills'                                    => !empty($arraValues) ? $arraValues->Clinical_Competencies : '',
+                                'advanced_degree_from'                      => $employee[0]->Advanced_Degree_from,
+                                'languages'                                 => !empty($arraValues) ? $arraValues->Languages : '',
+                                'certifications'                            => !empty($arraValues) ? $arraValues->Clinician_Profile_Treatment_Modalities : '',
+                                'cultural_competency'                       => !empty($arraValues) ? $arraValues->Cultural_Competencies1 : '',
+                                'public_bio'                                => !empty($arraValues) ? $arraValues->Public_Bio : '',
+                                'licensed_in'                               => $employee[0]->Licensed_In,
+                                'allow_telehealth_access'                   => $employee[0]->Allow_Telehealth_Access,
+                            ];
+                            if (is_array($employee_details) && count($employee_details)) {
+                                if (in_array($employee[0]->EmployeeID, $allEmployesId)) {
+                                    static::$_zohoPeoplesEmployeesModel->update(
+                                        $insertData,
+                                        ['employee_id' => $employee[0]->EmployeeID]
+                                    );
 
-                        $arraValues = static::getClinicianFormData($employee, $_defaultHeader);
-                        $updateData = [
-                            'email_Id'                                  => $employee[0]->EmailID,
-                            'employee_id'                               => $employee[0]->EmployeeID,
-                            'headshot_download_url'                     => $fileName,
-                            'employee_status'                           => $employee[0]->Employeestatus,
-                            'fname'                                     => $employee[0]->FirstName,
-                            'lname'                                     => $employee[0]->LastName,
-                            'preferred_name_nickname'                   => $employee[0]->Preferred_Name_Nickname,
-                            'clinical_title'                            => $employee[0]->Clinical_Title,
-                            'medical_qualification'                     => $employee[0]->Degree1,
-                            'designation'                               => $employee[0]->Designation,
-                            'skills'                                    => !empty($arraValues) ? $arraValues->Clinical_Competencies : '',
-                            'advanced_degree_from'                      => $employee[0]->Advanced_Degree_from,
-                            'languages'                                 => !empty($arraValues) ? $arraValues->Languages : '',
-                            'certifications'                            => !empty($arraValues) ? $arraValues->Clinician_Profile_Treatment_Modalities : '',
-                            'cultural_competency'                       => !empty($arraValues) ? $arraValues->Cultural_Competencies1 : '',
-                            'public_bio'                                => !empty($arraValues) ? $arraValues->Public_Bio : '',
-                            'licensed_in'                               => $employee[0]->Licensed_In,
-                            'allow_telehealth_access'                   => $employee[0]->Allow_Telehealth_Access,
+                                    $queryId = $employee[0]->EmployeeID;
 
-                        ];
-                        if (in_array($employee[0]->EmployeeID, $allEmployesId)) {
-                            static::$_zohoPeoplesEmployeesModel->update(
-                                $updateData,
-                                ['employee_id' => $employee[0]->EmployeeID]
-                            );
+                                    $post_id = $wpdb->get_row("SELECT post_id FROM wp_bitwelzp_zoho_people_employee_info WHERE employee_id ='$queryId'");
+                                    $this::programmatically_create_post(
+                                        $insertData,
+                                        $post_id !== null ? $post_id->post_id : '',
+                                        $getAllRiviews
+                                    );
+                                    if ($employee[0]->Profile_URL === '' || $employee[0]->Review_URL === '') {
+                                        $this->updateZohoPeoplesFields($recordId, $profileUrl, $reviewUrl);
+                                    }
+                                } else {
+                                    static::$_zohoPeoplesEmployeesModel->insert(
+                                        $insertData
+                                    );
+                                    $queryId = $employee[0]->EmployeeID;
 
-                            $queryId = $employee[0]->EmployeeID;
 
-                            $post_id = $wpdb->get_row("SELECT post_id FROM wp_bitwelzp_zoho_people_employee_info WHERE employee_id ='$queryId'");
-                            if ($employee[0]->Employeestatus === 'Active' && ($employee[0]->Designation === 'Clinical Therapist' || $employee[0]->Designation === 'Clinical Director') && $employee[0]->Allow_Telehealth_Access === 'true') {
+                                    $post_id = $wpdb->get_row("SELECT post_id FROM wp_bitwelzp_zoho_people_employee_info WHERE employee_id ='$queryId'");
+                                    $this::programmatically_create_post(
+                                        $insertData,
+                                        $post_id !== null ? $post_id->post_id : '',
+                                        $getAllRiviews
+                                    );
+                                    if ($employee[0]->Profile_URL === '' || $employee[0]->Review_URL === '') {
+                                        $this->updateZohoPeoplesFields($recordId, $profileUrl, $reviewUrl);
+                                    }
+
+                                }
+                            } else {
+                                static::$_zohoPeoplesEmployeesModel->insert(
+                                    $insertData
+                                );
+
                                 $this::programmatically_create_post(
-                                    $updateData,
-                                    $post_id !== null ? $post_id->post_id : '',
+                                    $insertData,
+                                    '',
                                     $getAllRiviews
                                 );
-                                if ($employee[0]->Profile_URL === '' || $employee[0]->Review_URL === '') {
-                                    $this->updateZohoPeoplesFields($recordId, $profileUrl, $reviewUrl);
-                                }
-                            }
-                        } else {
-                            static::$_zohoPeoplesEmployeesModel->insert(
-                                $updateData
-                            );
-                            $queryId = $employee[0]->EmployeeID;
-
-
-                            $post_id = $wpdb->get_row("SELECT post_id FROM wp_bitwelzp_zoho_people_employee_info WHERE employee_id ='$queryId'");
-                            if ($employee[0]->Employeestatus === 'Active' && ($employee[0]->Designation === 'Clinical Therapist' || $employee[0]->Designation === 'Clinical Director') && $employee[0]->Allow_Telehealth_Access === 'true') {
-                                $this::programmatically_create_post(
-                                    $updateData,
-                                    $post_id !== null ? $post_id->post_id : '',
-                                    $getAllRiviews
-                                );
-                                if ($employee[0]->Profile_URL === '' || $employee[0]->Review_URL === '') {
-                                    $this->updateZohoPeoplesFields($recordId, $profileUrl, $reviewUrl);
-                                }
                             }
                         }
                     }
@@ -390,6 +357,14 @@ final class Handler
             );
         }
 
+    }
+
+    public static function isEmployeeActive($data)
+    {
+        if ($data->Employeestatus === 'Active' && ($data->Designation === 'Clinical Therapist' || $data->Designation === 'Clinical Director') && $data->Allow_Telehealth_Access === 'true') {
+            return true;
+        }
+        return false;
     }
 
     public static function getClinicianFormData($employeeData, $_defaultHeader)
