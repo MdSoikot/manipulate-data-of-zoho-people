@@ -424,8 +424,12 @@ final class Handler
         return false;
     }
 
+    //Clinician some data(Clinical_Competencies,Languages,Clinician_Profile_Treatment_Modalities,Cultural_Competencies1,Public_Bio) is fetched from another table(Clinician Profile) of Zoho People.
+    //According to the David's suggestion
     public static function getClinicianFormData($employeeData, $_defaultHeader)
     {
+        //The employee id is exist in the clinician name of clinician profile table(e.g., (David - Giella - 1002))
+        //We fetched the data using the employee id of the clinician
         $clinicianFormParams = [
             'searchField'   => 'Clinician_Name',
             'searchOperator' => 'Contains',
