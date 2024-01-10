@@ -53,6 +53,7 @@ final class Hooks
         $employee_name = $employeeData[0]->fname . '_' . $employeeData[0]->lname;
         $headshot_download_url = $employeeData[0]->headshot_download_url;
         $new_headshot_download_url = '';
+
         if ($headshot_download_url === '') {
             $new_headshot_download_url = 'https://wellqor.com/wp-content/uploads/2021/11/bioPicplaceholder.jpg';
         } else {
@@ -710,6 +711,7 @@ input[type="checkbox"] {
 
 </div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+
 <script>
   $('.star-input').click(function() {
     $(this).parent([0]).parent()[0].reset();
@@ -746,6 +748,7 @@ input[type="checkbox"] {
   const handleStarChange = (e) => {
     data.star = parseInt(e.target.value)
   }
+
   const handleSnackBar = (message) => {
     var x = document.getElementById("snackbar");
     x.innerHTML = message
@@ -791,6 +794,7 @@ input[type="checkbox"] {
      .catch(err=>console.log(err))
     window.location.href = 'https://wellqor.com/thank-you-page/?employee_id=' + id
   }
+
 </script>
 
 <?php
@@ -808,25 +812,28 @@ input[type="checkbox"] {
         $upload_dir  = wp_upload_dir();
         $headshot_download_url = $employeeData[0]->headshot_download_url;
         $new_headshot_download_url = '';
+
         if ($headshot_download_url === '') {
             $new_headshot_download_url = 'https://wellqor.com/wp-content/uploads/2021/11/bioPicplaceholder.jpg';
         } else {
             $new_headshot_download_url = $upload_dir['baseurl'] . "/" . $employeeData[0]->headshot_download_url;
         }
+
         $reviewsData = array();
         $totalStars = 0;
+
         foreach ($getAllReviews as $review) {
             $form_details = json_decode($review->form_details);
+
             if ($employee_id == $form_details->employee_id && $form_details->status == 'approved') {
                 $form_details->created_at = $review->created_at;
                 array_push($reviewsData, $form_details);
                 $totalStars = $totalStars + $form_details->star;
             }
+
         }
 
         $totalVerifiedReviews = count($reviewsData);
-
-
         ob_start(); ?>
 
 <head>

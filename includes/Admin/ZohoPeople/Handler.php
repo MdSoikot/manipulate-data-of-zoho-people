@@ -337,7 +337,7 @@ final class Handler
                                 'lname'                                     => $employee[0]->LastName,
                                 'preferred_name_nickname'                   => $employee[0]->Preferred_Name_Nickname,
                                 'clinical_title'                            => $employee[0]->Clinical_Title,
-                                'medical_qualification'                     => $employee[0]->Cultural_Competency,
+                                'medical_qualification'                     => $employee[0]->Degree1,
                                 'designation'                               => $employee[0]->Designation,
                                 'skills'                                    => !empty($arraValues) ? $arraValues->Clinical_Competencies : '',
                                 'advanced_degree_from'                      => $employee[0]->Advanced_Degree_from,
