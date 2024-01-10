@@ -591,7 +591,6 @@ final class Handler
     //Handle clinician profile page status
     public function handlePageStatus($id)
     {
-        global $wpdb;
         $employee_data_by_id = static::$_zohoPeoplesEmployeesModel->get('*', ['id' => $id], null, null, 'id', 'DESC');
         $status = '';
 
@@ -692,14 +691,14 @@ final class Handler
                      </div>";
         }
 
-        //Style in Code Snippets Footer
+        //You can find the Style in the Code Snippets(plugin) Footer
         $content = <<<HTML
           <div class="employee-details">
 <div class="profile-heading">
 <div class="container">
     <div class="profile-img">
-        <img src='https://wellqor.com/wp-content/uploads/2023/11/animated_petal_bulletsArtboard-2-copy-7.svg'>
-        <img src='$new_headshot_download_url'>
+        <img src='https://wellqor.com/wp-content/uploads/2023/11/animated_petal_bulletsArtboard-2-copy-7.svg' alt='flower background'>
+        <img alt='$preferred_name_nickname $lname' src='$new_headshot_download_url'>
     </div>
     <div class="title">
         <div class="name">
