@@ -19,13 +19,14 @@ final class Handler
         self::$_integrationModel = new IntegrationModel();
         self::$_zohoPeoplesEmployeesModel = new ZohoPeoplesEmployeesModel();
         self::$_formDetailsModel = new FormDetailsModel();
-        $result = $this->get_auth_details();
-        if (count((array) $result) > 0) {
-            self::$data = json_decode($result->auth_details);
+        $authResponse = $this->getAuthDetails();
+        if (count((array) $authResponse) > 0) {
+            self::$data = json_decode($authResponse->auth_details);
         }
 
     }
 
+    //New access token generate for Zoho Analytics authorization
     public function analyticsGenerateToken()
     {
         $requestParams = [
@@ -38,62 +39,55 @@ final class Handler
         return $refreshToken;
     }
 
-    public function insertReviewIntoAnalytics($requestData, $type)
+
+    protected static function refreshAccessToken($apiData)
     {
-        $lastReviewId = static::$_formDetailsModel->get('id', [], 1, null, 'id', 'DESC');
-        $refreshToken = $this->analyticsGenerateToken();
-        $data = [
-            'Employee Id'       => $requestData->employee_id,
-            'Star'              => $requestData->star,
-            'First Name'        => $requestData->fname,
-            'Last Name'         => $requestData->lname,
-            'Phrases'           => implode(', ', $requestData->phrases),
-            'Title'             => $requestData->title,
-            'Title Description' => $requestData->desc,
-            'Age Range'         => $requestData->age,
-            'Gender'            => $requestData->gender,
-            'Status'            => $requestData->status,
-            'Empathetic'        => $requestData->empathetic,
-            'Review Id'         => $type === 'insert' ? $lastReviewId[0]->id : $requestData->editRowId,
-            'Created At'        => date('d M,Y h:i:s'),
+        if (
+            empty($apiData->dataCenter)
+            || empty($apiData->clientId)
+            || empty($apiData->clientSecret)
+            || empty($apiData->tokenDetails)
+        ) {
+            return false;
+        }
+        $tokenDetails = $apiData->tokenDetails;
+
+        $dataCenter = $apiData->dataCenter;
+        $apiEndpoint = "https://accounts.zoho.{$dataCenter}/oauth/v2/token";
+        $requestParams = [
+            'grant_type'    => 'refresh_token',
+            'client_id'     => $apiData->clientId,
+            'client_secret' => $apiData->clientSecret,
+            'refresh_token' => $tokenDetails->refresh_token,
         ];
 
-        if ($refreshToken) {
-            $apiEndpoint = 'https://analyticsapi.zoho.com/api/dschwam@wellqor.com/Developer_space/Patient Review Data?ZOHO_ACTION=ADDROW&ZOHO_OUTPUT_FORMAT=JSON&ZOHO_ERROR_FORMAT=JSON&ZOHO_API_VERSION=1.0';
-            $authorizationHeader['Authorization'] = 'Zoho-oauthtoken ' . $refreshToken->access_token;
-            $apiResponse = HttpHelper::post($apiEndpoint, $data, $authorizationHeader);
+        $apiResponse = HttpHelper::post($apiEndpoint, $requestParams);
+        if (is_wp_error($apiResponse) || !empty($apiResponse->error)) {
+            return false;
         }
-        return $apiResponse;
+        $tokenDetails->generates_on = \time();
+        $tokenDetails->access_token = $apiResponse->access_token;
+        return $tokenDetails;
     }
 
-    public function updateReviewIntoAnalytics($requestData)
+    protected static function saveRefreshedToken($integrationID, $data)
     {
-        $data = [
-            'Employee Id'       => $requestData->employee_id,
-            'Star'              => $requestData->star,
-            'First Name'        => $requestData->fname,
-            'Last Name'         => $requestData->lname,
-            'Phrases'           => implode(', ', $requestData->phrases),
-            'Title'             => $requestData->title,
-            'Title Description' => $requestData->desc,
-            'Age Range'         => $requestData->age,
-            'Gender'            => $requestData->gender,
-            'Status'            => $requestData->status,
-            'Empathetic'        => $requestData->empathetic,
-            'Updated At'        => date('d M,Y h:i:s'),
-        ];
-
-        $criteria = "(\"Review Id\"='$requestData->editRowId')";
-        $refreshToken = $this->analyticsGenerateToken();
-        if ($refreshToken) {
-            $apiEndpoint = "https://analyticsapi.zoho.com/api/dschwam@wellqor.com/Developer_space/Patient Review Data?ZOHO_ACTION=UPDATE&ZOHO_OUTPUT_FORMAT=JSON&ZOHO_ERROR_FORMAT=JSON&ZOHO_API_VERSION=1.0&ZOHO_CRITERIA={$criteria}";
-            $authorizationHeader['Authorization'] = 'Zoho-oauthtoken ' . $refreshToken->access_token;
-            $apiResponse = HttpHelper::post($apiEndpoint, $data, $authorizationHeader);
+        if (empty($integrationID)) {
+            return;
         }
-        return $apiResponse;
+        $result = static::$_integrationModel->update(
+            [
+                'auth_details' => wp_json_encode($data)
+            ],
+            [
+                'id' => $integrationID
+            ]
+        );
+        return $result;
     }
 
-    public function generate_token($data)
+    //Zoho authentication generate toekn
+    public function generateToken($data)
     {
         $requestsParams = $data;
         if (
@@ -132,7 +126,68 @@ final class Handler
         wp_send_json_success($apiResponse, 200);
     }
 
-    public function integration_save($data)
+    //Clinician patient review is added to Zoho Analytics (Patient Review Data) table via API
+    public function insertReviewIntoAnalytics($requestData, $type)
+    {
+        $lastReviewId = static::$_formDetailsModel->get('id', [], 1, null, 'id', 'DESC');
+        $refreshToken = $this->analyticsGenerateToken();
+        $data = [
+            'Employee Id'       => $requestData->employee_id,
+            'Star'              => $requestData->star,
+            'First Name'        => $requestData->fname,
+            'Last Name'         => $requestData->lname,
+            'Phrases'           => implode(', ', $requestData->phrases),
+            'Title'             => $requestData->title,
+            'Title Description' => $requestData->desc,
+            'Age Range'         => $requestData->age,
+            'Gender'            => $requestData->gender,
+            'Status'            => $requestData->status,
+            'Empathetic'        => $requestData->empathetic,
+            'Review Id'         => $type === 'insert' ? $lastReviewId[0]->id : $requestData->editRowId,
+            'Created At'        => date('d M,Y h:i:s'),
+        ];
+
+        if ($refreshToken) {
+            $apiEndpoint = 'https://analyticsapi.zoho.com/api/dschwam@wellqor.com/Developer_space/Patient Review Data?ZOHO_ACTION=ADDROW&ZOHO_OUTPUT_FORMAT=JSON&ZOHO_ERROR_FORMAT=JSON&ZOHO_API_VERSION=1.0';
+            $authorizationHeader['Authorization'] = 'Zoho-oauthtoken ' . $refreshToken->access_token;
+            $apiResponse = HttpHelper::post($apiEndpoint, $data, $authorizationHeader);
+        }
+        return $apiResponse;
+    }
+
+    //When clinician patient review is updated in Zoho People plugin, the review also updated in the Zoho Analytics (Patient Review Data) table via API
+
+    public function updateReviewIntoAnalytics($requestData)
+    {
+        $data = [
+            'Employee Id'       => $requestData->employee_id,
+            'Star'              => $requestData->star,
+            'First Name'        => $requestData->fname,
+            'Last Name'         => $requestData->lname,
+            'Phrases'           => implode(', ', $requestData->phrases),
+            'Title'             => $requestData->title,
+            'Title Description' => $requestData->desc,
+            'Age Range'         => $requestData->age,
+            'Gender'            => $requestData->gender,
+            'Status'            => $requestData->status,
+            'Empathetic'        => $requestData->empathetic,
+            'Updated At'        => date('d M,Y h:i:s'),
+        ];
+
+        $criteria = "(\"Review Id\"='$requestData->editRowId')";
+        $refreshToken = $this->analyticsGenerateToken();
+        if ($refreshToken) {
+            $apiEndpoint = "https://analyticsapi.zoho.com/api/dschwam@wellqor.com/Developer_space/Patient Review Data?ZOHO_ACTION=UPDATE&ZOHO_OUTPUT_FORMAT=JSON&ZOHO_ERROR_FORMAT=JSON&ZOHO_API_VERSION=1.0&ZOHO_CRITERIA={$criteria}";
+            $authorizationHeader['Authorization'] = 'Zoho-oauthtoken ' . $refreshToken->access_token;
+            $apiResponse = HttpHelper::post($apiEndpoint, $data, $authorizationHeader);
+        }
+        return $apiResponse;
+    }
+
+
+
+    //Save Zoho authorization details to the database
+    public function integrationSave($data)
     {
         $result = static::$_integrationModel->insert(
             [
@@ -146,8 +201,8 @@ final class Handler
     }
 
 
-
-    public function integration_update($data)
+    //Update Zoho authorization details
+    public function integrationUpdate($data)
     {
         $result = static::$_integrationModel->update(
             [
@@ -163,7 +218,8 @@ final class Handler
         wp_send_json_success($result, 200);
     }
 
-    public function get_auth_details()
+    //Fetch Zoho authorization details from the database
+    public function getAuthDetails()
     {
         $auth_details = static::$_integrationModel->get();
         if (is_wp_error($auth_details)) {
@@ -172,23 +228,15 @@ final class Handler
         return $auth_details[0];
     }
 
-    public function get_employee_data()
-    {
-
-        $employee_data = static::$_zohoPeoplesEmployeesModel->get('*', [], null, null, 'id', 'DESC');
-        if (is_wp_error($employee_data)) {
-            wp_send_json_error('Failed to fetch');
-        }
-        wp_send_json_success($employee_data, 200);
-    }
-
+    //Update (clinician profile link and review link) fields in Zoho People from Zoho People plugin via API
     public function updateZohoPeoplesFields($recordId, $profileUrl, $reviewUrl)
     {
         $requestData = self::$data;
         $isTokenExpired = false;
         $_apiDomain = "https://people.zoho.com/people/api/forms/json/employee/updateRecord?inputData={Profile_URL:'$profileUrl', Review_URL:'$reviewUrl'}&recordId=$recordId";
+
         if ((intval($requestData->tokenDetails->generates_on) + (55 * 60)) < time()) {
-            $refreshedToken = $this::_refreshAccessToken($requestData);
+            $refreshedToken = $this::refreshAccessToken($requestData);
             if ($refreshedToken) {
                 $isTokenExpired = true;
                 $requestData->tokenDetails = $refreshedToken;
@@ -200,20 +248,24 @@ final class Handler
             }
         }
         $_defaultHeader['Authorization'] = "Zoho-oauthtoken {$requestData->tokenDetails->access_token}";
+
         if ($isTokenExpired && !empty($requestData->integrationId)) {
-            $this::_saveRefreshedToken($requestData->integrationId, $requestData);
+            $this::saveRefreshedToken($requestData->integrationId, $requestData);
         }
+
         HttpHelper::get($_apiDomain, [], $_defaultHeader);
     }
 
-    public function get_peoples_forms()
+    //Fetch Clinician information from Zoho People
+    public function getPeoplesForms()
     {
         $upload_dir = wp_upload_dir();
         global $wpdb;
         $requestData = self::$data;
         $isTokenExpired = false;
+
         if ((intval($requestData->tokenDetails->generates_on) + (55 * 60)) < time()) {
-            $refreshedToken = $this::_refreshAccessToken($requestData);
+            $refreshedToken = $this::refreshAccessToken($requestData);
             if ($refreshedToken) {
                 $isTokenExpired = true;
                 $requestData->tokenDetails = $refreshedToken;
@@ -227,7 +279,7 @@ final class Handler
 
         $_defaultHeader['Authorization'] = "Zoho-oauthtoken {$requestData->tokenDetails->access_token}";
         if ($isTokenExpired && !empty($requestData->integrationId)) {
-            $this::_saveRefreshedToken($requestData->integrationId, $requestData);
+            $this::saveRefreshedToken($requestData->integrationId, $requestData);
         }
 
         $apiResponse = [] ;
@@ -254,6 +306,7 @@ final class Handler
 
             $employee_details = static::$_zohoPeoplesEmployeesModel->get();
             $allEmployesId = [];
+
             if (count($totalEmployees)) {
                 if (is_array($employee_details) && count($employee_details)) {
                     foreach ($employee_details as $employee) {
@@ -295,6 +348,7 @@ final class Handler
                                 'licensed_in'                               => $employee[0]->Licensed_In,
                                 'allow_telehealth_access'                   => $employee[0]->Allow_Telehealth_Access,
                             ];
+
                             if (is_array($employee_details) && count($employee_details)) {
                                 if (in_array($employee[0]->EmployeeID, $allEmployesId)) {
                                     static::$_zohoPeoplesEmployeesModel->update(
@@ -305,7 +359,7 @@ final class Handler
                                     $queryId = $employee[0]->EmployeeID;
 
                                     $post_id = $wpdb->get_row("SELECT post_id FROM wp_bitwelzp_zoho_people_employee_info WHERE employee_id ='$queryId'");
-                                    $this::programmatically_create_post(
+                                    $this::createClinicianProfilePage(
                                         $insertData,
                                         $post_id !== null ? $post_id->post_id : '',
                                         $getAllRiviews
@@ -321,7 +375,7 @@ final class Handler
 
 
                                     $post_id = $wpdb->get_row("SELECT post_id FROM wp_bitwelzp_zoho_people_employee_info WHERE employee_id ='$queryId'");
-                                    $this::programmatically_create_post(
+                                    $this::createClinicianProfilePage(
                                         $insertData,
                                         $post_id !== null ? $post_id->post_id : '',
                                         $getAllRiviews
@@ -336,7 +390,7 @@ final class Handler
                                     $insertData
                                 );
 
-                                $this::programmatically_create_post(
+                                $this::createClinicianProfilePage(
                                     $insertData,
                                     '',
                                     $getAllRiviews
@@ -347,7 +401,7 @@ final class Handler
                 };
             }
 
-            $all_employees = $this->get_all_employees();
+            $all_employees = $this->getAllEmployees();
             wp_send_json_success($all_employees, 200);
 
         } catch (\Throwable $e) {
@@ -359,97 +413,63 @@ final class Handler
 
     }
 
+    //Check Whether clinician status is active or not in Zoho People
     public static function isEmployeeActive($data)
     {
         if ($data->Employeestatus === 'Active' && ($data->Designation === 'Clinical Therapist' || $data->Designation === 'Clinical Director') && $data->Allow_Telehealth_Access === 'true') {
             return true;
         }
+
         return false;
     }
 
     public static function getClinicianFormData($employeeData, $_defaultHeader)
     {
-        $clinicialFormParams = [
+        $clinicianFormParams = [
             'searchField'   => 'Clinician_Name',
             'searchOperator' => 'Contains',
             'searchText'    => $employeeData[0]->EmployeeID
         ];
-        $clinicialFormResponse = HttpHelper::get('https://people.zoho.com/people/api/forms/Clinician_Profile/getRecords?searchParams=' . json_encode($clinicialFormParams) . '', [], $_defaultHeader);
+        $clinicianFormResponse = HttpHelper::get('https://people.zoho.com/people/api/forms/Clinician_Profile/getRecords?searchParams=' . json_encode($clinicianFormParams) . '', [], $_defaultHeader);
         $arraValues = '';
-        if (isset($clinicialFormResponse->response->result)) {
-            $responseData = (array) $clinicialFormResponse->response->result[0];
+
+        if (isset($clinicianFormResponse->response->result)) {
+            $responseData = (array) $clinicianFormResponse->response->result[0];
             $arraValues = array_values($responseData)[0][0];
         }
+
         return $arraValues;
     }
 
-    protected static function _refreshAccessToken($apiData)
-    {
-        if (
-            empty($apiData->dataCenter)
-            || empty($apiData->clientId)
-            || empty($apiData->clientSecret)
-            || empty($apiData->tokenDetails)
-        ) {
-            return false;
-        }
-        $tokenDetails = $apiData->tokenDetails;
 
-        $dataCenter = $apiData->dataCenter;
-        $apiEndpoint = "https://accounts.zoho.{$dataCenter}/oauth/v2/token";
-        $requestParams = [
-            'grant_type'    => 'refresh_token',
-            'client_id'     => $apiData->clientId,
-            'client_secret' => $apiData->clientSecret,
-            'refresh_token' => $tokenDetails->refresh_token,
-        ];
-
-        $apiResponse = HttpHelper::post($apiEndpoint, $requestParams);
-        if (is_wp_error($apiResponse) || !empty($apiResponse->error)) {
-            return false;
-        }
-        $tokenDetails->generates_on = \time();
-        $tokenDetails->access_token = $apiResponse->access_token;
-        return $tokenDetails;
-    }
-
-    protected static function _saveRefreshedToken($integrationID, $data)
-    {
-        if (empty($integrationID)) {
-            return;
-        }
-        $result = static::$_integrationModel->update(
-            [
-                'auth_details' => wp_json_encode($data)
-            ],
-            [
-                'id' => $integrationID
-            ]
-        );
-        return $result;
-    }
-
-    public function get_all_employees()
+    //Fetch all clinicans data from the database to show on the frontend
+    public function getAllEmployees()
     {
 
         $all_employees = static::$_zohoPeoplesEmployeesModel->get('*', ['employee_status' => 'Active', 'designation' => ['Clinical Therapist', 'Clinical Director'], 'allow_telehealth_access' => 'true'], null, null, 'id', 'DESC');
+
         if (is_wp_error($all_employees)) {
             return  [];
         }
+
         return $all_employees;
     }
 
-    public function delete_employees($Ids)
+    //Delete clinician permanently from the database
+    public function deleteEmployees($Ids)
     {
         global $wpdb;
         $result = '';
+
         foreach ($Ids as $id) {
             $result = $wpdb->delete($wpdb->prefix . 'bitwelzp_zoho_people_employee_info', ['id' => $id]);
         }
+
         wp_send_json_success($result);
     }
 
-    public function review_data_save($request)
+    //Save patient review data in the database
+    public function saveReviews($request)
     {
         $result = static::$_formDetailsModel->insert(
             [
@@ -459,14 +479,17 @@ final class Handler
         );
 
         $this->insertReviewIntoAnalytics($request, 'insert');
-        $this->get_peoples_forms();
+        $this->getPeoplesForms();
+
         if (is_wp_error($result)) {
             wp_send_json_error('Data Insertion Failed');
         }
+
         wp_send_json_success($result, 200);
     }
 
-    public function delete_form_details($Ids)
+    //Delete patient review permanently from the database
+    public function deleteReviews($Ids)
     {
         global $wpdb;
         $result = '';
@@ -477,10 +500,12 @@ final class Handler
         wp_send_json_success($result);
     }
 
-    public function review_approve($id)
+    //Approve pending patient review request
+    public function approveReview($id)
     {
         $get_form_details = static::$_formDetailsModel->get('*', ['id' => $id]);
         $new_form_details = json_decode($get_form_details[0]->form_details);
+
         if ($new_form_details->status === 'pending') {
             $new_form_details->status = 'approved';
         } else {
@@ -500,15 +525,18 @@ final class Handler
         if (is_wp_error($result)) {
             wp_send_json_error('Updating Failed');
         }
+
         if (count($get_form_details)) {
             $new_form_details->editRowId = $id;
             $this->updateReviewIntoAnalytics($new_form_details);
         }
+
         $get_updated_form_details = static::$_formDetailsModel->get('*', [], null, null, 'id', 'DESC');
         wp_send_json_success($get_updated_form_details, 200);
     }
 
-    public function review_update($requestData)
+    //Update patient review
+    public function updateReview($requestData)
     {
         $employee_data_by_id = static::$_zohoPeoplesEmployeesModel->get('*', ['employee_id' => $requestData->inputData->employee_id], null, null, 'id', 'DESC');
         $employee_name = '';
@@ -516,6 +544,7 @@ final class Handler
         if (!is_wp_error($employee_data_by_id)) {
             $employee_name = $employee_data_by_id[0]->fname . ' ' . $employee_data_by_id[0]->lname;
         }
+
         $requestData->inputData->employee_name = $employee_name;
 
         $result = static::$_formDetailsModel->update(
@@ -544,6 +573,7 @@ final class Handler
         }
     }
 
+    //Fetch review from the database to show on the frontend
     public function get_form_details()
     {
         $all_reviews = static::$_formDetailsModel->get('*', [], null, null, 'id', 'DESC');
@@ -553,7 +583,8 @@ final class Handler
         return $all_reviews;
     }
 
-    public function page_active($id)
+    //Handle clinician profile page status
+    public function handlePageStatus($id)
     {
         global $wpdb;
         $employee_data_by_id = static::$_zohoPeoplesEmployeesModel->get('*', ['id' => $id], null, null, 'id', 'DESC');
@@ -577,14 +608,17 @@ final class Handler
             ['page_status' => $status],
             ['id' => $id]
         );
+
         if (is_wp_error($result)) {
             wp_send_json_error('Updating Failed');
         }
+
         $employee_data = static::$_zohoPeoplesEmployeesModel->get('*', ['employee_status' => 'Active', 'designation' => ['Clinical Therapist', 'Clinical Director'], 'allow_telehealth_access' => 'true'], null, null, 'id', 'DESC');
         wp_send_json_success($employee_data, 200);
     }
 
-    public static function programmatically_create_post($data, $id, $getAllReviews)
+    //Create & update clinican profile page
+    public static function createClinicianProfilePage($data, $id, $getAllReviews)
     {
 
         global $wpdb;
@@ -627,6 +661,7 @@ final class Handler
         $reviewsData = [];
         $phrasesArray = [];
         $totalStars = 0;
+
         foreach ($getAllReviews as $review) {
             $form_details = json_decode($review->form_details);
             if ($employee_id == $form_details->employee_id && $form_details->status == 'approved') {
@@ -637,12 +672,14 @@ final class Handler
                 $totalStars = $totalStars + $form_details->star;
             }
         }
+
         $arr_freq = array_count_values($phrasesArray);
         arsort($arr_freq);
         $show_phrases = array_keys($arr_freq);
         $totalVerifiedReviews = count($reviewsData);
 
         $page_status = $wpdb->get_row("SELECT page_status FROM wp_bitwelzp_zoho_people_employee_info WHERE employee_id ='$employee_id'");
+
         if ($page_status == null) {
             static::$_zohoPeoplesEmployeesModel->update(
                 ['page_status' => 'active'],
@@ -651,11 +688,13 @@ final class Handler
         }
 
         $showAllReviewsBtn = '';
+
         if($totalVerifiedReviews > 0) {
             $showAllReviewsBtn = "   <div class='all-reviews' id='show-all-reviews-btn'>
 <a href='https://wellqor.com/show-all-reviews?employee_id={$employee_id}' >Read More</a>
                      </div>";
         }
+
         //Style in Code Snippets Footer
         $content = <<<HTML
           <div class="employee-details">
@@ -847,20 +886,13 @@ HTML;
                     'post_content'   => $content,
                 ]
             );
-            $term_id = $wpdb->get_row("SELECT term_id FROM wp_terms WHERE name ='Active Profile Page'");
-            if ($term_id) {
-                $exist_object = $wpdb->get_row("SELECT * FROM wp_term_relationships where object_id=$post_id");
-                if ($exist_object) {
-                    $wpdb->update('wp_term_relationships', ['term_taxonomy_id' => $term_id->term_id], ['object_id' => $post_id]);
-                } else {
-                    $wpdb->insert('wp_term_relationships', ['term_taxonomy_id' => $term_id->term_id, 'object_id' => $post_id]);
-                }
-            }
+
             $data['post_id'] = $post_id;
             static::$_zohoPeoplesEmployeesModel->update(
                 $data,
                 ['employee_id' => $employee_id]
             );
+
         } else {
             wp_update_post(
                 [
@@ -875,16 +907,6 @@ HTML;
                     'post_content'   => $content,
                 ]
             );
-
-            $term_id = $wpdb->get_row("SELECT term_id FROM wp_terms WHERE name ='Active Profile Page'");
-            if ($term_id) {
-                $exist_object = $wpdb->get_row("SELECT * FROM wp_term_relationships where object_id=$id");
-                if ($exist_object) {
-                    $wpdb->update('wp_term_relationships', ['term_taxonomy_id' => $term_id->term_id], ['object_id' => $id]);
-                } else {
-                    $wpdb->insert('wp_term_relationships', ['term_taxonomy_id' => $term_id->term_id, 'object_id' => $id]);
-                }
-            }
         }
     }
 }

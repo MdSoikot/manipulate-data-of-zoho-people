@@ -100,9 +100,9 @@ class Admin_Bar
         );
 
         $all_people = [];
-        $auth_details = (new Handler())->get_auth_details();
-        $get_all_employees = (new Handler())->get_all_employees();
-        $get_form_details=(new Handler())->get_form_details();
+        $auth_details = (new Handler())->getAuthDetails();
+        $get_all_employees = (new Handler())->getAllEmployees();
+        $get_form_details = (new Handler())->get_form_details();
         $bitwelzp = apply_filters(
             'bitwelzp_localized_script',
             array(
@@ -116,7 +116,7 @@ class Admin_Bar
                 'timeFormat'  => get_option('time_format'),
                 'timeZone'  => DateTimeHelper::wp_timezone_string(),
                 'integration_details' => $auth_details,
-                'auth_details' => count((array)$auth_details)>0 ?$auth_details->auth_details : '',
+                'auth_details' => count((array) $auth_details) > 0 ? $auth_details->auth_details : '',
                 'all_employees' => $get_all_employees,
                 'reviewsDetails' => $get_form_details,
                 'redirect' => get_rest_url() . 'bitwelzp/redirect',

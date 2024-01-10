@@ -32,6 +32,6 @@ class AdminHooks
         if (!wp_next_scheduled('cronDailyEvent')) {
             wp_schedule_event(time(), 'daily', 'cronDailyEvent');
         }
-        add_action('cronDailyEvent', [Handler::class, 'get_peoples_forms']);
+        add_action('cronDailyEvent', [Handler::class, 'getPeoplesForms']);
     }
 }
