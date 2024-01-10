@@ -259,8 +259,8 @@ final class Handler
     //Fetch Clinician information from Zoho People
     public function getPeoplesForms()
     {
-        $upload_dir = wp_upload_dir();
         global $wpdb;
+        $upload_dir = wp_upload_dir();
         $requestData = self::$data;
         $isTokenExpired = false;
 
@@ -371,15 +371,16 @@ final class Handler
                                     static::$_zohoPeoplesEmployeesModel->insert(
                                         $insertData
                                     );
+
                                     $queryId = $employee[0]->EmployeeID;
-
-
                                     $post_id = $wpdb->get_row("SELECT post_id FROM wp_bitwelzp_zoho_people_employee_info WHERE employee_id ='$queryId'");
+
                                     $this::createClinicianProfilePage(
                                         $insertData,
                                         $post_id !== null ? $post_id->post_id : '',
                                         $getAllRiviews
                                     );
+
                                     if ($employee[0]->Profile_URL === '' || $employee[0]->Review_URL === '') {
                                         $this->updateZohoPeoplesFields($recordId, $profileUrl, $reviewUrl);
                                     }
@@ -592,16 +593,8 @@ final class Handler
 
         if ($employee_data_by_id[0]->page_status === 'inactive' || $employee_data_by_id[0]->page_status === null) {
             $status = 'active';
-            $term_id = $wpdb->get_row("SELECT term_id FROM wp_terms WHERE name ='Active Profile Page'");
-            if ($term_id) {
-                $wpdb->update('wp_term_relationships', ['term_taxonomy_id' => $term_id->term_id], ['object_id' => $employee_data_by_id[0]->post_id]);
-            }
         } else {
             $status = 'inactive';
-            $term_id = $wpdb->get_row("SELECT term_id FROM wp_terms WHERE name ='InActive Profile Page'");
-            if ($term_id) {
-                $wpdb->update('wp_term_relationships', ['term_taxonomy_id' => $term_id->term_id], ['object_id' => $employee_data_by_id[0]->post_id]);
-            }
         }
 
         $result = static::$_zohoPeoplesEmployeesModel->update(
