@@ -133,6 +133,7 @@ final class Handler
         $refreshToken = $this->analyticsGenerateToken();
         $data = [
             'Employee Id'       => $requestData->employee_id,
+            'Zoho Id'       => $requestData->zoho_id,
             'Star'              => $requestData->star,
             'First Name'        => $requestData->fname,
             'Last Name'         => $requestData->lname,
@@ -161,6 +162,7 @@ final class Handler
     {
         $data = [
             'Employee Id'       => $requestData->employee_id,
+            'Zoho Id'       => $requestData->zoho_id,
             'Star'              => $requestData->star,
             'First Name'        => $requestData->fname,
             'Last Name'         => $requestData->lname,
@@ -183,8 +185,6 @@ final class Handler
         }
         return $apiResponse;
     }
-
-
 
     //Save Zoho authorization details to the database
     public function integrationSave($data)
@@ -284,6 +284,7 @@ final class Handler
 
         $apiResponse = [] ;
         $totalEmployees = [];
+
         try {
             while (!isset($apiResponse->response->errors)) {
                 $sIndex = count($totalEmployees) > 0 ? count($totalEmployees) + 1 : 1;
@@ -305,12 +306,12 @@ final class Handler
             $reviewUrl = '';
 
             $employee_details = static::$_zohoPeoplesEmployeesModel->get();
-            $allEmployesId = [];
+            $cliniciansZohoIds = [];
 
             if (count($totalEmployees)) {
                 if (is_array($employee_details) && count($employee_details)) {
                     foreach ($employee_details as $employee) {
-                        array_push($allEmployesId, $employee->employee_id);
+                        array_push($cliniciansZohoIds, $employee->zoho_id);
                     }
                 }
 
@@ -320,7 +321,7 @@ final class Handler
                         if ($this::isEmployeeActive($employee[0])) {
                             $recordId = $employee[0]->Zoho_ID;
                             $profileUrl = 'https://wellqor.com/' . $employee[0]->fname[0] . '' . $employee[0]->lname . '';
-                            $reviewUrl = 'https://wellqor.com/therapist-review-form/?employee_id=' . $employee[0]->employee_id . '';
+                            $reviewUrl = 'https://wellqor.com/therapist-review-form/?zoho_id=' . $employee[0]->zoho_id . '';
                             $headshot_url = $employee[0]->Headshot_downloadUrl;
                             $headshot_response = HttpHelper::get($headshot_url, [], $_defaultHeader);
                             $fileName = $employee[0]->Headshot;
@@ -329,7 +330,7 @@ final class Handler
                             $arraValues = static::getClinicianFormData($employee, $_defaultHeader);
                             $insertData = [
                                 'email_Id'                                  => $employee[0]->EmailID,
-                                'zoho_Id'                                   => $employee[0]->Zoho_ID,
+                                'zoho_id'                                   => $employee[0]->Zoho_ID,
                                 'employee_id'                               => $employee[0]->EmployeeID,
                                 'headshot_download_url'                     => $fileName,
                                 'employee_status'                           => $employee[0]->Employeestatus,
@@ -350,15 +351,15 @@ final class Handler
                             ];
 
                             if (is_array($employee_details) && count($employee_details)) {
-                                if (in_array($employee[0]->EmployeeID, $allEmployesId)) {
+                                if (in_array($employee[0]->Zoho_ID, $cliniciansZohoIds)) {
                                     static::$_zohoPeoplesEmployeesModel->update(
                                         $insertData,
-                                        ['employee_id' => $employee[0]->EmployeeID]
+                                        ['zoho_id' => $employee[0]->Zoho_ID]
                                     );
 
-                                    $queryId = $employee[0]->EmployeeID;
+                                    $queryId = $employee[0]->Zoho_ID;
 
-                                    $post_id = $wpdb->get_row("SELECT post_id FROM wp_bitwelzp_zoho_people_employee_info WHERE employee_id ='$queryId'");
+                                    $post_id = $wpdb->get_row("SELECT post_id FROM wp_bitwelzp_zoho_people_employee_info WHERE zoho_id ='$queryId'");
                                     $this::createClinicianProfilePage(
                                         $insertData,
                                         $post_id !== null ? $post_id->post_id : '',
@@ -372,8 +373,8 @@ final class Handler
                                         $insertData
                                     );
 
-                                    $queryId = $employee[0]->EmployeeID;
-                                    $post_id = $wpdb->get_row("SELECT post_id FROM wp_bitwelzp_zoho_people_employee_info WHERE employee_id ='$queryId'");
+                                    $queryId = $employee[0]->Zoho_ID;
+                                    $post_id = $wpdb->get_row("SELECT post_id FROM wp_bitwelzp_zoho_people_employee_info WHERE zoho_id ='$queryId'");
 
                                     $this::createClinicianProfilePage(
                                         $insertData,
@@ -445,7 +446,6 @@ final class Handler
 
         return $arraValues;
     }
-
 
     //Fetch all clinicans data from the database to show on the frontend
     public function getAllEmployees()
@@ -543,7 +543,7 @@ final class Handler
     //Update patient review
     public function updateReview($requestData)
     {
-        $employee_data_by_id = static::$_zohoPeoplesEmployeesModel->get('*', ['employee_id' => $requestData->inputData->employee_id], null, null, 'id', 'DESC');
+        $employee_data_by_id = static::$_zohoPeoplesEmployeesModel->get('*', ['zoho_id' => $requestData->inputData->zoho_id], null, null, 'id', 'DESC');
         $employee_name = '';
 
         if (!is_wp_error($employee_data_by_id)) {
@@ -619,7 +619,7 @@ final class Handler
 
         global $wpdb;
         $upload_dir = wp_upload_dir();
-        $employee_id = $data['employee_id'];
+        $zoho_id = $data['zoho_id'];
         $fname = $data['fname'];
         $lname = $data['lname'];
         $preferred_name_nickname = $data['preferred_name_nickname'];
@@ -660,7 +660,7 @@ final class Handler
 
         foreach ($getAllReviews as $review) {
             $form_details = json_decode($review->form_details);
-            if ($employee_id == $form_details->employee_id && $form_details->status == 'approved') {
+            if ($zoho_id == $form_details->zoho_id && $form_details->status == 'approved') {
                 $form_details->created_at = $review->created_at;
                 array_push($reviewsData, $form_details);
                 $tempArray = $phrasesArray;
@@ -674,12 +674,12 @@ final class Handler
         $show_phrases = array_keys($arr_freq);
         $totalVerifiedReviews = count($reviewsData);
 
-        $page_status = $wpdb->get_row("SELECT page_status FROM wp_bitwelzp_zoho_people_employee_info WHERE employee_id ='$employee_id'");
+        $page_status = $wpdb->get_row("SELECT page_status FROM wp_bitwelzp_zoho_people_employee_info WHERE zoho_id ='$zoho_id'");
 
         if ($page_status == null) {
             static::$_zohoPeoplesEmployeesModel->update(
                 ['page_status' => 'active'],
-                ['employee_id' => $employee_id]
+                ['zoho_id' => $zoho_id]
             );
         }
 
@@ -687,7 +687,7 @@ final class Handler
 
         if($totalVerifiedReviews > 0) {
             $showAllReviewsBtn = "   <div class='all-reviews' id='show-all-reviews-btn'>
-<a href='https://wellqor.com/show-all-reviews?employee_id={$employee_id}' >Read More</a>
+<a href='https://wellqor.com/show-all-reviews?zoho_id={$zoho_id}' >Read More</a>
                      </div>";
         }
 
@@ -807,7 +807,7 @@ final class Handler
 <h4><span>Featured Reviews</span></h4>
 {$map($reviewsData, function ($reviews) {
             return "
-           <a href='https://wellqor.com/show-all-reviews?employee_id={$reviews->employee_id}'>
+           <a href='https://wellqor.com/show-all-reviews?zoho_id={$reviews->zoho_id}'>
                              <div class='reviews-list'>
                                 <div class='reviews-accordion'> 
                                     <div class='reviewer-info'>
@@ -886,7 +886,7 @@ HTML;
             $data['post_id'] = $post_id;
             static::$_zohoPeoplesEmployeesModel->update(
                 $data,
-                ['employee_id' => $employee_id]
+                ['zoho_id' => $zoho_id]
             );
 
         } else {

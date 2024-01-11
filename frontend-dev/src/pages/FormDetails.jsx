@@ -15,16 +15,16 @@ function FormDetails({ newFormId }) {
     const [snack, setSnackbar] = useState({ show: false })
     const [tableData, setTableData] = useState(bitwelzp.reviewsDetails)
     const [showEditModal, setShowEditModal] = useState(false)
-    const [integConfig, setIntegConfig] = useRecoilState($integrationDetails);
+    const [integConfig, setIntegConfig] = useRecoilState($integrationDetails)
     const [rowId, setRowId] = useState()
 
     const [cols, setCols] = useState([
-        { width: 150, minWidth: 20, Header: __('Employee Id', 'bitwelzp'), accessor: 'employee_id', Cell: e => JSON.parse(e.row.original.form_details)?.employee_id },
-        { width: 180, minWidth: 20, Header: __('Employee Name', 'bitwelzp'), accessor: 'employee_name', Cell: e => JSON.parse(e.row.original.form_details)?.employee_name ?JSON.parse(e.row.original.form_details)?.employee_name:'' },
+        { width: 150, minWidth: 20, Header: __('Zoho ID', 'bitwelzp'), accessor: 'zoho_id', Cell: e => JSON.parse(e.row.original.form_details)?.zoho_id },
+        { width: 180, minWidth: 20, Header: __('Employee Name', 'bitwelzp'), accessor: 'employee_name', Cell: e => JSON.parse(e.row.original.form_details)?.employee_name ? JSON.parse(e.row.original.form_details)?.employee_name : '' },
         { width: 200, minWidth: 20, Header: __('First Name', 'bitwelzp'), accessor: 'fname', Cell: e => JSON.parse(e.row.original.form_details)?.fname },
         { width: 200, minWidth: 20, Header: __('Last Name', 'bitwelzp'), accessor: 'lname', Cell: e => JSON.parse(e.row.original.form_details)?.lname },
         { width: 80, minWidth: 20, Header: __('Rating', 'bitwelzp'), accessor: 'rating', Cell: e => JSON.parse(e.row.original.form_details)?.star },
-        { width: 250, minWidth: 80, Header: __('Phrases', 'bitwelzp'), accessor: 'phrases', Cell: e => JSON.parse(e.row.original.form_details)?.phrases.map(item => `${item} , `) },
+        { width: 250, minWidth: 80, Header: __('Phrases', 'bitwelzp'), accessor: 'phrases', Cell: e => JSON.parse(e.row.original.form_details)?.phrases?.length ? JSON.parse(e.row.original.form_details)?.phrases?.map(item => `${item} , `) : '' },
         { width: 250, minWidth: 100, Header: __('Title', 'bitwelzp'), accessor: 'title', Cell: e => JSON.parse(e.row.original.form_details)?.title },
         { width: 250, minWidth: 100, Header: __('Title Description', 'bitwelzp'), accessor: 'description', Cell: e => JSON.parse(e.row.original.form_details)?.desc },
         { width: 150, minWidth: 20, Header: __('Age Range', 'bitwelzp'), accessor: 'age', Cell: e => JSON.parse(e.row.original.form_details)?.age },

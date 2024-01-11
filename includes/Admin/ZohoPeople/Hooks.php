@@ -9,14 +9,14 @@ final class Hooks
 {
     private static $_zohoPeoplesEmployeesModel;
     private static $_formDetailsModel;
-    private static $_empoyeeId;
+    private static $_zohoId;
 
     public function __construct()
     {
         self::$_zohoPeoplesEmployeesModel = new ZohoPeoplesEmployeesModel();
         self::$_formDetailsModel = new FormDetailsModel();
-        if (isset($_GET['employee_id'])) {
-            self::$_empoyeeId = $_GET['employee_id'];
+        if (isset($_GET['zoho_id'])) {
+            self::$_zohoId = $_GET['zoho_id'];
         }
     }
 
@@ -46,10 +46,9 @@ final class Hooks
 
     public function showReviewForm()
     {
-        $id = static::$_empoyeeId;
-        $employeeData = static::$_zohoPeoplesEmployeesModel->get("*", array('employee_id' => $id), null, null, 'id', 'DESC');
+        $id = static::$_zohoId;
+        $employeeData = static::$_zohoPeoplesEmployeesModel->get("*", array('zoho_id' => $id), null, null, 'id', 'DESC');
         $upload_dir  = wp_upload_dir();
-
         $employee_name = $employeeData[0]->fname . '_' . $employeeData[0]->lname;
         $headshot_download_url = $employeeData[0]->headshot_download_url;
         $new_headshot_download_url = '';
@@ -697,7 +696,7 @@ input[type="checkbox"] {
 
         <div class="form-button">
           <button class="btn"
-            onclick="handleSubmit(event,<?php echo $employeeData[0]->employee_id?>,'<?php echo $employee_name?>')">Submit</button>
+            onclick="handleSubmit(event,<?php echo $employeeData[0]->zoho_id?>,'<?php echo $employee_name?>')">Submit</button>
           <button class="btn" type="reset">
             Reset
           </button>
@@ -742,7 +741,7 @@ input[type="checkbox"] {
     fname: "",
     lname: "",
     status: "pending",
-    employee_id: <?php echo$_GET['employee_id']?>
+    zoho_id: <?php echo$_GET['zoho_id']?>
   }
 
   const handleStarChange = (e) => {
@@ -792,7 +791,7 @@ input[type="checkbox"] {
         bodyOptions)
       .then(res => console.log(res))
      .catch(err=>console.log(err))
-    window.location.href = 'https://wellqor.com/thank-you-page/?employee_id=' + id
+    window.location.href = 'https://wellqor.com/thank-you-page/?zoho_id=' + id
   }
 
 </script>
@@ -805,8 +804,8 @@ input[type="checkbox"] {
 
     public function showAllReviews()
     {
-        $employee_id = static::$_empoyeeId;
-        $employeeData = static::$_zohoPeoplesEmployeesModel->get("*", array('employee_id' => $employee_id), null, null, 'id', 'DESC');
+        $zoho_id = static::$_zohoId;
+        $employeeData = static::$_zohoPeoplesEmployeesModel->get("*", array('zoho_id' => $zoho_id), null, null, 'id', 'DESC');
         $getAllReviews = static::$_formDetailsModel->get("*", [], null, null, 'id', 'DESC');
 
         $upload_dir  = wp_upload_dir();
@@ -825,7 +824,7 @@ input[type="checkbox"] {
         foreach ($getAllReviews as $review) {
             $form_details = json_decode($review->form_details);
 
-            if ($employee_id == $form_details->employee_id && $form_details->status == 'approved') {
+            if ($zoho_id == $form_details->zoho_id && $form_details->status == 'approved') {
                 $form_details->created_at = $review->created_at;
                 array_push($reviewsData, $form_details);
                 $totalStars = $totalStars + $form_details->star;
@@ -1126,7 +1125,7 @@ input[type="checkbox"] {
 
     public function thankYouPage()
     {
-        $id = static::$_empoyeeId;
+        $id = static::$_zohoId;
         ob_start(); ?>
 
 <head>
@@ -1181,7 +1180,7 @@ input[type="checkbox"] {
 </div>
 <script>
   const thankYouBack = (id) => {
-    window.location.href = 'https://wellqor.com/therapist-review-form/?employee_id=' + id
+    window.location.href = 'https://wellqor.com/therapist-review-form/?zoho_id=' + id
   }
 </script>
 
