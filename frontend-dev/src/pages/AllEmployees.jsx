@@ -19,7 +19,7 @@ function AllEmployees({ newFormId }) {
 
 
   const [cols, setCols] = useState([
-    { width: 150, minWidth: 80, Header: __('Zoho ID', 'bitwelzp'), accessor: 'zoho_id', Cell: e => e.row.original.page_status === 'active' ? <a className="btcd-tabl-lnk" href={`https://wellqor.com/${e.row.original.fname.charAt(0)}${e.row.original.lname}`} target="_blank">{e.row.original.zoho_id}</a> : e.row.original.zoho_id },
+    { width: 200, minWidth: 80, Header: __('Zoho ID', 'bitwelzp'), accessor: 'zoho_id', Cell: e => e.row.original.page_status === 'active' ? <a className="btcd-tabl-lnk" href={`https://wellqor.com/${e.row.original.fname.charAt(0)}${e.row.original.lname}`} target="_blank">{e.row.original.zoho_id}</a> : e.row.original.zoho_id },
     { width: 150, minWidth: 80, Header: __('Employee ID', 'bitwelzp'), accessor: 'employee_id', Cell: e => e.row.original.page_status === 'active' ? <a className="btcd-tabl-lnk" href={`https://wellqor.com/${e.row.original.fname.charAt(0)}${e.row.original.lname}`} target="_blank">{e.row.original.employee_id}</a> : e.row.original.employee_id },
     { width: 300, minWidth: 80, Header: __('Review Form Link', 'bitwelzp'), accessor: 'review_form_link', Cell: e => <CopyText value={`https://wellqor.com/therapist-review-form/?zoho_id=${e.row.original.zoho_id}`} setSnackbar={setSnackbar} className="cpyTxt" readOnly={true} /> },
     { width: 250, minWidth: 80, Header: __('Employee Status', 'bitwelzp'), accessor: 'employee_status', Cell: e => e.row.original.page_status === 'active' ? <a className="btcd-tabl-lnk" href={`https://wellqor.com/${e.row.original.fname.charAt(0)}${e.row.original.lname}`} target="_blank">{e.row.original.employee_status}</a> : e.row.original.employee_status },

@@ -15,11 +15,11 @@ function FormDetails({ newFormId }) {
     const [snack, setSnackbar] = useState({ show: false })
     const [tableData, setTableData] = useState(bitwelzp.reviewsDetails)
     const [showEditModal, setShowEditModal] = useState(false)
-    const [integConfig, setIntegConfig] = useRecoilState($integrationDetails)
+    const [integConfig] = useRecoilState($integrationDetails)
     const [rowId, setRowId] = useState()
 
     const [cols, setCols] = useState([
-        { width: 150, minWidth: 20, Header: __('Zoho ID', 'bitwelzp'), accessor: 'zoho_id', Cell: e => JSON.parse(e.row.original.form_details)?.zoho_id },
+        { width: 200, minWidth: 20, Header: __('Zoho ID', 'bitwelzp'), accessor: 'zoho_id', Cell: e => JSON.parse(e.row.original.form_details)?.zoho_id },
         { width: 180, minWidth: 20, Header: __('Employee Name', 'bitwelzp'), accessor: 'employee_name', Cell: e => JSON.parse(e.row.original.form_details)?.employee_name ? JSON.parse(e.row.original.form_details)?.employee_name : '' },
         { width: 200, minWidth: 20, Header: __('First Name', 'bitwelzp'), accessor: 'fname', Cell: e => JSON.parse(e.row.original.form_details)?.fname },
         { width: 200, minWidth: 20, Header: __('Last Name', 'bitwelzp'), accessor: 'lname', Cell: e => JSON.parse(e.row.original.form_details)?.lname },
@@ -36,6 +36,7 @@ function FormDetails({ newFormId }) {
 
 
     const setTableCols = useCallback(newCols => { setCols(newCols) }, [])
+    
     const handleDelete = (selectedRowIds) => {
         const Ids = []
         selectedRowIds.map(item => {
@@ -54,6 +55,7 @@ function FormDetails({ newFormId }) {
                 }
             })
     }
+
     const handleApprove = (selectedRowId) => {
         bitsFetch(selectedRowId, 'review_approve')
             .then(response => {

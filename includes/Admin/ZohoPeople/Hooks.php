@@ -79,7 +79,7 @@ final class Hooks
             width: 240px;
             height: 240px;
             top: 5%;
-            right: -3%;
+            right: 3%;
             background: url(https://wellqor.com/wp-content/uploads/2023/11/WellQor_heart.svg) 0 0 no-repeat;
             transform: rotate(349deg);
             opacity: 8%;
@@ -429,6 +429,14 @@ input[type="checkbox"] {
         opacity: 0;
     }
 }
+	  @media(min-width: 500px) {
+		 
+         .reviews-form {
+            .container {
+                margin-left:50px;
+            }
+		  }
+	  }
 
 @media(max-width: 500px) {
     #content {
@@ -857,7 +865,7 @@ input[type="checkbox"] {
                 width: 240px;
                 height: 240px;
                 top: 5%;
-                right: -3%;
+                right: 3%;
                 background: url(https://wellqor.com/wp-content/uploads/2023/11/WellQor_heart.svg) 0 0 no-repeat;
                 transform: rotate(349deg);
                 opacity: 8%;
