@@ -73,6 +73,8 @@ $bitwelzp_i18n_strings = array(
 
     'Successfully deleted' => __('Successfully deleted', 'bitwelzp'),
 
+    'Zoho ID' => __('Zoho ID', 'bitwelzp'),
+
     'Employee ID' => __('Employee ID', 'bitwelzp'),
 
     'Review Form Link' => __('Review Form Link', 'bitwelzp'),
@@ -152,8 +154,6 @@ $bitwelzp_i18n_strings = array(
     'Redirecting Home in' => __('Redirecting Home in', 'bitwelzp'),
 
     'Go Home' => __('Go Home', 'bitwelzp'),
-
-    'Employee Id' => __('Employee Id', 'bitwelzp'),
 
     'Employee Name' => __('Employee Name', 'bitwelzp'),
 
