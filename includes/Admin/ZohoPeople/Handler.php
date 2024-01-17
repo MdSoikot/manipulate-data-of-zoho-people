@@ -317,11 +317,10 @@ final class Handler
 
                 foreach ($totalEmployees as  $data) {
                     foreach ((array) $data as  $employee) {
-
                         if ($this::isEmployeeActive($employee[0])) {
                             $recordId = $employee[0]->Zoho_ID;
-                            $profileUrl = 'https://wellqor.com/' . $employee[0]->fname[0] . '' . $employee[0]->lname . '';
-                            $reviewUrl = 'https://wellqor.com/therapist-review-form/?zoho_id=' . $employee[0]->zoho_id . '';
+                            $profileUrl = 'https://wellqor.com/' . $employee[0]->FirstName . '' . $employee[0]->LastName . '';
+                            $reviewUrl = 'https://wellqor.com/therapist-review-form/?zoho_id=' . $employee[0]->Zoho_ID . '';
                             $headshot_url = $employee[0]->Headshot_downloadUrl;
                             $headshot_response = HttpHelper::get($headshot_url, [], $_defaultHeader);
                             $fileName = $employee[0]->Headshot;
@@ -350,6 +349,7 @@ final class Handler
                                 'allow_telehealth_access'                   => $employee[0]->Allow_Telehealth_Access,
                             ];
 
+
                             if (is_array($employee_details) && count($employee_details)) {
                                 if (in_array($employee[0]->Zoho_ID, $cliniciansZohoIds)) {
                                     static::$_zohoPeoplesEmployeesModel->update(
@@ -365,9 +365,10 @@ final class Handler
                                         $post_id !== null ? $post_id->post_id : '',
                                         $getAllRiviews
                                     );
-                                    if ($employee[0]->Profile_URL === '' || $employee[0]->Review_URL === '') {
-                                        $this->updateZohoPeoplesFields($recordId, $profileUrl, $reviewUrl);
-                                    }
+
+                                    // if ($employee[0]->Profile_URL === '' || $employee[0]->Review_URL === '') {
+                                    // }
+                                    $this->updateZohoPeoplesFields($recordId, $profileUrl, $reviewUrl);
                                 } else {
                                     static::$_zohoPeoplesEmployeesModel->insert(
                                         $insertData
@@ -382,9 +383,7 @@ final class Handler
                                         $getAllRiviews
                                     );
 
-                                    if ($employee[0]->Profile_URL === '' || $employee[0]->Review_URL === '') {
-                                        $this->updateZohoPeoplesFields($recordId, $profileUrl, $reviewUrl);
-                                    }
+                                    $this->updateZohoPeoplesFields($recordId, $profileUrl, $reviewUrl);
 
                                 }
                             } else {
