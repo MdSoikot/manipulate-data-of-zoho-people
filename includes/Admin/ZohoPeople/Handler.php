@@ -319,7 +319,7 @@ final class Handler
                     foreach ((array) $data as  $employee) {
                         if ($this::isEmployeeActive($employee[0])) {
                             $recordId = $employee[0]->Zoho_ID;
-                            $profileUrl = 'https://wellqor.com/' . $employee[0]->FirstName . '' . $employee[0]->LastName . '';
+                            $profileUrl = 'https://wellqor.com/' . $employee[0]->FirstName[0] . '' . $employee[0]->LastName . '';
                             $reviewUrl = 'https://wellqor.com/therapist-review-form/?zoho_id=' . $employee[0]->Zoho_ID . '';
                             $headshot_url = $employee[0]->Headshot_downloadUrl;
                             $headshot_response = HttpHelper::get($headshot_url, [], $_defaultHeader);
