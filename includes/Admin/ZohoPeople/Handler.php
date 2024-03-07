@@ -701,7 +701,7 @@ final class Handler
     </div>
     <div class="title">
         <div class="name">
-            <h2 ><span>$preferred_name_nickname</span> <span>$lname, </span><span>$medical_qualification</span></h2>
+            <h1><span>$preferred_name_nickname</span> <span>$lname, </span><span>$medical_qualification</span></h1>
         </div>
         <div class="designation">
         $clinical_title
@@ -843,7 +843,7 @@ final class Handler
                 <div class="form-info">
                     <div class="title">
 
-                        <h1>Not yet in touch with a patient liasion? Get matched with a therapist!</h1>
+                        <h3>Not yet in touch with a patient liasion? Get matched with a therapist!</h3>
                     </div>
                     <div class="contact">
 
