@@ -737,7 +737,9 @@ input[type="checkbox"] {
     var prevStars = $(this).prevAll();
     prevStars.removeClass('hovered');
   })
-
+	 
+let paramString = window.location.href.split('?')[1]
+const zoho_id = paramString.match(/\d+/g).join('')
 
   let data = {
     star: 0,
@@ -749,7 +751,7 @@ input[type="checkbox"] {
     fname: "",
     lname: "",
     status: "pending",
-    zoho_id: <?php echo$_GET['zoho_id']?>
+    zoho_id: zoho_id
   }
 
   const handleStarChange = (e) => {
@@ -815,6 +817,7 @@ input[type="checkbox"] {
         $zoho_id = static::$_zohoId;
         $employeeData = static::$_zohoPeoplesEmployeesModel->get("*", array('zoho_id' => $zoho_id), null, null, 'id', 'DESC');
         $getAllReviews = static::$_formDetailsModel->get("*", [], null, null, 'id', 'DESC');
+		
 
         $upload_dir  = wp_upload_dir();
         $headshot_download_url = $employeeData[0]->headshot_download_url;
