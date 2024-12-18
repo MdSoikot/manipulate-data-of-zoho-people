@@ -158,47 +158,7 @@ final class Handler
         return $apiResponse;
     }
 
-    public function testReviews()
-    {
 
-        $refreshToken = $this->analyticsGenerateToken();
-        $all_reviews = static::$_formDetailsModel->get('*', [], null, null, 'id');
-
-        foreach ($all_reviews as $review) {
-
-            if ($review->id > 450 && $review->id < 560) {
-
-                $form_details = json_decode($review->form_details);
-
-                $data = [
-                    'Employee Id'       => $form_details->employee_id,
-                    'Zoho Id'       =>  $form_details->zoho_id,
-                    'Star'              => $form_details->star,
-                    'First Name'        => $form_details->fname,
-                    'Last Name'         => $form_details->lname,
-                    'Phrases'           => isset($form_details->phrases) ? implode(', ', $form_details->phrases) : '',
-                    'Title'             => $form_details->title,
-                    'Title Description' => $form_details->desc,
-                    'Age Range'         => $form_details->age,
-                    'Gender'            => $form_details->gender,
-                    'Status'            => $form_details->status,
-                    'Empathetic'        => $form_details->empathetic,
-                    'Review Id'         => $review->id,
-                    'Created At'        => $review->created_at,
-                ];
-
-                if ($refreshToken) {
-
-                    $columns['columns'] = $data;
-                    $requestData = json_encode($columns);
-                    $apiEndpoint = "https://analyticsapi.zoho.com/restapi/v2/workspaces/1660248000000929001/views/1660248000012298002/rows?CONFIG=$requestData";
-                    $authorizationHeader['Authorization'] = 'Zoho-oauthtoken ' . $refreshToken->access_token;
-                    $authorizationHeader['ZANALYTICS-ORGID'] = '663268259';
-                    $apiResponse = HttpHelper::post($apiEndpoint, null, $authorizationHeader);
-                }
-            }
-        }
-    }
 
     //When clinician patient review is updated in Zoho People plugin, the review also updated in the Zoho Analytics (Patient Review Data) table via API
 
@@ -306,6 +266,7 @@ final class Handler
     //Fetch Clinician information from Zoho People
     public function getPeoplesForms()
     {
+
         global $wpdb;
         $upload_dir = wp_upload_dir();
         $requestData = self::$data;
@@ -586,7 +547,6 @@ final class Handler
     public function updateReview($requestData)
     {
         $employee_data_by_id = static::$_zohoPeoplesEmployeesModel->get('*', ['zoho_id' => $requestData->inputData->zoho_id], null, null, 'id', 'DESC');
-
         $employee_name = '';
 
         if (!is_wp_error($employee_data_by_id)) {
@@ -594,7 +554,6 @@ final class Handler
         }
 
         $requestData->inputData->employee_name = $employee_name;
-
         $result = static::$_formDetailsModel->update(
             [
                 'form_details' => wp_json_encode($requestData->inputData),
@@ -607,10 +566,17 @@ final class Handler
         );
 
 
-
         if (is_wp_error($result)) {
             wp_send_json_error('Updating Failed');
         } else {
+            $form_details = static::$_formDetailsModel->get('*', [], null, null, 'id', 'DESC');
+            $requestData->inputData->editRowId = $requestData->editRowId;
+            $updateReview = $this->updateReviewIntoAnalytics($requestData->inputData);
+
+            if (isset($updateReview->status) && $updateReview->status !== 'success') {
+                $this->insertReviewIntoAnalytics($requestData->inputData, 'update');
+            }
+
             wp_send_json_success($form_details, 200);
         }
     }
