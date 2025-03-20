@@ -13,11 +13,11 @@ $bitwelzp_i18n_strings = array(
 
     'Settings' => __('Settings', 'bitwelzp'),
 
+    'Edit' => __('Edit', 'bitwelzp'),
+
     'Data Updated Successfully' => __('Data Updated Successfully', 'bitwelzp'),
 
     'Updating Failed' => __('Updating Failed', 'bitwelzp'),
-
-    'Edit' => __('Edit', 'bitwelzp'),
 
     'Cancel' => __('Cancel', 'bitwelzp'),
 
@@ -155,6 +155,10 @@ $bitwelzp_i18n_strings = array(
 
     'Go Home' => __('Go Home', 'bitwelzp'),
 
+    'Status' => __('Status', 'bitwelzp'),
+
+    'Created At' => __('Created At', 'bitwelzp'),
+
     'Employee Name' => __('Employee Name', 'bitwelzp'),
 
     'Rating' => __('Rating', 'bitwelzp'),
@@ -168,10 +172,6 @@ $bitwelzp_i18n_strings = array(
     'Age Range' => __('Age Range', 'bitwelzp'),
 
     'Gender' => __('Gender', 'bitwelzp'),
-
-    'Status' => __('Status', 'bitwelzp'),
-
-    'Created At' => __('Created At', 'bitwelzp'),
 
     'Failed to toggle' => __('Failed to toggle', 'bitwelzp'),
 

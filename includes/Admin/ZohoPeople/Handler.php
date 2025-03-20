@@ -159,7 +159,6 @@ final class Handler
     }
 
 
-
     //When clinician patient review is updated in Zoho People plugin, the review also updated in the Zoho Analytics (Patient Review Data) table via API
 
     public function updateReviewIntoAnalytics($requestData)
@@ -327,7 +326,7 @@ final class Handler
                     foreach ((array) $data as  $employee) {
                         if ($this::isEmployeeActive($employee[0])) {
                             $recordId = $employee[0]->Zoho_ID;
-                            $profileUrl = 'https://wellqor.com/' . $employee[0]->FirstName[0] . '' . $employee[0]->LastName . '';
+                            $profileUrl = 'https://wellqor.com/' . $employee[0]->FirstName[0] . '' . str_replace(" ", "-", $employee[0]->LastName) . '';
                             $reviewUrl = 'https://wellqor.com/therapist-review-form/?zoho_id=' . $employee[0]->Zoho_ID . '';
                             $headshot_url = $employee[0]->Headshot_downloadUrl;
                             $headshot_response = HttpHelper::get($headshot_url, [], $_defaultHeader);
@@ -374,8 +373,6 @@ final class Handler
                                         $getAllRiviews
                                     );
 
-                                    // if ($employee[0]->Profile_URL === '' || $employee[0]->Review_URL === '') {
-                                    // }
                                     $this->updateZohoPeoplesFields($recordId, $profileUrl, $reviewUrl);
                                 } else {
                                     static::$_zohoPeoplesEmployeesModel->insert(
@@ -859,33 +856,53 @@ final class Handler
 </div>
 </div>
 
-     <div class="patient-form">
-                <div class="form-info">
-                    <div class="title">
+      <div class="clinical-profile-get-started">
+      <h2>Let’s get started!</h2>
+      <div class="clinical-profile-get-started-content">
+        <div class="clinical-profile-get-started-card">
+          <img
+            src="https://wellqor.com/wp-content/uploads/2024/11/Group-18141.svg"
+            alt="Wellqor get started heart"
+          />
+          <div class="clinical-profile-title">
+            <h3>Tell us about you!</h3>
+          </div>
+          <div class="clinical-profile-get-started-desc">
+            <span>We’ll send you therapist profiles, including their clinical experience, approach, and patient reviews.</span>
+          </div>
+        </div>
 
-                        <h3>Not yet in touch with a patient liasion? Get matched with a therapist!</h3>
-                    </div>
-                    <div class="contact">
+        <div class="clinical-profile-get-started-card">
+          <img
+            src="https://wellqor.com/wp-content/uploads/2024/11/Group-18142.svg"
+            alt="Wellqor get started heart"
+          />
+          <div class="clinical-profile-title">
+            <h3>Get options in a few hours</h3>
+          </div>
+          <div class="clinical-profile-get-started-desc">
+<p>If you prefer providing information over the phone, call (646) 687-4646.</p>
+          </div>
+        </div> 
 
-                        <h2>Tell us about you!</h2>
-                        <p>If you prefer providing information over the phone, call(646) 687-4646</p>
-                    </div>
-                    <div class="option">
-                        <h2>Get options in a few hours!</h2>
-                        <p>We'll send you therapist profiles, including their clinical experience, approach,  and patient reviews.</p>
-                    </div>
-                    <div class="pick-time">
-                        <h2>Pick your therapist & time.</h2>
-                        <p>Let us know which therapist you like and what appointment slot yout prefer.</p>
-                    </div>
+        <div class="clinical-profile-get-started-card">
+          <img
+            src="https://wellqor.com/wp-content/uploads/2024/11/Group-18143.svg"
+            alt="Wellqor get started heart"
+          />
+          <div class="clinical-profile-title">
+            <h3>Pick your therapist & time.</h3>
+          </div>
+          <div class="clinical-profile-get-started-desc">
+            <span>Let us know which therapist you like and what appointment slot you prefer.</span>
+          </div>
+        </div>
+      </div>
+      <div class="clinical-profile-get-started-form-lik">
+        <a href="https://wellqor.com/lets-get-started-form/">Get Started</a>
+      </div>
+    </div>
 
-                </div>
-                <div class="form">
-                    <iframe aria-label='2024 Get Started Form' frameborder="0"
-                        style="height:750px;width:100%;border:none;"
-                        src='https://forms.wellqor.com/wellqor/form/2024GetStartedForm/formperma/gsievJJFZAdSwOy89usPO9sBqaBQSn30XGf6mpdmlaQ'></iframe>
-                </div>
-            </div>
 			</div>
 HTML;
         if ($id === '' || $id === null) {
