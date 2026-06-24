@@ -366,7 +366,8 @@ final class Handler
 
                                     $queryId = $employee[0]->Zoho_ID;
 
-                                    $post_id = $wpdb->get_row("SELECT post_id FROM wp_bitwelzp_zoho_people_employee_info WHERE zoho_id ='$queryId'");
+                                    $employeeInfoTable = $wpdb->prefix . 'bitwelzp_zoho_people_employee_info';
+                                    $post_id = $wpdb->get_row("SELECT post_id FROM {$employeeInfoTable} WHERE zoho_id ='$queryId'");
                                     $this::createClinicianProfilePage(
                                         $insertData,
                                         $post_id !== null ? $post_id->post_id : '',
@@ -380,7 +381,7 @@ final class Handler
                                     );
 
                                     $queryId = $employee[0]->Zoho_ID;
-                                    $post_id = $wpdb->get_row("SELECT post_id FROM wp_bitwelzp_zoho_people_employee_info WHERE zoho_id ='$queryId'");
+                                    $post_id = $wpdb->get_row("SELECT post_id FROM {$wpdb->prefix}bitwelzp_zoho_people_employee_info WHERE zoho_id ='$queryId'");
 
                                     $this::createClinicianProfilePage(
                                         $insertData,
@@ -595,7 +596,7 @@ final class Handler
         $employee_data_by_id = static::$_zohoPeoplesEmployeesModel->get('*', ['id' => $id], null, null, 'id', 'DESC');
         $zoho_id = $employee_data_by_id[0]->zoho_id;
         $status = '';
-        $post_id = $wpdb->get_row("SELECT post_id FROM wp_bitwelzp_zoho_people_employee_info WHERE zoho_id ='$zoho_id'");
+        $post_id = $wpdb->get_row("SELECT post_id FROM {$wpdb->prefix}bitwelzp_zoho_people_employee_info WHERE zoho_id ='$zoho_id'");
 
 
         if ($employee_data_by_id[0]->page_status === 'inactive' || $employee_data_by_id[0]->page_status === null) {
@@ -690,7 +691,7 @@ final class Handler
         $show_phrases = array_keys($arr_freq);
         $totalVerifiedReviews = count($reviewsData);
 
-        $page_status = $wpdb->get_row("SELECT page_status FROM wp_bitwelzp_zoho_people_employee_info WHERE zoho_id ='$zoho_id'");
+        $page_status = $wpdb->get_row("SELECT page_status FROM {$wpdb->prefix}bitwelzp_zoho_people_employee_info WHERE zoho_id ='$zoho_id'");
 
         if ($page_status == null) {
             static::$_zohoPeoplesEmployeesModel->update(
