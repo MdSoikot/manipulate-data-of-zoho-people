@@ -25,7 +25,7 @@ final class Handler
         }
     }
 
-    //New access token generate for Zoho Analytics authorization
+    //Generate Zoho Analytics access token
     public function analyticsGenerateToken()
     {
         $requestParams = [
@@ -125,7 +125,7 @@ final class Handler
         wp_send_json_success($apiResponse, 200);
     }
 
-    //Clinician patient review is added to Zoho Analytics (Patient Review Data) table via API
+    //Push a patient review into Zoho Analytics (Patient Review Data)
     public function insertReviewIntoAnalytics($requestData, $type)
     {
         $lastReviewId = static::$_formDetailsModel->get('id', [], 1, null, 'id', 'DESC');
@@ -159,7 +159,7 @@ final class Handler
     }
 
 
-    //When clinician patient review is updated in Zoho People plugin, the review also updated in the Zoho Analytics (Patient Review Data) table via API
+    //Sync a plugin-side review edit into Zoho Analytics (Patient Review Data)
 
     public function updateReviewIntoAnalytics($requestData)
     {
@@ -234,7 +234,7 @@ final class Handler
         return $auth_details[0];
     }
 
-    //Update (clinician profile link and review link) fields in Zoho People from Zoho People plugin via API
+    //Update Profile_URL / Review_URL fields in Zoho People
     public function updateZohoPeoplesFields($recordId, $profileUrl, $reviewUrl)
     {
         $requestData = self::$data;
@@ -262,7 +262,7 @@ final class Handler
         HttpHelper::get($_apiDomain, [], $_defaultHeader);
     }
 
-    //AJAX entry point: run the employee sync then return the refreshed clinician list as JSON
+    //AJAX: run the sync, return the refreshed clinician list
     public function getPeoplesForms()
     {
         try {
@@ -276,8 +276,7 @@ final class Handler
         }
     }
 
-    //Fetch clinicians from Zoho People and persist them + their profile pages.
-    //Emits no HTTP/JSON response so it is safe to call from cron/queue; throws on a fetch failure.
+    //Fetch + persist clinicians and their profile pages. No JSON output (cron/queue-safe); throws on fetch failure.
     public function syncEmployees()
     {
         global $wpdb;
@@ -419,7 +418,7 @@ final class Handler
             }
     }
 
-    //Check Whether clinician status is active or not in Zoho People
+    //Is the clinician active in Zoho People
     public static function isEmployeeActive($data)
     {
         if ($data->Employeestatus === 'Active' && ($data->Designation === 'Clinical Therapist' || $data->Designation === 'Clinical Director') && $data->Allow_Telehealth_Access === 'true') {
@@ -429,12 +428,10 @@ final class Handler
         return false;
     }
 
-    //Clinician some data(Clinical_Competencies,Languages,Clinician_Profile_Treatment_Modalities,Cultural_Competencies1,Public_Bio) is fetched from another table(Clinician Profile) of Zoho People.
-    //According to the David's suggestion
+    //Enrich from the Clinician_Profile form: competencies, languages, modalities, cultural, bio
     public static function getClinicianFormData($employeeData, $_defaultHeader)
     {
-        //The employee id is exist in the clinician name of clinician profile table(e.g., (David - Giella - 1002))
-        //We fetched the data using the employee id of the clinician
+        //EmployeeID is embedded in Clinician_Name (e.g. "David - Giella - 1002"); search by it
         $clinicianFormParams = [
             'searchField'   => 'Clinician_Name',
             'searchOperator' => 'Contains',
@@ -459,7 +456,7 @@ final class Handler
             return $arraValues;
         }
 
-        //Contains search can return multiple/wrong matches for short numeric EmployeeIDs, so prefer an exact match on Clinician_Name before falling back to the search result
+        //Contains search can mis-match short numeric IDs; prefer an exact Clinician_Name match first
         foreach ($clinicianFormResponse->response->result as $resultRow) {
             $responseData = (array) $resultRow;
             $record = array_values($responseData)[0][0];
@@ -468,9 +465,7 @@ final class Handler
             }
         }
 
-        //No exact Clinician_Name match. Only trust the search result when it is unambiguous (a single row);
-        //multiple rows with no exact match means the Contains search collided, so skip enrichment rather than
-        //attach another clinician's data.
+        //No exact match: trust a lone result, but skip when multiple rows collide (avoid wrong clinician's data)
         if (count($clinicianFormResponse->response->result) === 1) {
             error_log('WELZP: no exact Clinician_Name match for EmployeeID ' . $employeeId . ', using single search result');
             $responseData = (array) $clinicianFormResponse->response->result[0];
@@ -481,14 +476,14 @@ final class Handler
         return $arraValues;
     }
 
-    //Check whether a Clinician_Profile "Clinician_Name" field (e.g. "David - Giella - 1002") belongs to the given EmployeeID
+    //Does Clinician_Name (e.g. "David - Giella - 1002") contain this EmployeeID as a part
     private static function clinicianNameMatchesEmployeeId($clinicianName, $employeeId)
     {
         $parts = array_map('trim', explode('-', $clinicianName));
         return in_array((string) $employeeId, $parts, true);
     }
 
-    //Fetch all clinicans data from the database to show on the frontend
+    //Fetch clinicians from DB for the frontend
     public function getAllEmployees()
     {
 
@@ -618,7 +613,7 @@ final class Handler
         }
     }
 
-    //Fetch review from the database to show on the frontend
+    //Fetch reviews from DB for the frontend
     public function get_form_details()
     {
         $all_reviews = static::$_formDetailsModel->get('*', [], null, null, 'id', 'DESC');
