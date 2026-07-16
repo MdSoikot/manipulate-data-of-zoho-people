@@ -455,7 +455,7 @@ final class Handler
             return $arraValues;
         }
 
-        //Contains search can return multiple/wrong matches for short numeric EmployeeIDs, so prefer an exact match on Clinician_Name before falling back to the first result
+        //Contains search can return multiple/wrong matches for short numeric EmployeeIDs, so prefer an exact match on Clinician_Name before falling back to the search result
         foreach ($clinicianFormResponse->response->result as $resultRow) {
             $responseData = (array) $resultRow;
             $record = array_values($responseData)[0][0];
@@ -464,9 +464,17 @@ final class Handler
             }
         }
 
-        error_log('WELZP: no exact Clinician_Name match for EmployeeID ' . $employeeId . ', using first search result');
-        $responseData = (array) $clinicianFormResponse->response->result[0];
-        return array_values($responseData)[0][0];
+        //No exact Clinician_Name match. Only trust the search result when it is unambiguous (a single row);
+        //multiple rows with no exact match means the Contains search collided, so skip enrichment rather than
+        //attach another clinician's data.
+        if (count($clinicianFormResponse->response->result) === 1) {
+            error_log('WELZP: no exact Clinician_Name match for EmployeeID ' . $employeeId . ', using single search result');
+            $responseData = (array) $clinicianFormResponse->response->result[0];
+            return array_values($responseData)[0][0];
+        }
+
+        error_log('WELZP: ambiguous Clinician_Profile match for EmployeeID ' . $employeeId . ' (' . count($clinicianFormResponse->response->result) . ' results, none exact), skipping enrichment');
+        return $arraValues;
     }
 
     //Check whether a Clinician_Profile "Clinician_Name" field (e.g. "David - Giella - 1002") belongs to the given EmployeeID
