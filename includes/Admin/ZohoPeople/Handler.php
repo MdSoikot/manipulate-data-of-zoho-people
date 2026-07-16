@@ -549,6 +549,9 @@ final class Handler
     public function approveReview($id)
     {
         $get_form_details = static::$_formDetailsModel->get('*', ['id' => $id]);
+        if (is_wp_error($get_form_details) || empty($get_form_details)) {
+            wp_send_json_error('Review not found', 404);
+        }
         $new_form_details = json_decode($get_form_details[0]->form_details);
 
         if ($new_form_details->status === 'pending') {
@@ -631,6 +634,9 @@ final class Handler
     public function handlePageStatus($id)
     {
         $employee_data_by_id = static::$_zohoPeoplesEmployeesModel->get('*', ['id' => $id], null, null, 'id', 'DESC');
+        if (is_wp_error($employee_data_by_id) || empty($employee_data_by_id)) {
+            wp_send_json_error('Clinician not found', 404);
+        }
         $zoho_id = $employee_data_by_id[0]->zoho_id;
         $status = '';
         $post_id = $this->getPostIdRowByZohoId($zoho_id);
