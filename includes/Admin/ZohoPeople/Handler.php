@@ -85,6 +85,29 @@ final class Handler
         return $result;
     }
 
+    //Ensure the Zoho access token is valid (refresh + persist when expired) and return the auth header
+    private function authHeader()
+    {
+        $requestData = self::$data;
+
+        if ((intval($requestData->tokenDetails->generates_on) + (55 * 60)) < time()) {
+            $refreshedToken = $this::refreshAccessToken($requestData);
+            if ($refreshedToken) {
+                $requestData->tokenDetails = $refreshedToken;
+                if (!empty($requestData->integrationId)) {
+                    $this::saveRefreshedToken($requestData->integrationId, $requestData);
+                }
+            } else {
+                wp_send_json_error(
+                    __('Failed to refresh access token', 'bitwelzp'),
+                    400
+                );
+            }
+        }
+
+        return ['Authorization' => "Zoho-oauthtoken {$requestData->tokenDetails->access_token}"];
+    }
+
     //Zoho authentication generate token
     public function generateToken($data)
     {
@@ -237,27 +260,8 @@ final class Handler
     //Update Profile_URL / Review_URL fields in Zoho People
     public function updateZohoPeoplesFields($recordId, $profileUrl, $reviewUrl)
     {
-        $requestData = self::$data;
-        $isTokenExpired = false;
         $_apiDomain = "https://people.zoho.com/people/api/forms/json/employee/updateRecord?inputData={Profile_URL:'$profileUrl', Review_URL:'$reviewUrl'}&recordId=$recordId";
-
-        if ((intval($requestData->tokenDetails->generates_on) + (55 * 60)) < time()) {
-            $refreshedToken = $this::refreshAccessToken($requestData);
-            if ($refreshedToken) {
-                $isTokenExpired = true;
-                $requestData->tokenDetails = $refreshedToken;
-            } else {
-                wp_send_json_error(
-                    __('Failed to refresh access token', 'bitwelzp'),
-                    400
-                );
-            }
-        }
-        $_defaultHeader['Authorization'] = "Zoho-oauthtoken {$requestData->tokenDetails->access_token}";
-
-        if ($isTokenExpired && !empty($requestData->integrationId)) {
-            $this::saveRefreshedToken($requestData->integrationId, $requestData);
-        }
+        $_defaultHeader = $this->authHeader();
 
         HttpHelper::get($_apiDomain, [], $_defaultHeader);
     }
@@ -281,26 +285,7 @@ final class Handler
     {
         global $wpdb;
         $upload_dir = wp_upload_dir();
-        $requestData = self::$data;
-        $isTokenExpired = false;
-
-        if ((intval($requestData->tokenDetails->generates_on) + (55 * 60)) < time()) {
-            $refreshedToken = $this::refreshAccessToken($requestData);
-            if ($refreshedToken) {
-                $isTokenExpired = true;
-                $requestData->tokenDetails = $refreshedToken;
-            } else {
-                wp_send_json_error(
-                    __('Failed to refresh access token', 'bitwelzp'),
-                    400
-                );
-            }
-        }
-
-        $_defaultHeader['Authorization'] = "Zoho-oauthtoken {$requestData->tokenDetails->access_token}";
-        if ($isTokenExpired && !empty($requestData->integrationId)) {
-            $this::saveRefreshedToken($requestData->integrationId, $requestData);
-        }
+        $_defaultHeader = $this->authHeader();
 
         $apiResponse = [];
         $totalEmployees = [];
