@@ -262,10 +262,24 @@ final class Handler
         HttpHelper::get($_apiDomain, [], $_defaultHeader);
     }
 
-    //Fetch Clinician information from Zoho People
+    //AJAX entry point: run the employee sync then return the refreshed clinician list as JSON
     public function getPeoplesForms()
     {
+        try {
+            $this->syncEmployees();
 
+            $all_employees = $this->getAllEmployees();
+            wp_send_json_success($all_employees, 200);
+        } catch (\Throwable $e) {
+            error_log('WELZP: employee sync failed: ' . $e->getMessage());
+            wp_send_json_error('Unknown', 400);
+        }
+    }
+
+    //Fetch clinicians from Zoho People and persist them + their profile pages.
+    //Emits no HTTP/JSON response so it is safe to call from cron/queue; throws on a fetch failure.
+    public function syncEmployees()
+    {
         global $wpdb;
         $upload_dir = wp_upload_dir();
         $requestData = self::$data;
@@ -292,8 +306,7 @@ final class Handler
         $apiResponse = [];
         $totalEmployees = [];
 
-        try {
-            while (!isset($apiResponse->response->errors)) {
+        while (!isset($apiResponse->response->errors)) {
                 $sIndex = count($totalEmployees) > 0 ? count($totalEmployees) + 1 : 1;
                 $apiEndpoint = 'https://people.zoho.com/people/api/forms/employee/getRecords?sIndex=' . $sIndex . '&limit=100';
                 $apiResponse = HttpHelper::get($apiEndpoint, [], $_defaultHeader);
@@ -404,15 +417,6 @@ final class Handler
                     }
                 };
             }
-
-            $all_employees = $this->getAllEmployees();
-            wp_send_json_success($all_employees, 200);
-        } catch (\Throwable $e) {
-            wp_send_json_error(
-                empty($apiResponse->response->errors) ? 'Unknown' : $apiResponse->response->errors,
-                400
-            );
-        }
     }
 
     //Check Whether clinician status is active or not in Zoho People
