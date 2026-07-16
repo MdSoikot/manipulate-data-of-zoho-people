@@ -282,7 +282,6 @@ final class Handler
     //Fetch + persist clinicians and their profile pages. No JSON output (cron/queue-safe); throws on fetch failure.
     public function syncEmployees()
     {
-        global $wpdb;
         $upload_dir = wp_upload_dir();
         $_defaultHeader = $this->authHeader();
 
@@ -375,10 +374,7 @@ final class Handler
                                     static::$_zohoPeoplesEmployeesModel->insert($insertData);
                                 }
 
-                                $employeeInfoTable = $wpdb->prefix . 'bitwelzp_zoho_people_employee_info';
-                                $post_id = $wpdb->get_row(
-                                    $wpdb->prepare("SELECT post_id FROM {$employeeInfoTable} WHERE zoho_id = %s", $employee[0]->Zoho_ID)
-                                );
+                                $post_id = $this->getPostIdRowByZohoId($employee[0]->Zoho_ID);
 
                                 $this::createClinicianProfilePage(
                                     $insertData,
@@ -475,6 +471,14 @@ final class Handler
             'designation'             => ['Clinical Therapist', 'Clinical Director'],
             'allow_telehealth_access' => 'true',
         ];
+    }
+
+    //Look up the employee_info row (post_id) for a Zoho record id
+    private function getPostIdRowByZohoId($zohoId)
+    {
+        global $wpdb;
+        $table = $wpdb->prefix . 'bitwelzp_zoho_people_employee_info';
+        return $wpdb->get_row($wpdb->prepare("SELECT post_id FROM {$table} WHERE zoho_id = %s", $zohoId));
     }
 
     //Fetch clinicians from DB for the frontend
@@ -620,11 +624,10 @@ final class Handler
     //Handle clinician profile page status
     public function handlePageStatus($id)
     {
-        global $wpdb;
         $employee_data_by_id = static::$_zohoPeoplesEmployeesModel->get('*', ['id' => $id], null, null, 'id', 'DESC');
         $zoho_id = $employee_data_by_id[0]->zoho_id;
         $status = '';
-        $post_id = $wpdb->get_row("SELECT post_id FROM {$wpdb->prefix}bitwelzp_zoho_people_employee_info WHERE zoho_id ='$zoho_id'");
+        $post_id = $this->getPostIdRowByZohoId($zoho_id);
 
 
         if ($employee_data_by_id[0]->page_status === 'inactive' || $employee_data_by_id[0]->page_status === null) {
