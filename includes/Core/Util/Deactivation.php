@@ -23,6 +23,8 @@ final class Deactivation
 
     public function deactive()
     {
+        wp_clear_scheduled_hook('cronDailyEvent');
+
         $routes = get_option('bitwelzp_routes');
         if ($routes && isset($routes['root'])) {
             $root_page = array( 'ID' => $routes['root'], 'post_status' => 'draft' );

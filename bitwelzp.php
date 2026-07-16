@@ -40,6 +40,12 @@ function bitwelzp_activate_plugin()
 
 register_activation_hook(__FILE__, 'bitwelzp_activate_plugin');
 
+function bitwelzp_deactivate_plugin()
+{
+    do_action('bitwelzp_deactivation');
+}
+register_deactivation_hook(__FILE__, 'bitwelzp_deactivate_plugin');
+
 function bitwelzp_uninstall_plugin()
 {
     do_action('bitwelzp_uninstall');

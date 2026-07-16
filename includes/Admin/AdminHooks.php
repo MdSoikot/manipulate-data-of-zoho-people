@@ -32,6 +32,12 @@ class AdminHooks
         if (!wp_next_scheduled('cronDailyEvent')) {
             wp_schedule_event(time(), 'daily', 'cronDailyEvent');
         }
-        add_action('cronDailyEvent', [Handler::class, 'getPeoplesForms']);
+        add_action('cronDailyEvent', [$this, 'runDailySync']);
+    }
+
+    //Cron callback: run the clinician sync via an instance (constructor loads auth) with no HTTP/JSON output
+    public function runDailySync()
+    {
+        (new Handler())->syncEmployees();
     }
 }
