@@ -729,16 +729,18 @@ final class Handler
 
         $reviewsData = [];
         $phrasesArray = [];
-        $totalStars = 0;
 
         foreach ($getAllReviews as $review) {
             $form_details = json_decode($review->form_details);
+            if (!is_object($form_details) || !isset($form_details->zoho_id, $form_details->status)) {
+                continue;
+            }
+
             if ($zoho_id == $form_details->zoho_id && $form_details->status == 'approved') {
                 $form_details->created_at = $review->created_at;
-                array_push($reviewsData, $form_details);
-                $tempArray = $phrasesArray;
-                $phrasesArray = array_merge($tempArray, $form_details->phrases);
-                $totalStars = $totalStars + $form_details->star;
+                $reviewsData[] = $form_details;
+                //Cast: a review with no phrases key would otherwise make array_merge() fatal on PHP 8
+                $phrasesArray = array_merge($phrasesArray, (array) ($form_details->phrases ?? []));
             }
         }
 
@@ -746,6 +748,13 @@ final class Handler
         arsort($arr_freq);
         $show_phrases = array_keys($arr_freq);
         $totalVerifiedReviews = count($reviewsData);
+
+        //Render only the phrases that exist. The markup used to hard-code $show_phrases[0..3],
+        //which warned and emitted empty spans for anyone with fewer than four distinct phrases.
+        $reviewHighlights = '';
+        foreach (array_slice($show_phrases, 0, 4) as $topPhrase) {
+            $reviewHighlights .= '<span>' . esc_html($topPhrase) . '</span>';
+        }
 
         $page_status = $wpdb->get_row("SELECT page_status FROM {$wpdb->prefix}bitwelzp_zoho_people_employee_info WHERE zoho_id ='$zoho_id'");
 
@@ -872,10 +881,7 @@ final class Handler
 <div class="highlights">
 
 <h4><span>Review Highlights</span></h4>
-<span>$show_phrases[0]</span>
-<span>$show_phrases[1]</span>
-<span>$show_phrases[2]</span>
-<span>$show_phrases[3]</span>
+$reviewHighlights
 </div>
 </div>
 <div class="line"></div>
