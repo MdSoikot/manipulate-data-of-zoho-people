@@ -160,7 +160,7 @@ final class Handler
             'Star'              => $requestData->star,
             'First Name'        => $requestData->fname,
             'Last Name'         => $requestData->lname,
-            'Phrases'           => isset($form_details->phrases) ? implode(', ', $form_details->phrases) : '',
+            'Phrases'           => isset($requestData->phrases) ? implode(', ', (array) $requestData->phrases) : '',
             'Title'             => $requestData->title,
             'Title Description' => $requestData->desc,
             'Age Range'         => $requestData->age,
