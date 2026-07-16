@@ -193,6 +193,7 @@ final class Handler
         $data['Review Id'] = $type === 'insert' ? $lastReviewId[0]->id : $requestData->editRowId;
         $data['Created At'] = date('d M,Y h:i:s');
 
+        $apiResponse = null;
         if ($refreshToken) {
             $apiResponse = $this->postAnalyticsRow(['columns' => $data], $refreshToken->access_token, 'POST');
         }
@@ -206,6 +207,7 @@ final class Handler
         $data['Updated At'] = date('d M,Y h:i:s');
 
         $refreshToken = $this->analyticsGenerateToken();
+        $apiResponse = null;
         if ($refreshToken) {
             $columns = ['columns' => $data];
             $columns['criteria'] = "(\"Review Id\"='$requestData->editRowId')";
