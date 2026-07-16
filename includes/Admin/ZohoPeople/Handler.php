@@ -298,12 +298,13 @@ final class Handler
                 $apiEndpoint = 'https://people.zoho.com/people/api/forms/employee/getRecords?sIndex=' . $sIndex . '&limit=100';
                 $apiResponse = HttpHelper::get($apiEndpoint, [], $_defaultHeader);
 
+                if (is_wp_error($apiResponse)) {
+                    throw new \Exception('Employee records request failed: ' . $apiResponse->get_error_message());
+                }
+
                 if (!isset($apiResponse->response->errors)) {
-                    if (count($totalEmployees) > 0) {
-                        $totalEmployees = array_merge($totalEmployees, $apiResponse->response->result);
-                    } else {
-                        $totalEmployees = $apiResponse->response->result;
-                    }
+                    $pageResult = isset($apiResponse->response->result) ? $apiResponse->response->result : [];
+                    $totalEmployees = array_merge($totalEmployees, $pageResult);
                 }
             }
 
@@ -374,38 +375,24 @@ final class Handler
                                         $insertData,
                                         ['zoho_id' => $employee[0]->Zoho_ID]
                                     );
-
-                                    $queryId = $employee[0]->Zoho_ID;
-
-                                    $employeeInfoTable = $wpdb->prefix . 'bitwelzp_zoho_people_employee_info';
-                                    $post_id = $wpdb->get_row("SELECT post_id FROM {$employeeInfoTable} WHERE zoho_id ='$queryId'");
-                                    $this::createClinicianProfilePage(
-                                        $insertData,
-                                        $post_id !== null ? $post_id->post_id : '',
-                                        $getAllRiviews
-                                    );
-
-                                    $this->updateZohoPeoplesFields($recordId, $profileUrl, $reviewUrl);
                                 } else {
-                                    static::$_zohoPeoplesEmployeesModel->insert(
-                                        $insertData
-                                    );
-
-                                    $queryId = $employee[0]->Zoho_ID;
-                                    $post_id = $wpdb->get_row("SELECT post_id FROM {$wpdb->prefix}bitwelzp_zoho_people_employee_info WHERE zoho_id ='$queryId'");
-
-                                    $this::createClinicianProfilePage(
-                                        $insertData,
-                                        $post_id !== null ? $post_id->post_id : '',
-                                        $getAllRiviews
-                                    );
-
-                                    $this->updateZohoPeoplesFields($recordId, $profileUrl, $reviewUrl);
+                                    static::$_zohoPeoplesEmployeesModel->insert($insertData);
                                 }
-                            } else {
-                                static::$_zohoPeoplesEmployeesModel->insert(
-                                    $insertData
+
+                                $employeeInfoTable = $wpdb->prefix . 'bitwelzp_zoho_people_employee_info';
+                                $post_id = $wpdb->get_row(
+                                    $wpdb->prepare("SELECT post_id FROM {$employeeInfoTable} WHERE zoho_id = %s", $employee[0]->Zoho_ID)
                                 );
+
+                                $this::createClinicianProfilePage(
+                                    $insertData,
+                                    $post_id !== null ? $post_id->post_id : '',
+                                    $getAllRiviews
+                                );
+
+                                $this->updateZohoPeoplesFields($recordId, $profileUrl, $reviewUrl);
+                            } else {
+                                static::$_zohoPeoplesEmployeesModel->insert($insertData);
 
                                 $this::createClinicianProfilePage(
                                     $insertData,
