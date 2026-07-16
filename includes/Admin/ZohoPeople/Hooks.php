@@ -30,6 +30,43 @@ final class Hooks
         add_shortcode('welz-thank-you-page', [$this, 'thankYouPage']);
     }
 
+    /**
+     * Render a review's rating as five stars, filled to match the score.
+     *
+     * Inline SVG rather than an icon font: nothing in this plugin or the theme enqueues
+     * FontAwesome, so an <i class="fa fa-star"> would render as blank space on any page
+     * where Elementor happens not to load it.
+     *
+     * Scores arrive as strings ("5") from older rows, hence the cast. A score of 0 means the
+     * rating question was left blank, not that the patient rated zero, so nothing is rendered.
+     *
+     * @param  int|string $star Score, clamped to 0-5.
+     * @return string Empty when there is no rating to show.
+     */
+    private function renderStarRating($star)
+    {
+        $star = max(0, min(5, (int) $star));
+        if ($star < 1) {
+            return '';
+        }
+
+        $starPath = 'M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z';
+
+        $html = sprintf(
+            '<span class="star-rating" role="img" aria-label="%s">',
+            esc_attr($star . ' out of 5 stars')
+        );
+        for ($i = 1; $i <= 5; $i++) {
+            $html .= sprintf(
+                '<svg class="star%s" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="%s" /></svg>',
+                $i <= $star ? ' filled' : '',
+                $starPath
+            );
+        }
+
+        return $html . '</span>';
+    }
+
     public function renderReview($attributes)
     {
         $default = array(
@@ -778,7 +815,6 @@ final class Hooks
         }
 
         $reviewsData = array();
-        $totalStars = 0;
 
         foreach ($getAllReviews as $review) {
             $form_details = json_decode($review->form_details);
@@ -788,8 +824,7 @@ final class Hooks
 
             if ($zoho_id == $form_details->zoho_id && $form_details->status == 'approved') {
                 $form_details->created_at = $review->created_at;
-                array_push($reviewsData, $form_details);
-                $totalStars = $totalStars + $form_details->star;
+                $reviewsData[] = $form_details;
             }
         }
 
@@ -947,6 +982,23 @@ final class Hooks
                     display: none;
                 }
 
+                /* Flat selectors: these must not depend on CSS nesting support. */
+                .star-rating {
+                    display: inline-flex;
+                    gap: 2px;
+                    line-height: 0;
+                }
+
+                .star-rating svg {
+                    width: 24px;
+                    height: 24px;
+                    fill: #dcdcdc;
+                }
+
+                .star-rating svg.filled {
+                    fill: orange;
+                }
+
 
                 @media(max-width: 767px) {
 
@@ -1053,8 +1105,7 @@ final class Hooks
                                     <span> <?php echo isset($review->age) ? esc_html($review->age) : '' ?> (Verified) on <?php echo esc_html($review->created_at) ?></span>
                                 </div>
 
-                                <img class='' src='https://wellqor.com/wp-content/uploads/2023/11/rating.png' width='137'
-                                    height='26' />
+                                <?php echo $this->renderStarRating($review->star ?? 0) ?>
                                 <h4><span>Review Highlights</span></h4>
                                 <div class='pharases-desc'>
                                     <div class="phrases">
