@@ -14,6 +14,9 @@ final class Handler
     private static $_formDetailsModel;
     private static $data = '';
 
+    const ANALYTICS_ROWS_URL = 'https://analyticsapi.zoho.com/restapi/v2/workspaces/1660248000000929001/views/1660248000012298002/rows';
+    const ANALYTICS_ORG_ID   = '663268259';
+
     public function __construct()
     {
         self::$_integrationModel = new IntegrationModel();
@@ -148,69 +151,65 @@ final class Handler
         wp_send_json_success($apiResponse, 200);
     }
 
+    //Shared review fields sent to the Zoho Analytics (Patient Review Data) table
+    private function analyticsBaseRow($requestData)
+    {
+        return [
+            'Employee Id'       => $requestData->employee_id,
+            'Zoho Id'           => $requestData->zoho_id,
+            'Star'              => $requestData->star,
+            'First Name'        => $requestData->fname,
+            'Last Name'         => $requestData->lname,
+            'Phrases'           => isset($form_details->phrases) ? implode(', ', $form_details->phrases) : '',
+            'Title'             => $requestData->title,
+            'Title Description' => $requestData->desc,
+            'Age Range'         => $requestData->age,
+            'Gender'            => $requestData->gender,
+            'Status'            => $requestData->status,
+            'Empathetic'        => $requestData->empathetic,
+        ];
+    }
+
+    //Send a row payload to the Analytics rows endpoint (POST to add, PUT to update)
+    private function postAnalyticsRow($columns, $accessToken, $method = 'POST')
+    {
+        $apiEndpoint = self::ANALYTICS_ROWS_URL . '?CONFIG=' . json_encode($columns);
+        $authorizationHeader['Authorization'] = 'Zoho-oauthtoken ' . $accessToken;
+        $authorizationHeader['ZANALYTICS-ORGID'] = self::ANALYTICS_ORG_ID;
+
+        if ($method === 'PUT') {
+            return HttpHelper::request($apiEndpoint, 'PUT', null, $authorizationHeader);
+        }
+        return HttpHelper::post($apiEndpoint, null, $authorizationHeader);
+    }
+
     //Push a patient review into Zoho Analytics (Patient Review Data)
     public function insertReviewIntoAnalytics($requestData, $type)
     {
         $lastReviewId = static::$_formDetailsModel->get('id', [], 1, null, 'id', 'DESC');
         $refreshToken = $this->analyticsGenerateToken();
-        $data = [
-            'Employee Id'       => $requestData->employee_id,
-            'Zoho Id'       =>    $requestData->zoho_id,
-            'Star'              => $requestData->star,
-            'First Name'        => $requestData->fname,
-            'Last Name'         => $requestData->lname,
-            'Phrases'           => isset($form_details->phrases) ? implode(', ', $form_details->phrases) : '',
-            'Title'             => $requestData->title,
-            'Title Description' => $requestData->desc,
-            'Age Range'         => $requestData->age,
-            'Gender'            => $requestData->gender,
-            'Status'            => $requestData->status,
-            'Empathetic'        => $requestData->empathetic,
-            'Review Id'         => $type === 'insert' ? $lastReviewId[0]->id : $requestData->editRowId,
-            'Created At'        => date('d M,Y h:i:s'),
-        ];
+
+        $data = $this->analyticsBaseRow($requestData);
+        $data['Review Id'] = $type === 'insert' ? $lastReviewId[0]->id : $requestData->editRowId;
+        $data['Created At'] = date('d M,Y h:i:s');
 
         if ($refreshToken) {
-            $columns['columns'] = $data;
-            $requestData = json_encode($columns);
-            $apiEndpoint = "https://analyticsapi.zoho.com/restapi/v2/workspaces/1660248000000929001/views/1660248000012298002/rows?CONFIG=$requestData";
-            $authorizationHeader['Authorization'] = 'Zoho-oauthtoken ' . $refreshToken->access_token;
-            $authorizationHeader['ZANALYTICS-ORGID'] = '663268259';
-            $apiResponse = HttpHelper::post($apiEndpoint, null, $authorizationHeader);
+            $apiResponse = $this->postAnalyticsRow(['columns' => $data], $refreshToken->access_token, 'POST');
         }
         return $apiResponse;
     }
 
-
     //Sync a plugin-side review edit into Zoho Analytics (Patient Review Data)
-
     public function updateReviewIntoAnalytics($requestData)
     {
-        $data = [
-            'Employee Id'       => $requestData->employee_id,
-            'Zoho Id'       => $requestData->zoho_id,
-            'Star'              => $requestData->star,
-            'First Name'        => $requestData->fname,
-            'Last Name'         => $requestData->lname,
-            'Phrases'           => isset($form_details->phrases) ? implode(', ', $form_details->phrases) : '',
-            'Title'             => $requestData->title,
-            'Title Description' => $requestData->desc,
-            'Age Range'         => $requestData->age,
-            'Gender'            => $requestData->gender,
-            'Status'            => $requestData->status,
-            'Empathetic'        => $requestData->empathetic,
-            'Updated At'        => date('d M,Y h:i:s'),
-        ];
+        $data = $this->analyticsBaseRow($requestData);
+        $data['Updated At'] = date('d M,Y h:i:s');
 
         $refreshToken = $this->analyticsGenerateToken();
         if ($refreshToken) {
-            $columns['columns'] = $data;
+            $columns = ['columns' => $data];
             $columns['criteria'] = "(\"Review Id\"='$requestData->editRowId')";
-            $encodedData = json_encode($columns);
-            $apiEndpoint = "https://analyticsapi.zoho.com/restapi/v2/workspaces/1660248000000929001/views/1660248000012298002/rows?CONFIG=$encodedData";
-            $authorizationHeader['Authorization'] = 'Zoho-oauthtoken ' . $refreshToken->access_token;
-            $authorizationHeader['ZANALYTICS-ORGID'] = '663268259';
-            $apiResponse = HttpHelper::request($apiEndpoint, 'PUT', null, $authorizationHeader);
+            $apiResponse = $this->postAnalyticsRow($columns, $refreshToken->access_token, 'PUT');
         }
         return $apiResponse;
     }
