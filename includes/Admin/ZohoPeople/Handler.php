@@ -745,6 +745,10 @@ final class Handler
             );
         }
 
+        //Preserve an admin-set inactive page (draft) instead of forcing publish on every sync
+        $currentPageStatus = ($page_status !== null && isset($page_status->page_status)) ? $page_status->page_status : 'active';
+        $postStatus = $currentPageStatus === 'inactive' ? 'draft' : 'publish';
+
         $showAllReviewsBtn = '';
 
         if ($totalVerifiedReviews > 0) {
@@ -979,7 +983,7 @@ HTML;
                     'post_author'    => $author_id,
                     'post_name'      => $slug,
                     'post_title'     => $title,
-                    'post_status'    => 'publish',
+                    'post_status'    => $postStatus,
                     'post_type'      => 'page',
                     'post_content'   => $content,
                 ]
