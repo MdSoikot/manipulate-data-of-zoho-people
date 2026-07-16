@@ -329,9 +329,20 @@ final class Handler
                             $profileUrl = 'https://wellqor.com/' . $employee[0]->FirstName[0] . '' . str_replace(" ", "-", $employee[0]->LastName) . '';
                             $reviewUrl = 'https://wellqor.com/therapist-review-form/?zoho_id=' . $employee[0]->Zoho_ID . '';
                             $headshot_url = $employee[0]->Headshot_downloadUrl;
-                            $headshot_response = HttpHelper::get($headshot_url, [], $_defaultHeader);
                             $fileName = $employee[0]->Headshot;
-                            file_put_contents($upload_dir['basedir'] . '/' . $fileName, $headshot_response);
+
+                            if (!empty($headshot_url)) {
+                                $headshot_response = HttpHelper::get($headshot_url, [], $_defaultHeader);
+
+                                if (!is_wp_error($headshot_response) && !empty($headshot_response) && !is_object($headshot_response)) {
+                                    file_put_contents($upload_dir['basedir'] . '/' . $fileName, $headshot_response);
+                                } else {
+                                    error_log('WELZP: headshot download failed for Zoho_ID ' . $employee[0]->Zoho_ID);
+                                    $fileName = '';
+                                }
+                            } else {
+                                $fileName = '';
+                            }
 
                             $arraValues = static::getClinicianFormData($employee, $_defaultHeader);
                             $insertData = [
@@ -440,13 +451,42 @@ final class Handler
         ];
         $clinicianFormResponse = HttpHelper::get('https://people.zoho.com/people/api/forms/Clinician_Profile/getRecords?searchParams=' . json_encode($clinicianFormParams) . '', [], $_defaultHeader);
         $arraValues = '';
+        $employeeId = $employeeData[0]->EmployeeID;
 
-        if (isset($clinicianFormResponse->response->result)) {
-            $responseData = (array) $clinicianFormResponse->response->result[0];
-            $arraValues = array_values($responseData)[0][0];
+        if (is_wp_error($clinicianFormResponse)) {
+            error_log('WELZP: Clinician_Profile request failed for EmployeeID ' . $employeeId . ': ' . $clinicianFormResponse->get_error_message());
+            return $arraValues;
         }
 
-        return $arraValues;
+        if (!empty($clinicianFormResponse->response->errors)) {
+            error_log('WELZP: Clinician_Profile API error for EmployeeID ' . $employeeId . ': ' . wp_json_encode($clinicianFormResponse->response->errors));
+            return $arraValues;
+        }
+
+        if (empty($clinicianFormResponse->response->result)) {
+            error_log('WELZP: no Clinician_Profile record found for EmployeeID ' . $employeeId);
+            return $arraValues;
+        }
+
+        //Contains search can return multiple/wrong matches for short numeric EmployeeIDs, so prefer an exact match on Clinician_Name before falling back to the first result
+        foreach ($clinicianFormResponse->response->result as $resultRow) {
+            $responseData = (array) $resultRow;
+            $record = array_values($responseData)[0][0];
+            if (isset($record->Clinician_Name) && static::clinicianNameMatchesEmployeeId($record->Clinician_Name, $employeeId)) {
+                return $record;
+            }
+        }
+
+        error_log('WELZP: no exact Clinician_Name match for EmployeeID ' . $employeeId . ', using first search result');
+        $responseData = (array) $clinicianFormResponse->response->result[0];
+        return array_values($responseData)[0][0];
+    }
+
+    //Check whether a Clinician_Profile "Clinician_Name" field (e.g. "David - Giella - 1002") belongs to the given EmployeeID
+    private static function clinicianNameMatchesEmployeeId($clinicianName, $employeeId)
+    {
+        $parts = array_map('trim', explode('-', $clinicianName));
+        return in_array((string) $employeeId, $parts, true);
     }
 
     //Fetch all clinicans data from the database to show on the frontend
