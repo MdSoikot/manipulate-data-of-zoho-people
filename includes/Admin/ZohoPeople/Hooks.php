@@ -16,7 +16,7 @@ final class Hooks
         self::$_zohoPeoplesEmployeesModel = new ZohoPeoplesEmployeesModel();
         self::$_formDetailsModel = new FormDetailsModel();
         if (isset($_GET['zoho_id'])) {
-            self::$_zohoId = $_GET['zoho_id'];
+            self::$_zohoId = sanitize_text_field(wp_unslash($_GET['zoho_id']));
         }
     }
 
@@ -47,14 +47,22 @@ final class Hooks
     public function showReviewForm()
     {
         $id = static::$_zohoId;
+        if ($id === null || $id === '') {
+            return '';
+        }
 
+        //get() returns a WP_Error when no row matches, so indexing it unguarded is a fatal
         $employeeData = static::$_zohoPeoplesEmployeesModel->get("*", array('zoho_id' => $id), null, null, 'id', 'DESC');
+        if (is_wp_error($employeeData) || empty($employeeData)) {
+            return '';
+        }
+
         $upload_dir  = wp_upload_dir();
         $employee_name = $employeeData[0]->fname . '_' . $employeeData[0]->lname;
         $headshot_download_url = $employeeData[0]->headshot_download_url;
         $new_headshot_download_url = '';
 
-        if ($headshot_download_url === '') {
+        if (empty($headshot_download_url)) {
             $new_headshot_download_url = 'https://wellqor.com/wp-content/uploads/2021/11/bioPicplaceholder.jpg';
         } else {
             $new_headshot_download_url = $upload_dir['baseurl'] . "/" . $employeeData[0]->headshot_download_url;
@@ -507,19 +515,18 @@ final class Hooks
                 <div class="container">
                     <div class="profile-img">
                         <img src='https://wellqor.com/wp-content/uploads/2023/11/animated_petal_bulletsArtboard-2-copy-7.svg'>
-                        <img src="<?php echo $new_headshot_download_url ?>
-			">
+                        <img src="<?php echo esc_url($new_headshot_download_url) ?>">
 
                     </div>
                     <div class="title">
                         <div class="name">
-                            <h2><span><?php echo $employeeData[0]->fname ?></span>
-                                <span><?php echo $employeeData[0]->lname ?>,
-                                </span><span><?php echo $employeeData[0]->medical_qualification ?></span>
+                            <h2><span><?php echo esc_html($employeeData[0]->fname) ?></span>
+                                <span><?php echo esc_html($employeeData[0]->lname) ?>,
+                                </span><span><?php echo esc_html($employeeData[0]->medical_qualification) ?></span>
                             </h2>
                         </div>
                         <div class="designation">
-                            <?php echo $employeeData[0]->clinical_title ?>
+                            <?php echo esc_html($employeeData[0]->clinical_title) ?>
                         </div>
                     </div>
                 </div>
@@ -721,7 +728,7 @@ final class Hooks
 
                         <div class="form-button">
                             <button class="btn"
-                                onclick="handleSubmit(event,'<?php echo $id ?>','<?php echo $employee_name ?>')">Submit</button>
+                                onclick="handleSubmit(event,'<?php echo esc_js($id) ?>','<?php echo esc_js($employee_name) ?>')">Submit</button>
                             <button class="btn" type="reset">
                                 Reset
                             </button>
@@ -832,15 +839,26 @@ final class Hooks
     public function showAllReviews()
     {
         $zoho_id = static::$_zohoId;
-        $employeeData = static::$_zohoPeoplesEmployeesModel->get("*", array('zoho_id' => $zoho_id), null, null, 'id', 'DESC');
-        $getAllReviews = static::$_formDetailsModel->get("*", [], null, null, 'id', 'DESC');
+        if ($zoho_id === null || $zoho_id === '') {
+            return '';
+        }
 
+        //get() returns a WP_Error when no row matches, so indexing it unguarded is a fatal
+        $employeeData = static::$_zohoPeoplesEmployeesModel->get("*", array('zoho_id' => $zoho_id), null, null, 'id', 'DESC');
+        if (is_wp_error($employeeData) || empty($employeeData)) {
+            return '';
+        }
+
+        $getAllReviews = static::$_formDetailsModel->get("*", [], null, null, 'id', 'DESC');
+        if (is_wp_error($getAllReviews) || empty($getAllReviews)) {
+            $getAllReviews = [];
+        }
 
         $upload_dir  = wp_upload_dir();
         $headshot_download_url = $employeeData[0]->headshot_download_url;
         $new_headshot_download_url = '';
 
-        if ($headshot_download_url === '') {
+        if (empty($headshot_download_url)) {
             $new_headshot_download_url = 'https://wellqor.com/wp-content/uploads/2021/11/bioPicplaceholder.jpg';
         } else {
             $new_headshot_download_url = $upload_dir['baseurl'] . "/" . $employeeData[0]->headshot_download_url;
@@ -851,6 +869,9 @@ final class Hooks
 
         foreach ($getAllReviews as $review) {
             $form_details = json_decode($review->form_details);
+            if (!is_object($form_details) || !isset($form_details->zoho_id, $form_details->status)) {
+                continue;
+            }
 
             if ($zoho_id == $form_details->zoho_id && $form_details->status == 'approved') {
                 $form_details->created_at = $review->created_at;
@@ -1081,21 +1102,18 @@ final class Hooks
                 <div class="container">
                     <div class="profile-img">
                         <img src='https://wellqor.com/wp-content/uploads/2023/11/animated_petal_bulletsArtboard-2-copy-7.svg'>
-                        <img src="<?php echo $new_headshot_download_url ?>
-        
-        
-    ">
+                        <img src="<?php echo esc_url($new_headshot_download_url) ?>">
 
                     </div>
                     <div class="title">
                         <div class="name">
-                            <h2 style=""><span><?php echo $employeeData[0]->fname ?></span>
-                                <span><?php echo $employeeData[0]->lname ?>,
-                                </span><span><?php echo $employeeData[0]->medical_qualification ?></span>
+                            <h2 style=""><span><?php echo esc_html($employeeData[0]->fname) ?></span>
+                                <span><?php echo esc_html($employeeData[0]->lname) ?>,
+                                </span><span><?php echo esc_html($employeeData[0]->medical_qualification) ?></span>
                             </h2>
                         </div>
                         <div class="designation">
-                            <?php echo $employeeData[0]->clinical_title ?>
+                            <?php echo esc_html($employeeData[0]->clinical_title) ?>
                         </div>
                     </div>
                 </div>
@@ -1114,12 +1132,12 @@ final class Hooks
 
                         <div class='reviews-list'>
                             <div class='reviews-accordion'>
-                                <h5><?php echo $review->title ?>
+                                <h5><?php echo isset($review->title) ? esc_html($review->title) : '' ?>
                                 </h5>
                                 <div class='reviewer-info'>
-                                    <span><?php echo $review->fname ?> <span><?php echo $review->lname[0] ?></span></span></span>,
-                                    <span><?php echo $review->gender ?></span>,
-                                    <span> <?php echo $review->age ?> (Verified) on <?php echo $review->created_at ?><span>
+                                    <span><?php echo isset($review->fname) ? esc_html($review->fname) : '' ?> <span><?php echo !empty($review->lname) ? esc_html($review->lname[0]) : '' ?></span></span>,
+                                    <span><?php echo isset($review->gender) ? esc_html($review->gender) : '' ?></span>,
+                                    <span> <?php echo isset($review->age) ? esc_html($review->age) : '' ?> (Verified) on <?php echo esc_html($review->created_at) ?></span>
                                 </div>
 
                                 <img class='' src='https://wellqor.com/wp-content/uploads/2023/11/rating.png' width='137'
@@ -1127,12 +1145,12 @@ final class Hooks
                                 <h4><span>Review Highlights</span></h4>
                                 <div class='pharases-desc'>
                                     <div class="phrases">
-                                        <?php foreach ($review->phrases as $phrase) { ?>
-                                            <span><?php echo $phrase ?></span>
+                                        <?php foreach ((array) ($review->phrases ?? []) as $phrase) { ?>
+                                            <span><?php echo esc_html($phrase) ?></span>
                                         <?php } ?>
                                     </div>
                                     <div class='desc' id='desc'>
-                                        <?php echo $review->desc ?>
+                                        <?php echo isset($review->desc) ? nl2br(esc_html($review->desc)) : '' ?>
 
                                     </div>
                                 </div>
@@ -1211,13 +1229,13 @@ final class Hooks
 
             <img src='https://wellqor.com/wp-content/uploads/2023/11/5tenets.png'>
             <h1>Thank you for providing your feedback!</h1>
-            <button class="btn" onclick='thankYouBack(<?php echo $id ?>)'>
+            <button class="btn" onclick="thankYouBack('<?php echo esc_js($id) ?>')">
                 Back
             </button>
         </div>
         <script>
             const thankYouBack = (id) => {
-                window.location.href = 'https://wellqor.com/therapist-review-form/?zoho_id=' + id
+                window.location.href = 'https://wellqor.com/therapist-review-form/?zoho_id=' + encodeURIComponent(id)
             }
         </script>
 

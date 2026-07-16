@@ -518,6 +518,13 @@ final class Handler
     //Save patient review data in the database
     public function saveReviews($request)
     {
+        if (!is_object($request)) {
+            wp_send_json_error('Invalid review payload', 400);
+        }
+
+        //Status is decided server-side only; a submitted status would let anyone self-approve their review
+        $request->status = 'pending';
+
         $result = static::$_formDetailsModel->insert(
             [
                 'form_details' => wp_json_encode($request),
