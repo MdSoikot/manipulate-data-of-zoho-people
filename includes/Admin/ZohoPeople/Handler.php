@@ -303,7 +303,7 @@ final class Handler
                 }
             }
 
-            $getAllRiviews = static::$_formDetailsModel->get('*', [], null, null, 'id', 'DESC');
+            $getAllRiviews = $this->allReviewsQuery();
             $recordId = '';
             $profileUrl = '';
             $reviewUrl = '';
@@ -481,6 +481,12 @@ final class Handler
         return $wpdb->get_row($wpdb->prepare("SELECT post_id FROM {$table} WHERE zoho_id = %s", $zohoId));
     }
 
+    //All reviews, newest first (raw model result; callers handle any WP_Error)
+    private function allReviewsQuery()
+    {
+        return static::$_formDetailsModel->get('*', [], null, null, 'id', 'DESC');
+    }
+
     //Fetch clinicians from DB for the frontend
     public function getAllEmployees()
     {
@@ -569,7 +575,7 @@ final class Handler
             $new_form_details->editRowId = $id;
             $res = $this->updateReviewIntoAnalytics($new_form_details);
         }
-        $get_updated_form_details = static::$_formDetailsModel->get('*', [], null, null, 'id', 'DESC');
+        $get_updated_form_details = $this->allReviewsQuery();
         wp_send_json_success($get_updated_form_details, 200);
     }
 
@@ -599,7 +605,7 @@ final class Handler
         if (is_wp_error($result)) {
             wp_send_json_error('Updating Failed');
         } else {
-            $form_details = static::$_formDetailsModel->get('*', [], null, null, 'id', 'DESC');
+            $form_details = $this->allReviewsQuery();
             $requestData->inputData->editRowId = $requestData->editRowId;
             $updateReview = $this->updateReviewIntoAnalytics($requestData->inputData);
 
@@ -614,7 +620,7 @@ final class Handler
     //Fetch reviews from DB for the frontend
     public function get_form_details()
     {
-        $all_reviews = static::$_formDetailsModel->get('*', [], null, null, 'id', 'DESC');
+        $all_reviews = $this->allReviewsQuery();
         if (is_wp_error($all_reviews)) {
             return  [];
         }
