@@ -467,11 +467,21 @@ final class Handler
         return in_array((string) $employeeId, $parts, true);
     }
 
+    //Query condition for active clinicians (Active + Clinical Therapist/Director + telehealth)
+    private function activeClinicianCondition()
+    {
+        return [
+            'employee_status'         => 'Active',
+            'designation'             => ['Clinical Therapist', 'Clinical Director'],
+            'allow_telehealth_access' => 'true',
+        ];
+    }
+
     //Fetch clinicians from DB for the frontend
     public function getAllEmployees()
     {
 
-        $all_employees = static::$_zohoPeoplesEmployeesModel->get('*', ['employee_status' => 'Active', 'designation' => ['Clinical Therapist', 'Clinical Director'], 'allow_telehealth_access' => 'true'], null, null, 'id', 'DESC');
+        $all_employees = static::$_zohoPeoplesEmployeesModel->get('*', $this->activeClinicianCondition(), null, null, 'id', 'DESC');
 
         if (is_wp_error($all_employees)) {
             return  [];
@@ -644,7 +654,7 @@ final class Handler
             wp_send_json_error('Updating Failed');
         }
 
-        $employee_data = static::$_zohoPeoplesEmployeesModel->get('*', ['employee_status' => 'Active', 'designation' => ['Clinical Therapist', 'Clinical Director'], 'allow_telehealth_access' => 'true'], null, null, 'id', 'DESC');
+        $employee_data = static::$_zohoPeoplesEmployeesModel->get('*', $this->activeClinicianCondition(), null, null, 'id', 'DESC');
         wp_send_json_success($employee_data, 200);
     }
 
