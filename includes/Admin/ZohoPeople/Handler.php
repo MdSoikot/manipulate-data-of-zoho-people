@@ -154,19 +154,23 @@ final class Handler
     //Shared review fields sent to the Zoho Analytics (Patient Review Data) table
     private function analyticsBaseRow($requestData)
     {
+        $phrases = isset($requestData->phrases) ? (array) $requestData->phrases : [];
+
         return [
-            'Employee Id'       => $requestData->employee_id,
-            'Zoho Id'           => $requestData->zoho_id,
-            'Star'              => $requestData->star,
-            'First Name'        => $requestData->fname,
-            'Last Name'         => $requestData->lname,
-            'Phrases'           => isset($requestData->phrases) ? implode(', ', (array) $requestData->phrases) : '',
-            'Title'             => $requestData->title,
-            'Title Description' => $requestData->desc,
-            'Age Range'         => $requestData->age,
-            'Gender'            => $requestData->gender,
-            'Status'            => $requestData->status,
-            'Empathetic'        => $requestData->empathetic,
+            'Employee Id'       => $requestData->employee_id ?? '',
+            'Zoho Id'           => $requestData->zoho_id ?? '',
+            'Star'              => $requestData->star ?? '',
+            'First Name'        => $requestData->fname ?? '',
+            'Last Name'         => $requestData->lname ?? '',
+            'Phrases'           => implode(', ', $phrases),
+            'Title'             => $requestData->title ?? '',
+            'Title Description' => $requestData->desc ?? '',
+            'Age Range'         => $requestData->age ?? '',
+            'Gender'            => $requestData->gender ?? '',
+            'Status'            => $requestData->status ?? '',
+            //"Empathetic" is now a normal phrase; keep the column populated for older rows that
+            //still carry the standalone field.
+            'Empathetic'        => $requestData->empathetic ?? (in_array('Empathetic', $phrases, true) ? 'Empathetic' : ''),
         ];
     }
 

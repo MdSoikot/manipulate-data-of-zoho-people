@@ -7,6 +7,9 @@ use BitCode\WELZP\Core\Database\FormDetailsModel;
 
 final class Hooks
 {
+    //Reviews shown before the "Read More" button reveals the rest
+    private const REVIEWS_VISIBLE = 3;
+
     private static $_zohoPeoplesEmployeesModel;
     private static $_formDetailsModel;
     private static $_zohoId;
@@ -58,7 +61,7 @@ final class Hooks
         }
 
         $upload_dir  = wp_upload_dir();
-        $employee_name = $employeeData[0]->fname . '_' . $employeeData[0]->lname;
+        $employee_name = trim($employeeData[0]->fname . ' ' . $employeeData[0]->lname);
         $headshot_download_url = $employeeData[0]->headshot_download_url;
         $new_headshot_download_url = '';
 
@@ -225,24 +228,15 @@ final class Hooks
                     left: -5000px;
                 }
 
-                .reviews-form .star-input:checked+.star-input-label .orange {
-                    animation: enlarge 0.5s ease-in-out forwards;
+                /* Fill is driven by a .filled class so every star up to the selected one lights up,
+                   not just the label immediately following the checked input. */
+                .reviews-form .star-input-label.filled .orange {
+                    animation: enlarge 0.4s ease-in-out forwards;
                 }
 
-                .reviews-form .star-input:checked+.star-input-label:nth-of-type(2) .orange {
-                    animation-delay: 0.1s;
-                }
-
-                .reviews-form .star-input:checked+.star-input-label:nth-of-type(3) .orange {
-                    animation-delay: 0.2s;
-                }
-
-                .reviews-form .star-input:checked+.star-input-label:nth-of-type(4) .orange {
-                    animation-delay: 0.3s;
-                }
-
-                .reviews-form .star-input:checked+.star-input-label:nth-of-type(5) .orange {
-                    animation-delay: 0.4s;
+                .reviews-form .star-input:focus-visible+.star-input-label {
+                    outline: 2px solid #345ac2;
+                    outline-offset: 2px;
                 }
 
                 .reviews-form .star-input-label {
@@ -549,111 +543,43 @@ final class Hooks
                         <div class="review-star">
                             <span class="rating-title title-label">Please rate your overall experience with your
                                 therapist:</span>
-                            <input type="checkbox" class="star-input" name="star" value=1 id="1"
-                                onChange="handleStarChange(event)" />
-                            <label class="star-input-label" for="1">1
-                                <i class="fa fa-star"></i>
-                                <i class="fa fa-star orange"></i>
-                            </label>
-                            <input type="checkbox" class="star-input" name="star" value=2 id="2"
-                                onChange="handleStarChange(event)" />
-                            <label class="star-input-label" for="2">2
-                                <i class="fa fa-star"></i>
-                                <i class="fa fa-star orange"></i>
-                            </label>
-                            <input type="checkbox" class="star-input" name="star" value=3 id="3"
-                                onChange="handleStarChange(event)" />
-                            <label class="star-input-label" for="3">3
-                                <i class="fa fa-star"></i>
-                                <i class="fa fa-star orange"></i>
-                            </label>
-                            <input type="checkbox" class="star-input" name="star" value=4 id="4"
-                                onChange="handleStarChange(event)" />
-                            <label class="star-input-label" for="4">4
-                                <i class="fa fa-star"></i>
-                                <i class="fa fa-star orange"></i>
-                            </label>
-                            <input type="checkbox" class="star-input" name="star" value=5 id="5"
-                                onChange="handleStarChange(event)" />
-                            <label class="star-input-label" for="5">5
-                                <i class="fa fa-star"></i>
-                                <i class="fa fa-star orange"></i>
-                            </label>
+                            <?php for ($star = 1; $star <= 5; $star++) { ?>
+                                <input type="radio" class="star-input" name="star" value="<?php echo $star ?>"
+                                    id="star-<?php echo $star ?>" onChange="handleStarChange(event)" />
+                                <label class="star-input-label" for="star-<?php echo $star ?>"><?php echo $star ?>
+                                    <i class="fa fa-star"></i>
+                                    <i class="fa fa-star orange"></i>
+                                </label>
+                            <?php } ?>
                         </div>
 
                         <span class="title-label">Please select which of the following phrases describe your therapist:</span>
                         <div class="control-group">
-                            <div class="control_indicator">
-                                <input type="checkbox" name="phrases" id='Knowledgeable' value="Knowledgeable"
-                                    onChange="handleChange(event)" />
-                                <label class="control control--checkbox">Knowledgeable </label>
-                            </div>
-                            <div class="control_indicator">
-                                <input type="checkbox" name="phrases" value="Supportive" id='Supportive'
-                                    onChange="handleChange(event)" />
-                                <label class="control control--checkbox">Supportive </label>
-                            </div>
-                            <div class="control_indicator">
-                                <input type="checkbox" name="phrases" value="Friendly" id='Friendly'
-                                    onChange="handleChange(event)" />
-                                <label class="control control--checkbox">Friendly </label>
-
-                            </div>
-                            <div class="control_indicator">
-                                <input type="checkbox" name="phrases" value="Helpful" id='Helpful'
-                                    onChange="handleChange(event)" />
-                                <label class="control control--checkbox">Helpful </label>
-
-                            </div>
-                            <div class="control_indicator">
-                                <input type="checkbox" name="phrases" value="Understanding" id='Understanding'
-                                    onChange="handleChange(event)" />
-                                <label class="control control--checkbox">Understanding </label>
-
-                            </div>
-                            <div class="control_indicator">
-                                <input type="checkbox" name="phrases" value="A good fit for me" id='fit'
-                                    onChange="handleChange(event)" />
-                                <label class="control control--checkbox">A good fit for me </label>
-
-                            </div>
-                            <div class="control_indicator">
-                                <input type="checkbox" name="phrases" value="Compassionate" id='Compassionate'
-                                    onChange="handleChange(event)" />
-                                <label class="control control--checkbox">Compassionate </label>
-
-                            </div>
-                            <div class="control_indicator">
-                                <input type="checkbox" name="phrases" value="Professional" id='Professional'
-                                    onChange="handleChange(event)" />
-                                <label class="control control--checkbox">Professional </label>
-
-                            </div>
-                            <div class="control_indicator">
-                                <input type="checkbox" name="phrases" value="Patient" id='Patient'
-                                    onChange="handleChange(event)" />
-                                <label class="control control--checkbox">Patient </label>
-
-                            </div>
-                            <div class="control_indicator">
-                                <input type="checkbox" name="phrases" value="Flexible" id='Flexible'
-                                    onChange="handleChange(event)" />
-                                <label class="control control--checkbox">Flexible </label>
-
-                            </div>
-                            <div class="control_indicator">
-                                <input type="checkbox" name="phrases" value="Competent" id='Competent'
-                                    onChange="handleChange(event)" />
-                                <label class="control control--checkbox">Competent </label>
-
-                            </div>
-
-                            <div class="control_indicator">
-                                <input type="checkbox" name="empathetic" value="empathetic" id='empathetic'
-                                    onChange="handleChange(event)" />
-                                <label class="control control--checkbox">Empathetic </label>
-
-                            </div>
+                            <?php
+                            $phraseOptions = array(
+                                'Knowledgeable',
+                                'Supportive',
+                                'Friendly',
+                                'Helpful',
+                                'Understanding',
+                                'A good fit for me',
+                                'Compassionate',
+                                'Professional',
+                                'Patient',
+                                'Flexible',
+                                'Competent',
+                                'Empathetic',
+                            );
+                            foreach ($phraseOptions as $phraseOption) {
+                                $phraseId = 'phrase-' . sanitize_title($phraseOption);
+                                ?>
+                                <div class="control_indicator">
+                                    <input type="checkbox" name="phrases" value="<?php echo esc_attr($phraseOption) ?>"
+                                        id="<?php echo esc_attr($phraseId) ?>" onChange="handleChange(event)" />
+                                    <label class="control control--checkbox"
+                                        for="<?php echo esc_attr($phraseId) ?>"><?php echo esc_html($phraseOption) ?></label>
+                                </div>
+                            <?php } ?>
                         </div>
 
                         <span class="title-label">Please provide a title for your therapist review:</span>
@@ -664,71 +590,55 @@ final class Hooks
                         <textarea name="desc" rows="5" onChange="handleChange(event)"></textarea>
                         <span class="title-label">What age range are you?</span>
                         <div class="age-range">
-                            <div class='age-option'>
-                                <input type="radio" name="age" value="under 20" onChange="handleChange(event)">
-                                <label>Under 20</label>
-                            </div>
-                            <div class='age-option'>
-                                <input type="radio" name="age" value="20-30" onChange="handleChange(event)">
-                                <label>20 - 30</label>
-
-                            </div>
-                            <div class='age-option'>
-                                <input type="radio" name="age" value="30 - 40" onChange="handleChange(event)">
-                                <label>30 - 40</label>
-
-                            </div>
-                            <div class='age-option'>
-                                <input type="radio" name="age" value="40 - 60" onChange="handleChange(event)">
-                                <label>40 - 60</label>
-
-                            </div>
-                            <div class='age-option'>
-                                <input type="radio" name="age" value="60 - 70" onChange="handleChange(event)">
-                                <label>60 - 70</label>
-
-                            </div>
-                            <div class='age-option'>
-                                <input type="radio" name="age" value="70+" onChange="handleChange(event)">
-                                <label>70+</label>
-
-                            </div>
+                            <?php
+                            //Values are kept exactly as-is (including the inconsistent spacing) so they stay
+                            //comparable with reviews already stored under these labels.
+                            $ageOptions = array(
+                                'under 20' => 'Under 20',
+                                '20-30'    => '20 - 30',
+                                '30 - 40'  => '30 - 40',
+                                '40 - 60'  => '40 - 60',
+                                '60 - 70'  => '60 - 70',
+                                '70+'      => '70+',
+                            );
+                            foreach ($ageOptions as $ageValue => $ageLabel) {
+                                $ageId = 'age-' . sanitize_title($ageValue);
+                                ?>
+                                <div class='age-option'>
+                                    <input type="radio" name="age" id="<?php echo esc_attr($ageId) ?>"
+                                        value="<?php echo esc_attr($ageValue) ?>" onChange="handleChange(event)">
+                                    <label for="<?php echo esc_attr($ageId) ?>"><?php echo esc_html($ageLabel) ?></label>
+                                </div>
+                            <?php } ?>
                         </div>
                         <span class="title-label">What gender are you?</span>
                         <div class="gender">
-                            <div class="gender-option">
-                                <input type="radio" name="gender" value="Male" onChange="handleChange(event)">
-                                <label>Male</label>
-                            </div>
-                            <div class="gender-option">
-                                <input type="radio" name="gender" value="Female" onChange="handleChange(event)">
-                                <label>Female</label>
-                            </div>
-                            <div class="gender-option">
-                                <input type="radio" name="gender" value="Other" onChange="handleChange(event)">
-                                <label>Other</label>
-                            </div>
-
-
-
+                            <?php foreach (array('Male', 'Female', 'Other') as $genderOption) {
+                                $genderId = 'gender-' . sanitize_title($genderOption);
+                                ?>
+                                <div class="gender-option">
+                                    <input type="radio" name="gender" id="<?php echo esc_attr($genderId) ?>"
+                                        value="<?php echo esc_attr($genderOption) ?>" onChange="handleChange(event)">
+                                    <label for="<?php echo esc_attr($genderId) ?>"><?php echo esc_html($genderOption) ?></label>
+                                </div>
+                            <?php } ?>
                         </div>
 
                         <div class='name'>
                             <div class='fname'>
-                                <span class="title-label">Please enter your first name:</span>
-                                <input type="text" name="fname" onChange="handleChange(event)" />
+                                <label class="title-label" for="reviewer-fname">Please enter your first name:</label>
+                                <input type="text" id="reviewer-fname" name="fname" onChange="handleChange(event)" />
                             </div>
                             <div class='lname'>
-                                <span class="title-label">Please enter your last initial:</span>
-                                <input type="text" name="lname" onChange="handleChange(event)" />
+                                <label class="title-label" for="reviewer-lname">Please enter your last initial:</label>
+                                <input type="text" id="reviewer-lname" name="lname" onChange="handleChange(event)" />
                             </div>
 
 
                         </div>
 
                         <div class="form-button">
-                            <button class="btn"
-                                onclick="handleSubmit(event,'<?php echo esc_js($id) ?>','<?php echo esc_js($employee_name) ?>')">Submit</button>
+                            <button class="btn" type="submit" onclick="handleSubmit(event)">Submit</button>
                             <button class="btn" type="reset">
                                 Reset
                             </button>
@@ -741,93 +651,96 @@ final class Hooks
 
 
         </div>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
-
         <script>
-            $('.star-input').click(function() {
-                $(this).parent([0]).parent()[0].reset();
-                var prevStars = $(this).prevAll();
-                var nextStars = $(this).nextAll();
-                prevStars.attr('checked', true);
-                nextStars.attr('checked', false);
-                $(this).attr('checked', true);
-            });
+            (function() {
+                //Identity comes from the server, not from re-parsing the URL: the old digit-scrape
+                //picked up digits from every query param and threw outright when there was no query string.
+                const zohoId = <?php echo wp_json_encode((string) $id) ?>;
+                const employeeName = <?php echo wp_json_encode($employee_name) ?>;
+                const saveUrl = <?php echo wp_json_encode(add_query_arg(array(
+                                    'action'      => 'bitwelzp_review_data_save',
+                                    '_ajax_nonce' => wp_create_nonce('bitcffp_nonce'),
+                                ), admin_url('admin-ajax.php'))) ?>;
+                const thankYouUrl = <?php echo wp_json_encode(home_url('/thank-you-page/')) ?>;
 
-            $('.star-input-label').on('mouseover', function() {
-                var prevStars = $(this).prevAll();
-                prevStars.addClass('hovered');
-            });
-            $('.star-input-label').on('mouseout', function() {
-                var prevStars = $(this).prevAll();
-                prevStars.removeClass('hovered');
-            })
-
-            let paramString = window.location.href.split('?')[1]
-            const zoho_id = paramString.match(/\d+/g).join('')
-
-            let data = {
-                star: 0,
-                phrases: [],
-                title: "",
-                desc: "",
-                age: "",
-                gender: "",
-                fname: "",
-                lname: "",
-                status: "pending",
-                zoho_id: zoho_id
-            }
-
-            const handleStarChange = (e) => {
-                data.star = parseInt(e.target.value)
-            }
-
-            const handleSnackBar = (message) => {
-                var x = document.getElementById("snackbar");
-                x.innerHTML = message
-                x.className = "show";
-                setTimeout(function() {
-                    x.className = x.className.replace("show", "");
-                }, 3000);
-            }
-
-            const handleChange = (e) => {
-                let phrasesArrays = []
-                let phrases = document.getElementsByName('phrases')
-                for (let item of phrases) {
-                    if (item.checked) {
-                        phrasesArrays.push(item.value)
-                    }
-                }
-                const {
-                    name,
-                    value
-                } = e.target
-
-                data = {
-                    ...data,
-                    [name]: value
+                let data = {
+                    star: 0,
+                    phrases: [],
+                    title: "",
+                    desc: "",
+                    age: "",
+                    gender: "",
+                    fname: "",
+                    lname: "",
+                    zoho_id: zohoId,
+                    employee_name: employeeName
                 };
-                data.phrases = phrasesArrays
 
-            }
+                const starLabels = Array.from(document.querySelectorAll('.star-input-label'));
 
+                const paintStars = (upTo) => {
+                    starLabels.forEach((label, index) => {
+                        label.classList.toggle('filled', index < upTo);
+                    });
+                };
 
-            const handleSubmit = (e, id, employee_name) => {
-                console.log(id)
-                e.preventDefault();
-                data.employee_name = employee_name.replace("_", " ")
-                bodyOptions = {
-                    method: "POST",
-                    body: JSON.stringify(data)
-                }
-                fetch(
-                        '<?php echo admin_url('admin-ajax.php'); ?>?action=bitwelzp_review_data_save&_ajax_nonce=<?php echo wp_create_nonce('bitcffp_nonce'); ?>',
-                        bodyOptions)
-                    .then(res => console.log(res))
-                    .catch(err => console.log(err))
-                window.location.href = 'https://wellqor.com/thank-you-page/?zoho_id=' + id
-            }
+                starLabels.forEach((label, index) => {
+                    label.addEventListener('mouseover', () => paintStars(index + 1));
+                    label.addEventListener('mouseout', () => paintStars(data.star));
+                });
+
+                window.handleStarChange = (e) => {
+                    data.star = parseInt(e.target.value, 10);
+                    paintStars(data.star);
+                };
+
+                const handleSnackBar = (message) => {
+                    const x = document.getElementById("snackbar");
+                    x.textContent = message;
+                    x.className = "show";
+                    setTimeout(function() {
+                        x.className = x.className.replace("show", "");
+                    }, 3000);
+                };
+
+                window.handleChange = (e) => {
+                    const phrasesArrays = [];
+                    for (const item of document.getElementsByName('phrases')) {
+                        if (item.checked) {
+                            phrasesArrays.push(item.value);
+                        }
+                    }
+                    const { name, value } = e.target;
+
+                    data = { ...data, [name]: value };
+                    data.phrases = phrasesArrays;
+                };
+
+                window.handleSubmit = async (e) => {
+                    e.preventDefault();
+
+                    const button = e.target;
+                    button.disabled = true;
+
+                    try {
+                        //Await the save before navigating; the old code redirected immediately and
+                        //raced the request, silently dropping reviews.
+                        const res = await fetch(saveUrl, {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify(data)
+                        });
+                        const payload = await res.json().catch(() => null);
+                        if (!res.ok || !payload || payload.success !== true) {
+                            throw new Error('Review save rejected');
+                        }
+                        window.location.href = thankYouUrl + '?zoho_id=' + encodeURIComponent(zohoId);
+                    } catch (err) {
+                        button.disabled = false;
+                        handleSnackBar('Sorry, we could not save your review. Please try again.');
+                    }
+                };
+            })();
         </script>
 
     <?php
@@ -1123,14 +1036,14 @@ final class Hooks
 
 
                     <div class="verified-reviews">
-                        <h4>Patient Satisfaction</span></h4>
-                        <span><?php echo $totalVerifiedReviews ?> verified
+                        <h4>Patient Satisfaction</h4>
+                        <span><?php echo (int) $totalVerifiedReviews ?> verified
                             reviews</span>
 
                     </div>
-                    <?php foreach ($reviewsData as $review) { ?>
+                    <?php foreach ($reviewsData as $reviewIndex => $review) { ?>
 
-                        <div class='reviews-list'>
+                        <div class='reviews-list<?php echo $reviewIndex >= self::REVIEWS_VISIBLE ? ' d-none' : '' ?>'>
                             <div class='reviews-accordion'>
                                 <h5><?php echo isset($review->title) ? esc_html($review->title) : '' ?>
                                 </h5>
@@ -1149,7 +1062,7 @@ final class Hooks
                                             <span><?php echo esc_html($phrase) ?></span>
                                         <?php } ?>
                                     </div>
-                                    <div class='desc' id='desc'>
+                                    <div class='desc'>
                                         <?php echo isset($review->desc) ? nl2br(esc_html($review->desc)) : '' ?>
 
                                     </div>
@@ -1158,19 +1071,31 @@ final class Hooks
 
                         </div>
                     <?php } ?>
-                    <div class='all-reviews'>
-                        <button id='read-more-btn' onClick='showAllReviews()'>Read More</button>
-                    </div>
+                    <?php if ($totalVerifiedReviews > self::REVIEWS_VISIBLE) { ?>
+                        <div class='all-reviews'>
+                            <button type='button' id='read-more-btn'>Read More</button>
+                        </div>
+                    <?php } ?>
                 </div>
 
 
 
             </div>
         </div>
-        </div>
-
-
-
+        <script>
+            (function() {
+                const button = document.getElementById('read-more-btn');
+                if (!button) {
+                    return;
+                }
+                button.addEventListener('click', function() {
+                    document.querySelectorAll('.reviews-list.d-none').forEach(function(item) {
+                        item.classList.remove('d-none');
+                    });
+                    button.parentNode.removeChild(button);
+                });
+            })();
+        </script>
 
     <?php
         return ob_get_clean();
