@@ -294,60 +294,70 @@ final class Handler
         $apiResponse = [];
         $totalEmployees = [];
 
-        while (!isset($apiResponse->response->errors)) {
-                $sIndex = count($totalEmployees) > 0 ? count($totalEmployees) + 1 : 1;
-                $apiEndpoint = 'https://people.zoho.com/people/api/forms/employee/getRecords?sIndex=' . $sIndex . '&limit=100';
-                $apiResponse = HttpHelper::get($apiEndpoint, [], $_defaultHeader);
+        while (true) {
+            $sIndex = count($totalEmployees) + 1;
+            $apiEndpoint = 'https://people.zoho.com/people/api/forms/employee/getRecords?sIndex=' . $sIndex . '&limit=100';
+            $apiResponse = HttpHelper::get($apiEndpoint, [], $_defaultHeader);
 
-                if (is_wp_error($apiResponse)) {
-                    throw new \Exception('Employee records request failed: ' . $apiResponse->get_error_message());
-                }
+            if (is_wp_error($apiResponse)) {
+                throw new \Exception('Employee records request failed: ' . $apiResponse->get_error_message());
+            }
 
-                if (!isset($apiResponse->response->errors)) {
-                    $pageResult = isset($apiResponse->response->result) ? $apiResponse->response->result : [];
-                    $totalEmployees = array_merge($totalEmployees, $pageResult);
+            if (isset($apiResponse->response->errors)) {
+                break;
+            }
+
+            $pageResult = isset($apiResponse->response->result) ? $apiResponse->response->result : [];
+
+            //An empty page means every record has been read. Without this the row count never grows,
+            //sIndex never advances, and the loop requests the same page forever.
+            if (empty($pageResult)) {
+                break;
+            }
+
+            $totalEmployees = array_merge($totalEmployees, $pageResult);
+        }
+
+        $getAllRiviews = $this->allReviewsQuery();
+        $recordId = '';
+        $profileUrl = '';
+        $reviewUrl = '';
+
+        $employee_details = static::$_zohoPeoplesEmployeesModel->get();
+        $cliniciansZohoIds = [];
+
+        if (count($totalEmployees)) {
+            if (is_array($employee_details) && count($employee_details)) {
+                foreach ($employee_details as $employee) {
+                    array_push($cliniciansZohoIds, $employee->zoho_id);
                 }
             }
 
-            $getAllRiviews = $this->allReviewsQuery();
-            $recordId = '';
-            $profileUrl = '';
-            $reviewUrl = '';
+            foreach ($totalEmployees as  $data) {
+                foreach ((array) $data as  $employee) {
+                    if ($this::isEmployeeActive($employee[0])) {
+                        $recordId = $employee[0]->Zoho_ID;
+                        $profileUrl = 'https://wellqor.com/' . $employee[0]->FirstName[0] . '' . str_replace(" ", "-", $employee[0]->LastName) . '';
+                        $reviewUrl = 'https://wellqor.com/therapist-review-form/?zoho_id=' . $employee[0]->Zoho_ID . '';
+                        $headshot_url = $employee[0]->Headshot_downloadUrl;
+                        //Zoho supplies the filename; sanitize before it reaches the uploads path
+                        $fileName = sanitize_file_name($employee[0]->Headshot);
 
-            $employee_details = static::$_zohoPeoplesEmployeesModel->get();
-            $cliniciansZohoIds = [];
+                        if (!empty($headshot_url) && !empty($fileName)) {
+                            $headshot_response = HttpHelper::get($headshot_url, [], $_defaultHeader);
 
-            if (count($totalEmployees)) {
-                if (is_array($employee_details) && count($employee_details)) {
-                    foreach ($employee_details as $employee) {
-                        array_push($cliniciansZohoIds, $employee->zoho_id);
-                    }
-                }
-
-                foreach ($totalEmployees as  $data) {
-                    foreach ((array) $data as  $employee) {
-                        if ($this::isEmployeeActive($employee[0])) {
-                            $recordId = $employee[0]->Zoho_ID;
-                            $profileUrl = 'https://wellqor.com/' . $employee[0]->FirstName[0] . '' . str_replace(" ", "-", $employee[0]->LastName) . '';
-                            $reviewUrl = 'https://wellqor.com/therapist-review-form/?zoho_id=' . $employee[0]->Zoho_ID . '';
-                            $headshot_url = $employee[0]->Headshot_downloadUrl;
-                            $fileName = $employee[0]->Headshot;
-
-                            if (!empty($headshot_url)) {
-                                $headshot_response = HttpHelper::get($headshot_url, [], $_defaultHeader);
-
-                                if (!is_wp_error($headshot_response) && !empty($headshot_response) && !is_object($headshot_response)) {
-                                    file_put_contents($upload_dir['basedir'] . '/' . $fileName, $headshot_response);
-                                } else {
-                                    error_log('WELZP: headshot download failed for Zoho_ID ' . $employee[0]->Zoho_ID);
-                                    $fileName = '';
-                                }
+                            if (!is_wp_error($headshot_response) && !empty($headshot_response) && !is_object($headshot_response)) {
+                                file_put_contents($upload_dir['basedir'] . '/' . $fileName, $headshot_response);
                             } else {
+                                error_log('WELZP: headshot download failed for Zoho_ID ' . $employee[0]->Zoho_ID);
                                 $fileName = '';
                             }
+                        } else {
+                            $fileName = '';
+                        }
 
-                            $arraValues = static::getClinicianFormData($employee, $_defaultHeader);
-                            $insertData = [
+                        $arraValues = static::getClinicianFormData($employee, $_defaultHeader);
+                        $insertData = [
                                 'email_Id'                                  => $employee[0]->EmailID,
                                 'zoho_id'                                   => $employee[0]->Zoho_ID,
                                 'employee_id'                               => $employee[0]->EmployeeID,
@@ -367,41 +377,33 @@ final class Handler
                                 'public_bio'                                => !empty($arraValues) ? $arraValues->Public_Bio : '',
                                 'licensed_in'                               => $employee[0]->Licensed_In,
                                 'allow_telehealth_access'                   => $employee[0]->Allow_Telehealth_Access,
-                            ];
+                        ];
 
-
-                            if (is_array($employee_details) && count($employee_details)) {
-                                if (in_array($employee[0]->Zoho_ID, $cliniciansZohoIds)) {
-                                    static::$_zohoPeoplesEmployeesModel->update(
-                                        $insertData,
-                                        ['zoho_id' => $employee[0]->Zoho_ID]
-                                    );
-                                } else {
-                                    static::$_zohoPeoplesEmployeesModel->insert($insertData);
-                                }
-
-                                $post_id = $this->getPostIdRowByZohoId($employee[0]->Zoho_ID);
-
-                                $this::createClinicianProfilePage(
-                                    $insertData,
-                                    $post_id !== null ? $post_id->post_id : '',
-                                    $getAllRiviews
-                                );
-
-                                $this->updateZohoPeoplesFields($recordId, $profileUrl, $reviewUrl);
-                            } else {
-                                static::$_zohoPeoplesEmployeesModel->insert($insertData);
-
-                                $this::createClinicianProfilePage(
-                                    $insertData,
-                                    '',
-                                    $getAllRiviews
-                                );
-                            }
+                        //Existence is per-clinician. Keying off the whole table being non-empty meant that on a
+                        //first-ever sync nobody got their Zoho Profile_URL/Review_URL written back.
+                        if (in_array($employee[0]->Zoho_ID, $cliniciansZohoIds)) {
+                            static::$_zohoPeoplesEmployeesModel->update(
+                                $insertData,
+                                ['zoho_id' => $employee[0]->Zoho_ID]
+                            );
+                        } else {
+                            static::$_zohoPeoplesEmployeesModel->insert($insertData);
+                            $cliniciansZohoIds[] = $employee[0]->Zoho_ID;
                         }
+
+                        $post_id = $this->getPostIdRowByZohoId($employee[0]->Zoho_ID);
+
+                        $this::createClinicianProfilePage(
+                            $insertData,
+                            ($post_id !== null && !empty($post_id->post_id)) ? $post_id->post_id : '',
+                            $getAllRiviews
+                        );
+
+                        $this->updateZohoPeoplesFields($recordId, $profileUrl, $reviewUrl);
                     }
-                };
-            }
+                }
+            };
+        }
     }
 
     //Is the clinician active in Zoho People
@@ -487,6 +489,22 @@ final class Handler
         return $wpdb->get_row($wpdb->prepare("SELECT post_id FROM {$table} WHERE zoho_id = %s", $zohoId));
     }
 
+    //Rebuild a single clinician's profile page from the current DB row + reviews
+    private function refreshClinicianPage($zohoId)
+    {
+        $employee = static::$_zohoPeoplesEmployeesModel->get('*', ['zoho_id' => $zohoId]);
+        if (is_wp_error($employee) || empty($employee)) {
+            return;
+        }
+
+        $postIdRow = $this->getPostIdRowByZohoId($zohoId);
+        static::createClinicianProfilePage(
+            (array) $employee[0],
+            ($postIdRow !== null && !empty($postIdRow->post_id)) ? $postIdRow->post_id : '',
+            $this->allReviewsQuery()
+        );
+    }
+
     //All reviews, newest first (raw model result; callers handle any WP_Error)
     private function allReviewsQuery()
     {
@@ -506,17 +524,31 @@ final class Handler
         return $all_employees;
     }
 
-    //Delete clinician permanently from the database
+    //Delete clinician permanently from the database, along with their generated profile page
     public function deleteEmployees($Ids)
     {
         global $wpdb;
-        $result = '';
+        $table = $wpdb->prefix . 'bitwelzp_zoho_people_employee_info';
+        $deleted = 0;
 
-        foreach ($Ids as $id) {
-            $result = $wpdb->delete($wpdb->prefix . 'bitwelzp_zoho_people_employee_info', ['id' => $id]);
+        foreach ((array) $Ids as $id) {
+            $id = absint($id);
+            if (!$id) {
+                continue;
+            }
+
+            //Read post_id before the row goes: it is the only link between clinician and page
+            $row = $wpdb->get_row($wpdb->prepare("SELECT post_id FROM {$table} WHERE id = %d", $id));
+            if ($row !== null && !empty($row->post_id)) {
+                wp_delete_post((int) $row->post_id, true);
+            }
+
+            if ($wpdb->delete($table, ['id' => $id], ['%d'])) {
+                $deleted++;
+            }
         }
 
-        wp_send_json_success($result);
+        wp_send_json_success($deleted);
     }
 
     //Save patient review data in the database
@@ -537,7 +569,10 @@ final class Handler
         );
 
         $this->insertReviewIntoAnalytics($request, 'insert');
-        $this->getPeoplesForms();
+
+        //No full Zoho sync here: it ran a whole employee fetch per review submit and, because
+        //getPeoplesForms() ends in wp_send_json_success(), it also killed this handler's own response.
+        //A new review is 'pending' anyway, so no profile page changes until it is approved.
 
         if (is_wp_error($result)) {
             wp_send_json_error('Data Insertion Failed');
@@ -591,6 +626,12 @@ final class Handler
             $new_form_details->editRowId = $id;
             $res = $this->updateReviewIntoAnalytics($new_form_details);
         }
+
+        //Approving/unapproving changes the review counts and highlights baked into the page markup
+        if (!empty($new_form_details->zoho_id)) {
+            $this->refreshClinicianPage($new_form_details->zoho_id);
+        }
+
         $get_updated_form_details = $this->allReviewsQuery();
         wp_send_json_success($get_updated_form_details, 200);
     }
@@ -654,6 +695,9 @@ final class Handler
         $status = '';
         $post_id = $this->getPostIdRowByZohoId($zoho_id);
 
+        if ($post_id === null || empty($post_id->post_id)) {
+            wp_send_json_error('No profile page exists for this clinician yet', 404);
+        }
 
         if ($employee_data_by_id[0]->page_status === 'inactive' || $employee_data_by_id[0]->page_status === null) {
             $status = 'active';
@@ -730,6 +774,11 @@ final class Handler
         $reviewsData = [];
         $phrasesArray = [];
 
+        //A failed reviews query would otherwise make the foreach below fatal
+        if (is_wp_error($getAllReviews) || !is_array($getAllReviews)) {
+            $getAllReviews = [];
+        }
+
         foreach ($getAllReviews as $review) {
             $form_details = json_decode($review->form_details);
             if (!is_object($form_details) || !isset($form_details->zoho_id, $form_details->status)) {
@@ -756,7 +805,7 @@ final class Handler
             $reviewHighlights .= '<span>' . esc_html($topPhrase) . '</span>';
         }
 
-        $page_status = $wpdb->get_row("SELECT page_status FROM {$wpdb->prefix}bitwelzp_zoho_people_employee_info WHERE zoho_id ='$zoho_id'");
+        $page_status = $wpdb->get_row($wpdb->prepare("SELECT page_status FROM {$wpdb->prefix}bitwelzp_zoho_people_employee_info WHERE zoho_id = %s", $zoho_id));
 
         if ($page_status == null) {
             static::$_zohoPeoplesEmployeesModel->update(
@@ -972,6 +1021,12 @@ $reviewHighlights
 
 			</div>
 HTML;
+        //A stored post_id whose page was deleted in WP would make wp_update_post a silent no-op,
+        //leaving the clinician with no page forever. Fall back to creating a fresh one.
+        if ($id !== '' && $id !== null && get_post($id) === null) {
+            $id = '';
+        }
+
         if ($id === '' || $id === null) {
             $post_id = wp_insert_post(
                 [
@@ -980,15 +1035,20 @@ HTML;
                     'post_author'    => $author_id,
                     'post_name'      => $slug,
                     'post_title'     => $title,
-                    'post_status'    => 'publish',
+                    'post_status'    => $postStatus,
                     'post_type'      => 'page',
                     'post_content'   => $content,
                 ]
             );
 
-            $data['post_id'] = $post_id;
+            if (is_wp_error($post_id) || empty($post_id)) {
+                error_log('WELZP: profile page creation failed for Zoho_ID ' . $zoho_id);
+                return;
+            }
+
+            //Only the link column: writing the whole $data back would also rewrite unrelated row fields
             static::$_zohoPeoplesEmployeesModel->update(
-                $data,
+                ['post_id' => $post_id],
                 ['zoho_id' => $zoho_id]
             );
         } else {
