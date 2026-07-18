@@ -17,6 +17,10 @@ function AllEmployees({ newFormId }) {
   const [isLoading, setisLoading] = useState(false);
   const [tableData, setTableData] = useState(bitwelzp.all_employees);
 
+  // adminURL is not localized on older deployed builds — derive it from ajaxURL
+  const adminURL =
+    bitwelzp.adminURL || bitwelzp.ajaxURL.replace("admin-ajax.php", "");
+
   const filterLName = (lname) => {
     const rmSingleQuotation = lname.replace(/'/g, "");
     return rmSingleQuotation.replace(/ /g, "-");
@@ -61,6 +65,24 @@ function AllEmployees({ newFormId }) {
           </a>
         ) : (
           e.row.original.employee_id
+        ),
+    },
+    {
+      width: 120,
+      minWidth: 60,
+      Header: __("Post ID", "bitwelzp"),
+      accessor: "post_id",
+      Cell: (e) =>
+        e.row.original.post_id ? (
+          <a
+            className="btcd-tabl-lnk"
+            href={`${adminURL}post.php?post=${e.row.original.post_id}&action=edit`}
+            target="_blank"
+          >
+            {e.row.original.post_id}
+          </a>
+        ) : (
+          "—"
         ),
     },
     {

@@ -110,6 +110,7 @@ class Admin_Bar
                 'assetsURL' => BITWELZP_ASSET_URI,
                 'baseURL'   => $base_path_admin . 'admin.php?page=bitwelzp#',
                 'ajaxURL'   => admin_url('admin-ajax.php'),
+                'adminURL'  => admin_url(),
                 'allForms'  => $all_people,
                 'erase_all'  => get_option('bitwelzp_erase_all'),
                 'dateFormat'  => get_option('date_format'),
