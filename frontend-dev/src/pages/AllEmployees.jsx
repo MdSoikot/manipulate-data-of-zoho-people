@@ -300,23 +300,6 @@ function AllEmployees({ newFormId }) {
       )),
     },
     {
-      width: 150,
-      minWidth: 20,
-      Header: __('Page Status', 'bitwelzp'),
-      accessor: 'page_status',
-      Cell: (e) => (
-        <button
-          type="button"
-          className={`btn btcd-btn-lg ${
-            e.row.original.page_status === 'active' ? 'green' : 'red'
-          } sh-sm flx`}
-          onClick={() => handleActive(e.row.original.id)}
-        >
-          {e.row.original.page_status === 'active' ? 'active' : 'inActive'}
-        </button>
-      ),
-    },
-    {
       width: 180,
       minWidth: 20,
       Header: __('Created At', 'bitwelzp'),
@@ -347,6 +330,32 @@ function AllEmployees({ newFormId }) {
   const setTableCols = useCallback((newCols) => {
     setCols(newCols)
   }, [])
+
+  // keep Page Status as the last, right-sticky column (same pattern as
+  // the Actions column on the reviews table)
+  useEffect(() => {
+    const ncols = cols.filter((itm) => itm.accessor !== 'page_status')
+    ncols.push({
+      sticky: 'right',
+      width: 150,
+      minWidth: 20,
+      Header: __('Page Status', 'bitwelzp'),
+      accessor: 'page_status',
+      Cell: (e) => (
+        <button
+          type="button"
+          className={`btn btcd-btn-lg ${
+            e.row.original.page_status === 'active' ? 'green' : 'red'
+          } sh-sm flx`}
+          onClick={() => handleActive(e.row.original.id)}
+        >
+          {e.row.original.page_status === 'active' ? 'active' : 'inActive'}
+        </button>
+      ),
+    })
+    setCols([...ncols])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [newFormId])
 
   const fetchData = () => {
     setisLoading(true)
