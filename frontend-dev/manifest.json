@@ -1,0 +1,22 @@
+{
+  "name": "Zoho CRM for Fluent Form",
+  "version": "1.0.0",
+  "short_name": "FF-Zoho CRM",
+  "description": "Sends Fluent Form entries to Zoho CRM",
+  "icons": [
+    {
+      "src": "../img/logo.svg",
+      "sizes": "256x256",
+      "type": "image/svg"
+    },
+    {
+      "src": "../img/logo.png",
+      "type": "image/png",
+      "sizes": "256x256"
+    }
+  ],
+  "start_url": ".",
+  "display": "minimal-ui",
+  "theme_color": "#13233c",
+  "background_color": "#13233c"
+}

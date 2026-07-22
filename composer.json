@@ -1,0 +1,11 @@
+{
+    "name": "bitcode/bit-zoho-people",
+    "description": "A Helper Plugin for fetching Zoho people data in wordpress",
+    "license": "gpl-2",
+    "require": {},
+    "autoload": {
+        "psr-4": {
+            "BitCode\\WELZP\\": "includes/"
+        }
+    }
+}
