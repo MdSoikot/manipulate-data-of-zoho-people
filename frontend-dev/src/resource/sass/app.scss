@@ -1775,7 +1775,7 @@ nav.top-nav {
 }
 
 .btcd-all-frm .tbody .tr .td:last-child,
-.btcd-all-frm .tbody .tr .td:nth-child(4) {
+.btcd-all-frm .tbody .tr .td:has(.tooltip) {
   overflow: visible;
 }
 
