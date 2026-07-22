@@ -111,7 +111,7 @@ final class Handler
         return ['Authorization' => "Zoho-oauthtoken {$requestData->tokenDetails->access_token}"];
     }
 
-    //Zoho authentication generate token
+    //Exchange the OAuth authorization code for Zoho access/refresh tokens
     public function generateToken($data)
     {
         $requestsParams = $data;
@@ -168,8 +168,7 @@ final class Handler
             'Age Range'         => $requestData->age ?? '',
             'Gender'            => $requestData->gender ?? '',
             'Status'            => $requestData->status ?? '',
-            //"Empathetic" is now a normal phrase; keep the column populated for older rows that
-            //still carry the standalone field.
+            //Fill from the standalone field when present, otherwise from the phrases list
             'Empathetic'        => $requestData->empathetic ?? (in_array('Empathetic', $phrases, true) ? 'Empathetic' : ''),
         ];
     }
@@ -309,8 +308,7 @@ final class Handler
 
             $pageResult = isset($apiResponse->response->result) ? $apiResponse->response->result : [];
 
-            //An empty page means every record has been read. Without this the row count never grows,
-            //sIndex never advances, and the loop requests the same page forever.
+            //Empty page means every record has been read; stop paginating
             if (empty($pageResult)) {
                 break;
             }
@@ -379,8 +377,7 @@ final class Handler
                                 'allow_telehealth_access'                   => $employee[0]->Allow_Telehealth_Access,
                         ];
 
-                        //Existence is per-clinician. Keying off the whole table being non-empty meant that on a
-                        //first-ever sync nobody got their Zoho Profile_URL/Review_URL written back.
+                        //Update the clinician's row if it exists, otherwise insert a new one
                         if (in_array($employee[0]->Zoho_ID, $cliniciansZohoIds)) {
                             static::$_zohoPeoplesEmployeesModel->update(
                                 $insertData,
@@ -537,7 +534,6 @@ final class Handler
                 continue;
             }
 
-            //Read post_id before the row goes: it is the only link between clinician and page
             $row = $wpdb->get_row($wpdb->prepare("SELECT post_id FROM {$table} WHERE id = %d", $id));
             if ($row !== null && !empty($row->post_id)) {
                 wp_delete_post((int) $row->post_id, true);
@@ -558,7 +554,6 @@ final class Handler
             wp_send_json_error('Invalid review payload', 400);
         }
 
-        //Status is decided server-side only; a submitted status would let anyone self-approve their review
         $request->status = 'pending';
 
         $result = static::$_formDetailsModel->insert(
@@ -569,10 +564,6 @@ final class Handler
         );
 
         $this->insertReviewIntoAnalytics($request, 'insert');
-
-        //No full Zoho sync here: it ran a whole employee fetch per review submit and, because
-        //getPeoplesForms() ends in wp_send_json_success(), it also killed this handler's own response.
-        //A new review is 'pending' anyway, so no profile page changes until it is approved.
 
         if (is_wp_error($result)) {
             wp_send_json_error('Data Insertion Failed');
@@ -730,7 +721,7 @@ final class Handler
         wp_send_json_success($employee_data, 200);
     }
 
-    //Create & update clinican profile page
+    //Create or update a clinician profile page
     public static function createClinicianProfilePage($data, $id, $getAllReviews)
     {
 
@@ -774,7 +765,7 @@ final class Handler
         $reviewsData = [];
         $phrasesArray = [];
 
-        //A failed reviews query would otherwise make the foreach below fatal
+        //Treat a failed reviews query as no reviews
         if (is_wp_error($getAllReviews) || !is_array($getAllReviews)) {
             $getAllReviews = [];
         }
@@ -788,7 +779,7 @@ final class Handler
             if ($zoho_id == $form_details->zoho_id && $form_details->status == 'approved') {
                 $form_details->created_at = $review->created_at;
                 $reviewsData[] = $form_details;
-                //Cast: a review with no phrases key would otherwise make array_merge() fatal on PHP 8
+                //Cast handles reviews with a missing phrases key
                 $phrasesArray = array_merge($phrasesArray, (array) ($form_details->phrases ?? []));
             }
         }
@@ -798,8 +789,7 @@ final class Handler
         $show_phrases = array_keys($arr_freq);
         $totalVerifiedReviews = count($reviewsData);
 
-        //Render only the phrases that exist. The markup used to hard-code $show_phrases[0..3],
-        //which warned and emitted empty spans for anyone with fewer than four distinct phrases.
+        //Render up to four most-frequent phrases
         $reviewHighlights = '';
         foreach (array_slice($show_phrases, 0, 4) as $topPhrase) {
             $reviewHighlights .= '<span>' . esc_html($topPhrase) . '</span>';
@@ -814,7 +804,7 @@ final class Handler
             );
         }
 
-        //Preserve an admin-set inactive page (draft) instead of forcing publish on every sync
+        //Inactive pages stay as drafts; everything else publishes
         $currentPageStatus = ($page_status !== null && isset($page_status->page_status)) ? $page_status->page_status : 'active';
         $postStatus = $currentPageStatus === 'inactive' ? 'draft' : 'publish';
 
@@ -1021,8 +1011,7 @@ $reviewHighlights
 
 			</div>
 HTML;
-        //A stored post_id whose page was deleted in WP would make wp_update_post a silent no-op,
-        //leaving the clinician with no page forever. Fall back to creating a fresh one.
+        //Clear a stored post_id whose page no longer exists so a fresh page is created
         if ($id !== '' && $id !== null && get_post($id) === null) {
             $id = '';
         }
@@ -1046,7 +1035,7 @@ HTML;
                 return;
             }
 
-            //Only the link column: writing the whole $data back would also rewrite unrelated row fields
+            //Link the new page to the clinician row
             static::$_zohoPeoplesEmployeesModel->update(
                 ['post_id' => $post_id],
                 ['zoho_id' => $zoho_id]

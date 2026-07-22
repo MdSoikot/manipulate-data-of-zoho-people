@@ -31,14 +31,9 @@ final class Hooks
     }
 
     /**
-     * Render a review's rating as five stars, filled to match the score.
+     * Render a review's rating as five inline-SVG stars, filled to match the score.
      *
-     * Inline SVG rather than an icon font: nothing in this plugin or the theme enqueues
-     * FontAwesome, so an <i class="fa fa-star"> would render as blank space on any page
-     * where Elementor happens not to load it.
-     *
-     * Scores arrive as strings ("5") from older rows, hence the cast. A score of 0 means the
-     * rating question was left blank, not that the patient rated zero, so nothing is rendered.
+     * A score of 0 means the rating question was left blank, so nothing is rendered.
      *
      * @param  int|string $star Score, clamped to 0-5.
      * @return string Empty when there is no rating to show.
@@ -91,7 +86,7 @@ final class Hooks
             return '';
         }
 
-        //get() returns a WP_Error when no row matches, so indexing it unguarded is a fatal
+        //get() returns a WP_Error when no row matches
         $employeeData = static::$_zohoPeoplesEmployeesModel->get("*", array('zoho_id' => $id), null, null, 'id', 'DESC');
         if (is_wp_error($employeeData) || empty($employeeData)) {
             return '';
@@ -265,8 +260,7 @@ final class Hooks
                     left: -5000px;
                 }
 
-                /* Fill is driven by a .filled class so every star up to the selected one lights up,
-                   not just the label immediately following the checked input. */
+                /* .filled lights up every star up to the selected one */
                 .reviews-form .star-input-label.filled .orange {
                     animation: enlarge 0.4s ease-in-out forwards;
                 }
@@ -690,8 +684,7 @@ final class Hooks
         </div>
         <script>
             (function() {
-                //Identity comes from the server, not from re-parsing the URL: the old digit-scrape
-                //picked up digits from every query param and threw outright when there was no query string.
+                //Identity and endpoints are injected server-side
                 const zohoId = <?php echo wp_json_encode((string) $id) ?>;
                 const employeeName = <?php echo wp_json_encode($employee_name) ?>;
                 const saveUrl = <?php echo wp_json_encode(add_query_arg(array(
@@ -760,8 +753,7 @@ final class Hooks
                     button.disabled = true;
 
                     try {
-                        //Await the save before navigating; the old code redirected immediately and
-                        //raced the request, silently dropping reviews.
+                        //Navigate to the thank-you page only after the save succeeds
                         const res = await fetch(saveUrl, {
                             method: "POST",
                             headers: { "Content-Type": "application/json" },
@@ -793,7 +785,7 @@ final class Hooks
             return '';
         }
 
-        //get() returns a WP_Error when no row matches, so indexing it unguarded is a fatal
+        //get() returns a WP_Error when no row matches
         $employeeData = static::$_zohoPeoplesEmployeesModel->get("*", array('zoho_id' => $zoho_id), null, null, 'id', 'DESC');
         if (is_wp_error($employeeData) || empty($employeeData)) {
             return '';
