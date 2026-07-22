@@ -1,19 +1,19 @@
 import { useEffect, useState } from 'react'
-import { Link, useHistory } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { __ } from '../Utils/i18nwrap'
 import space from '../resource/img/space.svg'
 
 export default function Error404() {
   const [sec, setsec] = useState(9)
-  const history = useHistory()
+  const navigate = useNavigate()
   useEffect(() => {
     setTimeout(() => {
       if (sec === 0) {
-        history.push('/')
+        navigate('/')
       }
       setsec(sec - 1)
     }, 1000)
-  }, [history, sec])
+  }, [navigate, sec])
 
   return (
     <div className="error-404">

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import ReactStars from 'react-rating-stars-component'
-import { useRecoilState } from 'recoil'
+import { useAtom } from 'jotai'
 import bitsFetch from '../Utils/bitsFetch'
 import { __ } from '../Utils/i18nwrap'
 import LoaderSm from './Loaders/LoaderSm'
@@ -9,7 +9,7 @@ import { $integrationDetails } from '../Utils/GlobalStates'
 
 export default function ReviewsEdit(props) {
   const [isLoading, setisLoading] = useState(false)
-  const [integConfig, setIntegConfig] = useRecoilState($integrationDetails)
+  const [integConfig, setIntegConfig] = useAtom($integrationDetails)
   const [formDetails, setFormDetails] = useState(() => {
     const filteredData = props.tableData.filter(
       (item) => item.id === props.rowId,

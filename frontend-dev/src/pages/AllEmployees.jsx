@@ -1,7 +1,7 @@
 /* eslint-disable no-undef */
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { memo, useCallback, useState, useEffect } from 'react'
-import { useRecoilState } from 'recoil'
+import { useAtom } from 'jotai'
 import { __ } from '../Utils/i18nwrap'
 import SnackMsg from '../components/Utilities/SnackMsg'
 import Table from '../components/Utilities/Table'
@@ -12,7 +12,7 @@ import LoaderSm from '../components/Loaders/LoaderSm'
 
 function AllEmployees({ newFormId }) {
   const [snack, setSnackbar] = useState({ show: false })
-  const [integrationDetails] = useRecoilState($integrationDetails)
+  const [integrationDetails] = useAtom($integrationDetails)
   const integConfig = integrationDetails.integ_config
   const [isLoading, setisLoading] = useState(false)
   const [tableData, setTableData] = useState(bitwelzp.all_employees)

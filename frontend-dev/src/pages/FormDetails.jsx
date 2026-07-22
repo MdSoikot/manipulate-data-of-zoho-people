@@ -1,7 +1,7 @@
 /* eslint-disable no-undef */
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { memo, useCallback, useState, useEffect } from 'react'
-import { useRecoilState } from 'recoil'
+import { useAtom } from 'jotai'
 import { __ } from '../Utils/i18nwrap'
 import SnackMsg from '../components/Utilities/SnackMsg'
 import Table from '../components/Utilities/Table'
@@ -15,7 +15,7 @@ function FormDetails({ newFormId }) {
   const [snack, setSnackbar] = useState({ show: false })
   const [tableData, setTableData] = useState(bitwelzp.reviewsDetails)
   const [showEditModal, setShowEditModal] = useState(false)
-  const [integConfig] = useRecoilState($integrationDetails)
+  const [integConfig] = useAtom($integrationDetails)
   const [rowId, setRowId] = useState()
 
   const [cols, setCols] = useState([

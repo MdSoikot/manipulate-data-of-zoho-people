@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useRecoilState } from 'recoil'
+import { useAtom } from 'jotai'
 import { __ } from '../Utils/i18nwrap'
 import CopyText from '../components/Utilities/CopyText'
 import LoaderSm from '../components/Loaders/LoaderSm'
@@ -10,7 +10,7 @@ import bitsFetch from '../Utils/bitsFetch'
 import { $integrationDetails } from '../Utils/GlobalStates'
 
 export default function Authorization() {
-  const [integConfig, setIntegConfig] = useRecoilState($integrationDetails)
+  const [integConfig, setIntegConfig] = useAtom($integrationDetails)
   const [snack, setSnackbar] = useState({ show: false })
   const [isLoading, setisLoading] = useState(false)
   const [isSaveLoading, setIsSaveLoading] = useState(false)
