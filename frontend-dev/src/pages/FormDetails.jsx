@@ -123,7 +123,14 @@ function FormDetails({ newFormId }) {
       minWidth: 20,
       Header: __('Created At', 'bitwelzp'),
       accessor: 'created_at',
-    }
+    },
+    {
+      width: 150,
+      minWidth: 20,
+      Header: __('Updated At', 'bitwelzp'),
+      accessor: 'updated_at',
+      Cell: (e) => e.value || '—',
+    },
   ]))
 
   const setTableCols = useCallback((newCols) => {

@@ -16,6 +16,7 @@ class Model
 {
     protected static $table;
     protected static $primary_key;
+    protected static $timestamps = true;
     protected $app_db;
     protected $table_name;
     protected $db_response;
@@ -37,6 +38,14 @@ class Model
     {
         if (is_null($data)) {
             return new WP_Error('empty_data', __('Form data is empty', 'bitwelzp'));
+        }
+        if (\is_array($data) && static::$timestamps) {
+            if (!isset($data['created_at'])) {
+                $data['created_at'] = current_time('mysql');
+            }
+            if (!isset($data['updated_at'])) {
+                $data['updated_at'] = current_time('mysql');
+            }
         }
         $result = $this->app_db->insert(
             $this->table_name,
@@ -155,6 +164,9 @@ class Model
             && array_keys($data) !== range(0, count($data) - 1)
         ) {
             $data_to_update = $data;
+            if (static::$timestamps && !isset($data_to_update['updated_at'])) {
+                $data_to_update['updated_at'] = current_time('mysql');
+            }
         } else {
             return new WP_Error(
                 'update_error',
@@ -186,6 +198,9 @@ class Model
             && array_keys($data) !== range(0, count($data) - 1)
         ) {
             $data_to_update = $data;
+            if (static::$timestamps && !isset($data_to_update['updated_at'])) {
+                $data_to_update['updated_at'] = current_time('mysql');
+            }
         } else {
             return new WP_Error(
                 'update_error',

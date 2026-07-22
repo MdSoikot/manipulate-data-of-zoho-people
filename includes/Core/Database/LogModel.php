@@ -12,4 +12,5 @@ use BitCode\WELZP\Core\Database\Model;
 class LogModel extends Model
 {
     protected static $table = 'bitwelzp_log_details';
+    protected static $timestamps = false;
 }

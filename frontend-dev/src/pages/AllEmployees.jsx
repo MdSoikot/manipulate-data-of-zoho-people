@@ -316,6 +316,20 @@ function AllEmployees({ newFormId }) {
         </button>
       ),
     },
+    {
+      width: 180,
+      minWidth: 20,
+      Header: __('Created At', 'bitwelzp'),
+      accessor: 'created_at',
+      Cell: (e) => e.value || '—',
+    },
+    {
+      width: 180,
+      minWidth: 20,
+      Header: __('Updated At', 'bitwelzp'),
+      accessor: 'updated_at',
+      Cell: (e) => e.value || '—',
+    },
   ]))
 
   const handleActive = (selectedRowId) => {
