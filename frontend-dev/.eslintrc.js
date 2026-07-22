@@ -16,21 +16,7 @@ module.exports = {
     sourceType: 'module',
     babelOptions: {
       presets: [
-        [
-          '@babel/preset-env',
-          {
-            targets: { browsers: ['Chrome >= 88'] },
-            loose: true,
-          },
-        ],
         ['@babel/preset-react', { runtime: 'automatic' }],
-      ],
-      plugins: [
-        '@babel/plugin-transform-runtime',
-        ['@babel/plugin-transform-react-jsx', { runtime: 'automatic' }],
-        ['@babel/plugin-proposal-class-properties', { loose: true }],
-        ['@babel/plugin-proposal-private-methods', { loose: true }],
-        // "@babel/plugin-transform-regenerator",
       ],
     },
   },
@@ -40,7 +26,6 @@ module.exports = {
     'plugin:import/errors',
     'plugin:jsx-a11y/recommended',
     'airbnb',
-    'react-app',
   ],
   plugins: ['babel', 'react', 'react-hooks', 'jsx-a11y', 'import', 'standard', 'promise', 'node'],
   rules: {

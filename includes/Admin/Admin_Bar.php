@@ -43,12 +43,6 @@ class Admin_Bar
         if (strpos($current_screen, 'bitwelzp') === false) {
             return;
         }
-        if (wp_script_is('bitwelzp-vendors', 'registered')) {
-            wp_deregister_script('bitwelzp-vendors');
-        }
-        if (wp_script_is('bitwelzp-runtime', 'registered')) {
-            wp_deregister_script('bitwelzp-runtime');
-        }
         if (wp_script_is('bitwelzp-admin-script', 'registered')) {
             wp_deregister_script('bitwelzp-admin-script');
         }
@@ -61,43 +55,54 @@ class Admin_Bar
         $site_url .= empty($parsed_url['port']) ? null : ':' . $parsed_url['port'];
         $base_path_admin =  str_replace($site_url, '', get_admin_url());
 
-        wp_enqueue_script(
-            'bitwelzp-vendors',
-            BITWELZP_ASSET_JS_URI . '/vendors-main.js',
-            null,
-            BITWELZP_VERSION,
-            true
-        );
+        $deps = wp_script_is('wp-i18n') ? array('wp-i18n') : array();
+        $dev_origin = $this->viteDevServer();
 
-        wp_enqueue_script(
-            'bitwelzp-runtime',
-            BITWELZP_ASSET_JS_URI . '/runtime.js',
-            null,
-            BITWELZP_VERSION,
-            true
-        );
-
-        if (wp_script_is('wp-i18n')) {
-            $deps = array('bitwelzp-vendors', 'bitwelzp-runtime', 'wp-i18n');
+        if ($dev_origin) {
+            add_action('admin_head', function () use ($dev_origin) {
+                printf(
+                    '<script type="module">import RefreshRuntime from "%1$s/@react-refresh";'
+                    . 'RefreshRuntime.injectIntoGlobalHook(window);'
+                    . 'window.$RefreshReg$ = () => {};'
+                    . 'window.$RefreshSig$ = () => (type) => type;'
+                    . 'window.__vite_plugin_react_preamble_installed__ = true;</script>',
+                    esc_url($dev_origin)
+                );
+            });
+            wp_enqueue_script('bitwelzp-vite-client', $dev_origin . '/@vite/client', array(), null, true);
+            wp_enqueue_script('bitwelzp-admin-script', $dev_origin . '/src/index.jsx', $deps, null, true);
+            // app.scss is a dedicated entry, served as a style-injecting module in dev
+            wp_enqueue_script('bitwelzp-styles-dev', $dev_origin . '/src/resource/sass/app.scss', array(), null, true);
         } else {
-            $deps = array('bitwelzp-vendors', 'bitwelzp-runtime',);
+            wp_enqueue_script(
+                'bitwelzp-admin-script',
+                BITWELZP_ASSET_JS_URI . '/index.js',
+                $deps,
+                BITWELZP_VERSION,
+                true
+            );
+
+            wp_enqueue_style(
+                'bitwelzp-styles',
+                BITWELZP_ASSET_URI . '/css/bitwelzp.css',
+                null,
+                BITWELZP_VERSION,
+                'screen'
+            );
         }
 
-        wp_enqueue_script(
-            'bitwelzp-admin-script',
-            BITWELZP_ASSET_JS_URI . '/index.js',
-            $deps,
-            BITWELZP_VERSION,
-            true
-        );
-
-        wp_enqueue_style(
-            'bitwelzp-styles',
-            BITWELZP_ASSET_URI . '/css/bitwelzp.css',
-            null,
-            BITWELZP_VERSION,
-            'screen'
-        );
+        // Vite output is ESM; the tags need type="module"
+        add_filter('script_loader_tag', function ($tag, $handle, $src) {
+            $module_handles = array('bitwelzp-admin-script', 'bitwelzp-vite-client', 'bitwelzp-styles-dev');
+            if (in_array($handle, $module_handles, true)) {
+                $tag = sprintf(
+                    '<script type="module" crossorigin src="%s" id="%s-js"></script>' . "\n",
+                    esc_url($src),
+                    esc_attr($handle)
+                );
+            }
+            return $tag;
+        }, 10, 3);
 
         $all_people = [];
         $auth_details = (new Handler())->getAuthDetails();
@@ -131,6 +136,26 @@ class Admin_Bar
             $bitwelzp['translations'] = $bitwelzp_i18n_strings;
         }
         wp_localize_script('bitwelzp-admin-script', 'bitwelzp', $bitwelzp);
+    }
+
+    /**
+     * Detect a running Vite dev server.
+     *
+     * Define BITWELZP_DEV_SERVER in wp-config.php to force a URL (or false to
+     * disable detection); otherwise the hot file written by `pnpm dev` is used.
+     *
+     * @return string|null Dev server origin, or null for production assets
+     */
+    private function viteDevServer()
+    {
+        if (defined('BITWELZP_DEV_SERVER')) {
+            return BITWELZP_DEV_SERVER ?: null;
+        }
+        $hot = BITWELZP_PLUGIN_DIR_PATH . '/frontend-dev/hot';
+        if (file_exists($hot)) {
+            return trim(file_get_contents($hot));
+        }
+        return null;
     }
 
     /**

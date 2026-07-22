@@ -62,15 +62,13 @@ const AllFormContextProvider = (props) => {
     && typeof bitwelzp !== 'undefined'
     && bitwelzp.allForms !== null) {
     allFormsInitialState = bitwelzp?.allForms?.map(form => (
-      { formID: form.id, status: form.gclid, formName: form.title, shortcode: `fluentform id='${form.id}'`}))
+      { formID: form.id, status: form.gclid, formName: form.title, shortcode: `fluentform id='${form.id}'` }))
   }
   const [allForms, allFormsDispatchHandler] = useReducer(AllFormsDispatchHandler, allFormsInitialState)
 
   return (
     <AllFormContext.Provider
-      value={{
-        allFormsData: { allForms, allFormsDispatchHandler },
-      }}
+      value={{ allFormsData: { allForms, allFormsDispatchHandler } }}
     >
       {props.children}
     </AllFormContext.Provider>

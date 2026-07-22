@@ -1,114 +1,112 @@
 /* eslint-disable no-undef */
 // eslint-disable-next-line import/no-extraneous-dependencies
-import { memo, useCallback, useState, useEffect } from "react";
-import { __ } from "../Utils/i18nwrap";
-import SnackMsg from "../components/Utilities/SnackMsg";
-import Table from "../components/Utilities/Table";
-import bitsFetch from "../Utils/bitsFetch";
-import OptionMenu from "../components/Utilities/OptionMenu";
-import EditIcn from "../Icons/EditIcn";
-import ReviewsEdit from "../components/ReviewsEdit";
-import { $integrationDetails } from "../Utils/GlobalStates";
-import { useRecoilState } from "recoil";
+import { memo, useCallback, useState, useEffect } from 'react'
+import { useRecoilState } from 'recoil'
+import { __ } from '../Utils/i18nwrap'
+import SnackMsg from '../components/Utilities/SnackMsg'
+import Table from '../components/Utilities/Table'
+import bitsFetch from '../Utils/bitsFetch'
+import OptionMenu from '../components/Utilities/OptionMenu'
+import EditIcn from '../Icons/EditIcn'
+import ReviewsEdit from '../components/ReviewsEdit'
+import { $integrationDetails } from '../Utils/GlobalStates'
 
 function FormDetails({ newFormId }) {
-  const [snack, setSnackbar] = useState({ show: false });
-  const [tableData, setTableData] = useState(bitwelzp.reviewsDetails);
-  const [showEditModal, setShowEditModal] = useState(false);
-  const [integConfig] = useRecoilState($integrationDetails);
-  const [rowId, setRowId] = useState();
+  const [snack, setSnackbar] = useState({ show: false })
+  const [tableData, setTableData] = useState(bitwelzp.reviewsDetails)
+  const [showEditModal, setShowEditModal] = useState(false)
+  const [integConfig] = useRecoilState($integrationDetails)
+  const [rowId, setRowId] = useState()
 
   const [cols, setCols] = useState([
     {
       width: 200,
       minWidth: 20,
-      Header: __("Zoho ID", "bitwelzp"),
-      accessor: "zoho_id",
+      Header: __('Zoho ID', 'bitwelzp'),
+      accessor: 'zoho_id',
       Cell: (e) => JSON.parse(e.row.original.form_details)?.zoho_id,
     },
     {
       width: 180,
       minWidth: 20,
-      Header: __("Employee Name", "bitwelzp"),
-      accessor: "employee_name",
-      Cell: (e) =>
-        JSON.parse(e.row.original.form_details)?.employee_name
-          ? JSON.parse(e.row.original.form_details)?.employee_name
-          : "",
+      Header: __('Employee Name', 'bitwelzp'),
+      accessor: 'employee_name',
+      Cell: (e) => (JSON.parse(e.row.original.form_details)?.employee_name
+        ? JSON.parse(e.row.original.form_details)?.employee_name
+        : ''),
     },
     {
       width: 200,
       minWidth: 20,
-      Header: __("First Name", "bitwelzp"),
-      accessor: "fname",
+      Header: __('First Name', 'bitwelzp'),
+      accessor: 'fname',
       Cell: (e) => JSON.parse(e.row.original.form_details)?.fname,
     },
     {
       width: 200,
       minWidth: 20,
-      Header: __("Last Name", "bitwelzp"),
-      accessor: "lname",
+      Header: __('Last Name', 'bitwelzp'),
+      accessor: 'lname',
       Cell: (e) => JSON.parse(e.row.original.form_details)?.lname,
     },
     {
       width: 80,
       minWidth: 20,
-      Header: __("Rating", "bitwelzp"),
-      accessor: "rating",
+      Header: __('Rating', 'bitwelzp'),
+      accessor: 'rating',
       Cell: (e) => JSON.parse(e.row.original.form_details)?.star,
     },
     {
       width: 250,
       minWidth: 80,
-      Header: __("Phrases", "bitwelzp"),
-      accessor: "phrases",
-      Cell: (e) =>
-        JSON.parse(e.row.original.form_details)?.phrases?.length
-          ? JSON.parse(e.row.original.form_details)?.phrases?.map(
-              (item) => `${item} , `
-            )
-          : "",
+      Header: __('Phrases', 'bitwelzp'),
+      accessor: 'phrases',
+      Cell: (e) => (JSON.parse(e.row.original.form_details)?.phrases?.length
+        ? JSON.parse(e.row.original.form_details)?.phrases?.map(
+          (item) => `${item} , `,
+        )
+        : ''),
     },
     {
       width: 250,
       minWidth: 100,
-      Header: __("Title", "bitwelzp"),
-      accessor: "title",
+      Header: __('Title', 'bitwelzp'),
+      accessor: 'title',
       Cell: (e) => JSON.parse(e.row.original.form_details)?.title,
     },
     {
       width: 250,
       minWidth: 100,
-      Header: __("Title Description", "bitwelzp"),
-      accessor: "description",
+      Header: __('Title Description', 'bitwelzp'),
+      accessor: 'description',
       Cell: (e) => JSON.parse(e.row.original.form_details)?.desc,
     },
     {
       width: 150,
       minWidth: 20,
-      Header: __("Age Range", "bitwelzp"),
-      accessor: "age",
+      Header: __('Age Range', 'bitwelzp'),
+      accessor: 'age',
       Cell: (e) => JSON.parse(e.row.original.form_details)?.age,
     },
     {
       width: 150,
       minWidth: 20,
-      Header: __("Gender", "bitwelzp"),
-      accessor: "gender",
+      Header: __('Gender', 'bitwelzp'),
+      accessor: 'gender',
       Cell: (e) => JSON.parse(e.row.original.form_details)?.gender,
     },
     {
       width: 150,
       minWidth: 20,
-      Header: __("Status", "bitwelzp"),
-      accessor: "status",
+      Header: __('Status', 'bitwelzp'),
+      accessor: 'status',
       Cell: (e) => (
         <button
           type="button"
           className={`btn btcd-btn-lg ${
-            JSON.parse(e.row.original.form_details).status === "pending"
-              ? "red"
-              : "green"
+            JSON.parse(e.row.original.form_details).status === 'pending'
+              ? 'red'
+              : 'green'
           } sh-sm flx`}
           onClick={() => handleApprove(e.row.original.id)}
         >
@@ -119,73 +117,73 @@ function FormDetails({ newFormId }) {
     {
       width: 150,
       minWidth: 20,
-      Header: __("Created At", "bitwelzp"),
-      accessor: "created_at",
+      Header: __('Created At', 'bitwelzp'),
+      accessor: 'created_at',
       Cell: (e) => e.row.original?.created_at,
     },
-  ]);
+  ])
 
-  console.log(tableData);
+  console.log(tableData)
 
   const setTableCols = useCallback((newCols) => {
-    setCols(newCols);
-  }, []);
+    setCols(newCols)
+  }, [])
 
   const handleDelete = (selectedRowIds) => {
-    const Ids = [];
+    const Ids = []
     selectedRowIds.map((item) => {
-      Ids.push(item.original.id);
-    });
-    bitsFetch(Ids, "delete_form_details").then((response) => {
+      Ids.push(item.original.id)
+    })
+    bitsFetch(Ids, 'delete_form_details').then((response) => {
       if (response) {
-        const filteredData = tableData.filter((row) => !Ids.includes(row.id));
-        setTableData(filteredData);
+        const filteredData = tableData.filter((row) => !Ids.includes(row.id))
+        setTableData(filteredData)
         setSnackbar({
           show: true,
-          msg: __("Successfully deleted", "bitwelzp"),
-        });
+          msg: __('Successfully deleted', 'bitwelzp'),
+        })
         bitsFetch(
           integConfig?.integ_config?.auth_details,
-          "get_peoples_forms"
+          'get_peoples_forms',
         ).then((response) => {
-          console.log(response);
-        });
+          console.log(response)
+        })
       }
-    });
-  };
+    })
+  }
 
   const handleApprove = (selectedRowId) => {
-    bitsFetch(selectedRowId, "review_approve").then((response) => {
+    bitsFetch(selectedRowId, 'review_approve').then((response) => {
       if (response) {
-        setTableData(response.data);
+        setTableData(response.data)
         setSnackbar({
           show: true,
-          msg: __("Successfully Updated", "bitwelzp"),
-        });
+          msg: __('Successfully Updated', 'bitwelzp'),
+        })
         bitsFetch(
           integConfig?.integ_config?.auth_details,
-          "get_peoples_forms"
+          'get_peoples_forms',
         ).then((response) => {
-          console.log(response);
-        });
+          console.log(response)
+        })
       }
-    });
-  };
+    })
+  }
 
   const handleEditModal = (selectedRowId) => {
-    setRowId(selectedRowId);
-    setShowEditModal(true);
-  };
+    setRowId(selectedRowId)
+    setShowEditModal(true)
+  }
 
   useEffect(() => {
-    const ncols = cols.filter((itm) => itm.accessor !== "t_action");
+    const ncols = cols.filter((itm) => itm.accessor !== 't_action')
     // eslint-disable-next-line max-len
     ncols.push({
-      sticky: "right",
+      sticky: 'right',
       width: 100,
       minWidth: 60,
-      Header: "Actions",
-      accessor: "t_action",
+      Header: 'Actions',
+      accessor: 't_action',
       Cell: (val) => (
         <>
           <OptionMenu title="Actions" w={150} h={164}>
@@ -199,10 +197,10 @@ function FormDetails({ newFormId }) {
           </OptionMenu>
         </>
       ),
-    });
-    setCols([...ncols]);
+    })
+    setCols([...ncols])
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [newFormId]);
+  }, [newFormId])
 
   return (
     <div id="all-forms">
@@ -236,7 +234,7 @@ function FormDetails({ newFormId }) {
         )}
       </>
     </div>
-  );
+  )
 }
 
-export default memo(FormDetails);
+export default memo(FormDetails)

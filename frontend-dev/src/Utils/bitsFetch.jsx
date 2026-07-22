@@ -27,4 +27,3 @@ export default async function bitsFetch(data, action, options = {}, queryParam =
     .then(res => res.json())
   return response
 }
-

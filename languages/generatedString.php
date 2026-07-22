@@ -71,14 +71,6 @@ $bitwelzp_i18n_strings = array(
 
     'Client ID cann\'t be empty' => __('Client ID cann\'t be empty', 'bitwelzp'),
 
-    'Successfully deleted' => __('Successfully deleted', 'bitwelzp'),
-
-    'Zoho ID' => __('Zoho ID', 'bitwelzp'),
-
-    'Employee ID' => __('Employee ID', 'bitwelzp'),
-
-    'Review Form Link' => __('Review Form Link', 'bitwelzp'),
-
     'Employee Status' => __('Employee Status', 'bitwelzp'),
 
     'First Name' => __('First Name', 'bitwelzp'),
@@ -101,6 +93,8 @@ $bitwelzp_i18n_strings = array(
 
     'Page Status' => __('Page Status', 'bitwelzp'),
 
+    'Zoho ID' => __('Zoho ID', 'bitwelzp'),
+
     'New Empolyee Added and Data Updated' => __('New Empolyee Added and Data Updated', 'bitwelzp'),
 
     'Successfully Updated' => __('Successfully Updated', 'bitwelzp'),
@@ -112,6 +106,14 @@ $bitwelzp_i18n_strings = array(
     'Please complete the authorization first' => __('Please complete the authorization first', 'bitwelzp'),
 
     'Fetch data' => __('Fetch data', 'bitwelzp'),
+
+    'Successfully deleted' => __('Successfully deleted', 'bitwelzp'),
+
+    'Employee ID' => __('Employee ID', 'bitwelzp'),
+
+    'Post ID' => __('Post ID', 'bitwelzp'),
+
+    'Review Form Link' => __('Review Form Link', 'bitwelzp'),
 
     'Authorized ✔' => __('Authorized ✔', 'bitwelzp'),
 
