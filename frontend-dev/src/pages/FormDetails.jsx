@@ -11,6 +11,14 @@ import EditIcn from '../Icons/EditIcn'
 import ReviewsEdit from '../components/ReviewsEdit'
 import { $integrationDetails } from '../Utils/GlobalStates'
 
+const parseDetails = (row) => {
+  try {
+    return JSON.parse(row.form_details) || {}
+  } catch {
+    return {}
+  }
+}
+
 function FormDetails({ newFormId }) {
   const [snack, setSnackbar] = useState({ show: false })
   const [tableData, setTableData] = useState(bitwelzp.reviewsDetails)
@@ -23,94 +31,89 @@ function FormDetails({ newFormId }) {
       width: 200,
       minWidth: 20,
       Header: __('Zoho ID', 'bitwelzp'),
-      accessor: 'zoho_id',
-      Cell: (e) => JSON.parse(e.row.original.form_details)?.zoho_id,
+      id: 'zoho_id',
+      accessor: (row) => parseDetails(row).zoho_id ?? '',
     },
     {
       width: 180,
       minWidth: 20,
       Header: __('Employee Name', 'bitwelzp'),
-      accessor: 'employee_name',
-      Cell: (e) => (JSON.parse(e.row.original.form_details)?.employee_name
-        ? JSON.parse(e.row.original.form_details)?.employee_name
-        : ''),
+      id: 'employee_name',
+      accessor: (row) => parseDetails(row).employee_name ?? '',
     },
     {
       width: 200,
       minWidth: 20,
       Header: __('First Name', 'bitwelzp'),
-      accessor: 'fname',
-      Cell: (e) => JSON.parse(e.row.original.form_details)?.fname,
+      id: 'fname',
+      accessor: (row) => parseDetails(row).fname ?? '',
     },
     {
       width: 200,
       minWidth: 20,
       Header: __('Last Name', 'bitwelzp'),
-      accessor: 'lname',
-      Cell: (e) => JSON.parse(e.row.original.form_details)?.lname,
+      id: 'lname',
+      accessor: (row) => parseDetails(row).lname ?? '',
     },
     {
       width: 80,
       minWidth: 20,
       Header: __('Rating', 'bitwelzp'),
-      accessor: 'rating',
-      Cell: (e) => JSON.parse(e.row.original.form_details)?.star,
+      id: 'rating',
+      accessor: (row) => parseDetails(row).star ?? '',
     },
     {
       width: 250,
       minWidth: 80,
       Header: __('Phrases', 'bitwelzp'),
-      accessor: 'phrases',
-      Cell: (e) => (JSON.parse(e.row.original.form_details)?.phrases?.length
-        ? JSON.parse(e.row.original.form_details)?.phrases?.map(
-          (item) => `${item} , `,
-        )
+      id: 'phrases',
+      accessor: (row) => (parseDetails(row).phrases?.length
+        ? parseDetails(row).phrases.join(', ')
         : ''),
     },
     {
       width: 250,
       minWidth: 100,
       Header: __('Title', 'bitwelzp'),
-      accessor: 'title',
-      Cell: (e) => JSON.parse(e.row.original.form_details)?.title,
+      id: 'title',
+      accessor: (row) => parseDetails(row).title ?? '',
     },
     {
       width: 250,
       minWidth: 100,
       Header: __('Title Description', 'bitwelzp'),
-      accessor: 'description',
-      Cell: (e) => JSON.parse(e.row.original.form_details)?.desc,
+      id: 'description',
+      accessor: (row) => parseDetails(row).desc ?? '',
     },
     {
       width: 150,
       minWidth: 20,
       Header: __('Age Range', 'bitwelzp'),
-      accessor: 'age',
-      Cell: (e) => JSON.parse(e.row.original.form_details)?.age,
+      id: 'age',
+      accessor: (row) => parseDetails(row).age ?? '',
     },
     {
       width: 150,
       minWidth: 20,
       Header: __('Gender', 'bitwelzp'),
-      accessor: 'gender',
-      Cell: (e) => JSON.parse(e.row.original.form_details)?.gender,
+      id: 'gender',
+      accessor: (row) => parseDetails(row).gender ?? '',
     },
     {
       width: 150,
       minWidth: 20,
       Header: __('Status', 'bitwelzp'),
-      accessor: 'status',
+      id: 'status',
+      accessor: (row) => parseDetails(row).status ?? '',
       Cell: (e) => (
         <button
           type="button"
           className={`btn btcd-btn-lg ${
-            JSON.parse(e.row.original.form_details).status === 'pending'
-              ? 'red'
-              : 'green'
+            e.value === 'pending' ? 'red' : 'green'
           } sh-sm flx`}
           onClick={() => handleApprove(e.row.original.id)}
         >
-          {JSON.parse(e.row.original.form_details)?.status}
+          {e.value}
         </button>
       ),
     },
@@ -119,11 +122,8 @@ function FormDetails({ newFormId }) {
       minWidth: 20,
       Header: __('Created At', 'bitwelzp'),
       accessor: 'created_at',
-      Cell: (e) => e.row.original?.created_at,
     },
   ])
-
-  console.log(tableData)
 
   const setTableCols = useCallback((newCols) => {
     setCols(newCols)
