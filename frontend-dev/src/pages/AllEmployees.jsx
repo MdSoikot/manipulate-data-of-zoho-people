@@ -344,12 +344,12 @@ function AllEmployees({ newFormId }) {
       Cell: (e) => (
         <button
           type="button"
-          className={`btn btcd-btn-lg ${
-            e.row.original.page_status === 'active' ? 'green' : 'red'
-          } sh-sm flx`}
+          className={`status-badge ${
+            e.row.original.page_status === 'active' ? 'active' : 'inactive'
+          }`}
           onClick={() => handleActive(e.row.original.id)}
         >
-          {e.row.original.page_status === 'active' ? 'active' : 'inActive'}
+          {e.row.original.page_status === 'active' ? 'active' : 'inactive'}
         </button>
       ),
     })

@@ -1586,6 +1586,42 @@ input[type="checkbox"].disabled:checked:before {
   height: 40px;
 }
 
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: none;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1;
+  padding: 6px 12px;
+  border-radius: 20px;
+  text-transform: capitalize;
+  transition: background 0.2s;
+  &::before {
+    content: '';
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: currentColor;
+  }
+  &.active {
+    background: #dcf9ee;
+    color: #0b8a5c;
+    &:hover {
+      background: #c4f3e1;
+    }
+  }
+  &.inactive {
+    background: #fde7ec;
+    color: #d1244a;
+    &:hover {
+      background: #fad2db;
+    }
+  }
+}
+
 .btn-md {
   font-weight: bold;
   padding: 5px 20px;

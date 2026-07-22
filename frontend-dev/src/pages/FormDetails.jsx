@@ -109,9 +109,9 @@ function FormDetails({ newFormId }) {
       Cell: (e) => (
         <button
           type="button"
-          className={`btn btcd-btn-lg ${
-            e.value === 'pending' ? 'red' : 'green'
-          } sh-sm flx`}
+          className={`status-badge ${
+            e.value === 'pending' ? 'inactive' : 'active'
+          }`}
           onClick={() => handleApprove(e.row.original.id)}
         >
           {e.value}
