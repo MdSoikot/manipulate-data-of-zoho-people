@@ -8,6 +8,7 @@ import Table from '../components/Utilities/Table'
 import CopyText from '../components/Utilities/CopyText'
 import bitsFetch from '../Utils/bitsFetch'
 import { $integrationDetails } from '../Utils/GlobalStates'
+import { mergeSavedCols } from '../Utils/tableColPersist'
 import LoaderSm from '../components/Loaders/LoaderSm'
 
 function AllEmployees({ newFormId }) {
@@ -25,7 +26,7 @@ function AllEmployees({ newFormId }) {
     return rmSingleQuotation.replace(/ /g, '-')
   }
 
-  const [cols, setCols] = useState([
+  const [cols, setCols] = useState(() => mergeSavedCols('all_employees', [
     {
       width: 200,
       minWidth: 80,
@@ -315,7 +316,7 @@ function AllEmployees({ newFormId }) {
         </button>
       ),
     },
-  ])
+  ]))
 
   const handleActive = (selectedRowId) => {
     bitsFetch(selectedRowId, 'page_active').then((response) => {
@@ -428,6 +429,7 @@ function AllEmployees({ newFormId }) {
             columnHidable
             setTableCols={setTableCols}
             search
+            tableName="all_employees"
             DataFetchBtn={<DataFetchBtn />}
             handleDelete={handleDelete}
           />

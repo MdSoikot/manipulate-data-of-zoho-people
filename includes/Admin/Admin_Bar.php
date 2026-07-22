@@ -125,6 +125,7 @@ class Admin_Bar
                 'auth_details' => count((array) $auth_details) > 0 ? $auth_details->auth_details : '',
                 'all_employees' => $get_all_employees,
                 'reviewsDetails' => $get_form_details,
+                'table_columns' => get_option('bitwelzp_table_columns', new \stdClass()),
                 'redirect' => get_rest_url() . 'bitwelzp/redirect',
 
             )

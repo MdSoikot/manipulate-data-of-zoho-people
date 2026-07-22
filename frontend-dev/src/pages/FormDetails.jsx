@@ -10,6 +10,7 @@ import OptionMenu from '../components/Utilities/OptionMenu'
 import EditIcn from '../Icons/EditIcn'
 import ReviewsEdit from '../components/ReviewsEdit'
 import { $integrationDetails } from '../Utils/GlobalStates'
+import { mergeSavedCols } from '../Utils/tableColPersist'
 
 const parseDetails = (row) => {
   try {
@@ -26,7 +27,7 @@ function FormDetails({ newFormId }) {
   const [integConfig] = useAtom($integrationDetails)
   const [rowId, setRowId] = useState()
 
-  const [cols, setCols] = useState([
+  const [cols, setCols] = useState(() => mergeSavedCols('form_details', [
     {
       width: 200,
       minWidth: 20,
@@ -122,8 +123,8 @@ function FormDetails({ newFormId }) {
       minWidth: 20,
       Header: __('Created At', 'bitwelzp'),
       accessor: 'created_at',
-    },
-  ])
+    }
+  ]))
 
   const setTableCols = useCallback((newCols) => {
     setCols(newCols)
@@ -219,6 +220,7 @@ function FormDetails({ newFormId }) {
             columnHidable
             setTableCols={setTableCols}
             search
+            tableName="form_details"
             handleDelete={handleDelete}
           />
         </div>

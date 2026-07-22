@@ -7,6 +7,8 @@ import { ReactSortable } from 'react-sortablejs'
 import { useColumnOrder, useFilters, useFlexLayout, useGlobalFilter, usePagination, useResizeColumns, useRowSelect, useSortBy, useTable } from 'react-table'
 import { useSticky } from 'react-table-sticky'
 import { __ } from '../../Utils/i18nwrap'
+import bitsFetch from '../../Utils/bitsFetch'
+import { colId, savedHiddenIds } from '../../Utils/tableColPersist'
 import ConfirmModal from './ConfirmModal'
 import Menu from './Menu'
 import TableCheckBox from './TableCheckBox'
@@ -99,6 +101,7 @@ function Table(props) {
       data,
       manualPagination: typeof props.pageCount !== 'undefined',
       pageCount: props.pageCount,
+      initialState: { hiddenColumns: savedHiddenIds(props.tableName) },
       autoResetPage: false,
       autoResetHiddenColumns: false,
       autoResetSortBy: false,
@@ -132,6 +135,27 @@ function Table(props) {
   )
 
   const [search, setSearch] = useState(globalFilter)
+
+  // persist column order & visibility; first run only records the baseline
+  const lastSavedCols = useRef(null)
+  useEffect(() => {
+    if (!props.tableName) return undefined
+    const payload = columns
+      .filter(c => colId(c) && colId(c) !== 't_action')
+      .map(c => ({ id: colId(c), hidden: !!hiddenColumns?.includes(colId(c)) }))
+    const serialized = JSON.stringify(payload)
+    if (lastSavedCols.current === null) {
+      lastSavedCols.current = serialized
+      return undefined
+    }
+    if (serialized === lastSavedCols.current) return undefined
+    const timer = setTimeout(() => {
+      lastSavedCols.current = serialized
+      bitsFetch({ table: props.tableName, columns: payload }, 'save_table_columns')
+    }, 800)
+    return () => clearTimeout(timer)
+  }, [columns, hiddenColumns, props.tableName])
+
   useEffect(() => {
     if (fetchData) {
       fetchData({ pageIndex, pageSize })

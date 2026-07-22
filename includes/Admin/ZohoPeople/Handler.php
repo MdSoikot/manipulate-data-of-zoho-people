@@ -682,6 +682,35 @@ final class Handler
         return $all_reviews;
     }
 
+    //Persist table column order & visibility, keyed by table name
+    public function saveTableColumns($data)
+    {
+        if (empty($data->table) || !isset($data->columns) || !is_array($data->columns)) {
+            wp_send_json_error('Invalid column data', 400);
+        }
+
+        $table   = sanitize_key($data->table);
+        $columns = [];
+        foreach ($data->columns as $col) {
+            if (empty($col->id)) {
+                continue;
+            }
+            $columns[] = [
+                'id'     => sanitize_text_field($col->id),
+                'hidden' => !empty($col->hidden),
+            ];
+        }
+
+        $saved = get_option('bitwelzp_table_columns', []);
+        if (!is_array($saved)) {
+            $saved = [];
+        }
+        $saved[$table] = $columns;
+        update_option('bitwelzp_table_columns', $saved, false);
+
+        wp_send_json_success($columns);
+    }
+
     //Handle clinician profile page status
     public function handlePageStatus($id)
     {

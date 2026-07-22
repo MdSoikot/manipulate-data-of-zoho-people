@@ -21,5 +21,6 @@ final class Router
         Route::post('review_approve', [Handler::class,'approveReview']);
         Route::post('review_update', [Handler::class, 'updateReview']);
         Route::post('page_active', [Handler::class,'handlePageStatus']);
+        Route::post('save_table_columns', [Handler::class,'saveTableColumns']);
     }
 }
