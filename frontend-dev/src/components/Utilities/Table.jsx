@@ -243,59 +243,69 @@ function Table(props) {
           <Scrollbars className="btcd-scroll" style={{ height: props.height }}>
             <div {...getTableProps()} className={`${props.className} ${props.rowClickable && 'rowClickable'}`}>
               <div className="thead">
-                {headerGroups.map((headerGroup, i) => (
-                  <div key={`t-th-${i + 8}`} className="tr" {...headerGroup.getHeaderGroupProps()}>
-                    {headerGroup.headers.map(column => (
-                      <div key={column.id} className="th flx" {...column.getHeaderProps()}>
-                        <div {...column.id !== 't_action' && column.getSortByToggleProps()}>
-                          {column.render('Header')}
-                          {' '}
-                          {(column.id !== 't_action' && column.id !== 'selection') && (
-                            <span>
-                              {column.isSorted
-                                ? column.isSortedDesc
-                                  ? String.fromCharCode(9662)
-                                  : String.fromCharCode(9652)
-                                : <span className="btcd-icn icn-sort" style={{ fontSize: 10, marginLeft: 5 }} />}
-                            </span>
-                          )}
-                        </div>
-                        {props.resizable
-                          && (
-                            <div
-                              {...column.getResizerProps()}
-                              className={`btcd-t-resizer ${column.isResizing ? 'isResizing' : ''}`}
-                            />
-                          )}
-                      </div>
-                    ))}
-                  </div>
-                ))}
+                {headerGroups.map(headerGroup => {
+                  const { key: headerGroupKey, ...headerGroupProps } = headerGroup.getHeaderGroupProps()
+                  return (
+                    <div key={headerGroupKey} className="tr" {...headerGroupProps}>
+                      {headerGroup.headers.map(column => {
+                        const { key: headerKey, ...headerProps } = column.getHeaderProps()
+                        return (
+                          <div key={headerKey} className="th flx" {...headerProps}>
+                            <div {...column.id !== 't_action' && column.getSortByToggleProps()}>
+                              {column.render('Header')}
+                              {' '}
+                              {(column.id !== 't_action' && column.id !== 'selection') && (
+                                <span>
+                                  {column.isSorted
+                                    ? column.isSortedDesc
+                                      ? String.fromCharCode(9662)
+                                      : String.fromCharCode(9652)
+                                    : <span className="btcd-icn icn-sort" style={{ fontSize: 10, marginLeft: 5 }} />}
+                                </span>
+                              )}
+                            </div>
+                            {props.resizable
+                              && (
+                                <div
+                                  {...column.getResizerProps()}
+                                  className={`btcd-t-resizer ${column.isResizing ? 'isResizing' : ''}`}
+                                />
+                              )}
+                          </div>
+                        )
+                      })}
+                    </div>
+                  )
+                })}
               </div>
               {props.loading ? <TableLoader2 /> : (
                 <div className="tbody" {...getTableBodyProps()}>
                   {page.map(row => {
                     prepareRow(row)
+                    const { key: rowKey, ...rowProps } = row.getRowProps()
                     return (
                       <div
-                        key={`t-r-${row.index}`}
+                        key={rowKey}
                         className={`tr ${row.isSelected ? 'btcd-row-selected' : ''}`}
-                        {...row.getRowProps()}
+                        {...rowProps}
                       >
-                        {row.cells.map(cell => (
-                          <div
-                            key={`t-d-${cell.row.index}`}
-                            className="td flx"
-                            {...cell.getCellProps()}
-                            onClick={(e) => props.rowClickable && typeof cell.column.Header === 'string' && props.onRowClick(e, row.cells, cell.row.index, { fetchData, data: { pageIndex, pageSize, sortBy, filters, globalFilter } })}
-                            onKeyPress={(e) => props.rowClickable && typeof cell.column.Header === 'string' && props.onRowClick(e, row.cells, cell.row.index, { fetchData, data: { pageIndex, pageSize, sortBy, filters, globalFilter } })}
-                            role="button"
-                            tabIndex={0}
-                            aria-label="cell"
-                          >
-                            {cell.render('Cell')}
-                          </div>
-                        ))}
+                        {row.cells.map(cell => {
+                          const { key: cellKey, ...cellProps } = cell.getCellProps()
+                          return (
+                            <div
+                              key={cellKey}
+                              className="td flx"
+                              {...cellProps}
+                              onClick={(e) => props.rowClickable && typeof cell.column.Header === 'string' && props.onRowClick(e, row.cells, cell.row.index, { fetchData, data: { pageIndex, pageSize, sortBy, filters, globalFilter } })}
+                              onKeyPress={(e) => props.rowClickable && typeof cell.column.Header === 'string' && props.onRowClick(e, row.cells, cell.row.index, { fetchData, data: { pageIndex, pageSize, sortBy, filters, globalFilter } })}
+                              role="button"
+                              tabIndex={0}
+                              aria-label="cell"
+                            >
+                              {cell.render('Cell')}
+                            </div>
+                          )
+                        })}
                       </div>
                     )
                   })}
