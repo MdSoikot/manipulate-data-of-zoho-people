@@ -12,7 +12,7 @@ final class Handler
     private static $_integrationModel;
     private static $_zohoPeoplesEmployeesModel;
     private static $_formDetailsModel;
-    private static $data = '';
+    private static $data = null;
 
     const ANALYTICS_ROWS_URL = 'https://analyticsapi.zoho.com/restapi/v2/workspaces/1660248000000929001/views/1660248000012298002/rows';
     const ANALYTICS_ORG_ID   = '663268259';
@@ -92,6 +92,13 @@ final class Handler
     private function authHeader()
     {
         $requestData = self::$data;
+
+        if (!is_object($requestData) || empty($requestData->tokenDetails)) {
+            wp_send_json_error(
+                __('Zoho authorization details not found', 'bitwelzp'),
+                400
+            );
+        }
 
         if ((intval($requestData->tokenDetails->generates_on) + (55 * 60)) < time()) {
             $refreshedToken = $this::refreshAccessToken($requestData);
