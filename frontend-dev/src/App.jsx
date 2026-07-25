@@ -16,6 +16,7 @@ import Authorization from './pages/Authorization'
 
 const AllEmployees = lazy(() => import('./pages/AllEmployees'))
 const FormDetails = lazy(() => import('./pages/FormDetails'))
+const Logs = lazy(() => import('./pages/Logs'))
 const Error404 = lazy(() => import('./pages/Error404'))
 
 function App() {
@@ -66,6 +67,14 @@ function App() {
                 element={(
                   <Suspense fallback={<TableLoader />}>
                     <FormDetails />
+                  </Suspense>
+                )}
+              />
+              <Route
+                path="/logs"
+                element={(
+                  <Suspense fallback={<TableLoader />}>
+                    <Logs />
                   </Suspense>
                 )}
               />

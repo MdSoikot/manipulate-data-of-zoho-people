@@ -29,6 +29,7 @@ class Admin_Bar
         $capability = apply_filters('bitwelzp_access_capability', 'manage_options');
         if (current_user_can($capability)) {
             add_menu_page(__('WellQor Zoho People', 'bitwelzp'), 'Zoho People', $capability, 'bitwelzp', array($this, 'RootPage'), 'data:image/svg+xml;base64,' . base64_encode('<svg xmlns="http://www.w3.org/2000/svg" id="Layer_1" width="36.34" height="36.34" data-name="Layer 1"><defs/><circle cx="18.17" cy="18.17" r="16.2" fill="none" stroke="#000" stroke-miterlimit="10" stroke-width="1.5"/><path d="M27.06 9.47v2.62H16.32a7 7 0 0 0-6.91 5.7 6.51 6.51 0 0 0-.11 1V16.5a1.46 1.46 0 0 1 0-.3 7 7 0 0 1 1.53-4.11 7.09 7.09 0 0 1 5.49-2.62Z" class="cls-2"/><path d="M12 20.71a4.89 4.89 0 0 0-.15 1.21 4.34 4.34 0 0 0 .26 1.5 4.51 4.51 0 0 0 8.54 0 4.15 4.15 0 0 0 .25-1.46h2.5a7 7 0 1 1-14.07 0 7.19 7.19 0 0 1 .3-2 6.71 6.71 0 0 1 .56-1.32 7.81 7.81 0 0 1 .69-1 7.06 7.06 0 0 1 5.49-2.62h7v2.62h-7.44a3.61 3.61 0 0 0-1.59.34 4.65 4.65 0 0 0-1.55 1.24 4.36 4.36 0 0 0-.79 1.39.38.38 0 0 1 0 .1Z" class="cls-2"/></svg>'), 30);
+            add_submenu_page('bitwelzp', __('Activity Logs', 'bitwelzp'), __('Logs', 'bitwelzp'), $capability, 'admin.php?page=bitwelzp#/logs');
         }
     }
 

@@ -46,7 +46,18 @@ final class Plugin
     public function init_plugin()
     {
         add_action('init', [$this, 'init_classes'], 11);
+        add_action('admin_init', [$this, 'maybe_upgrade']);
         add_filter('plugin_action_links_' . plugin_basename(BITWELZP_PLUGIN_MAIN_FILE), [$this, 'plugin_action_links']);
+    }
+
+    //Run pending migrations when the plugin was updated without a re-activation
+    public function maybe_upgrade()
+    {
+        if (get_option('bitwelzp_version') !== BITWELZP_VERSION) {
+            DB::migrate();
+            update_option('bitwelzp_installed', time());
+            update_option('bitwelzp_version', BITWELZP_VERSION);
+        }
     }
 
     /**

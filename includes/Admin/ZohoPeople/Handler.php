@@ -6,6 +6,7 @@ use BitCode\WELZP\Core\Util\HttpHelper;
 use BitCode\WELZP\Core\Database\IntegrationModel;
 use BitCode\WELZP\Core\Database\ZohoPeoplesEmployeesModel;
 use BitCode\WELZP\Core\Database\FormDetailsModel;
+use BitCode\WELZP\Admin\Log\Handler as LogHandler;
 
 final class Handler
 {
@@ -237,6 +238,9 @@ final class Handler
         if (is_wp_error($result)) {
             wp_send_json_error('Saving Failed');
         }
+
+        LogHandler::save('auth_save', 'integration', $result);
+
         wp_send_json_success($result, 200);
     }
 
@@ -255,6 +259,9 @@ final class Handler
         if (is_wp_error($result)) {
             wp_send_json_error('Updating Failed');
         }
+
+        LogHandler::save('auth_update', 'integration', $data->integrationId);
+
         wp_send_json_success($result, 200);
     }
 
@@ -287,6 +294,7 @@ final class Handler
             wp_send_json_success($all_employees, 200);
         } catch (\Throwable $e) {
             error_log('WELZP: employee sync failed: ' . $e->getMessage());
+            LogHandler::save('employee_sync', 'employee', '', null, ['error' => $e->getMessage()]);
             wp_send_json_error('Unknown', 400);
         }
     }
@@ -330,6 +338,7 @@ final class Handler
 
         $employee_details = static::$_zohoPeoplesEmployeesModel->get();
         $cliniciansZohoIds = [];
+        $processedClinicians = 0;
 
         if (count($totalEmployees)) {
             if (is_array($employee_details) && count($employee_details)) {
@@ -404,10 +413,19 @@ final class Handler
                         );
 
                         $this->updateZohoPeoplesFields($recordId, $profileUrl, $reviewUrl);
+                        $processedClinicians++;
                     }
                 }
             };
         }
+
+        LogHandler::save(
+            'employee_sync',
+            'employee',
+            '',
+            null,
+            ['fetched_records' => count($totalEmployees), 'processed' => $processedClinicians]
+        );
     }
 
     //Is the clinician active in Zoho People
@@ -541,13 +559,26 @@ final class Handler
                 continue;
             }
 
-            $row = $wpdb->get_row($wpdb->prepare("SELECT post_id FROM {$table} WHERE id = %d", $id));
+            $row = $wpdb->get_row($wpdb->prepare("SELECT post_id, zoho_id, employee_id, fname, lname, email_Id, employee_status, designation, clinical_title, page_status FROM {$table} WHERE id = %d", $id));
             if ($row !== null && !empty($row->post_id)) {
                 wp_delete_post((int) $row->post_id, true);
             }
 
             if ($wpdb->delete($table, ['id' => $id], ['%d'])) {
                 $deleted++;
+
+                $snapshot = null;
+                if ($row !== null) {
+                    $snapshot = (array) $row;
+                    unset($snapshot['post_id']);
+                }
+                LogHandler::save(
+                    'employee_delete',
+                    'employee',
+                    $row->zoho_id ?? $id,
+                    $snapshot,
+                    null
+                );
             }
         }
 
@@ -576,6 +607,14 @@ final class Handler
             wp_send_json_error('Data Insertion Failed');
         }
 
+        LogHandler::save(
+            'review_add',
+            'review',
+            $result,
+            null,
+            $request
+        );
+
         wp_send_json_success($result, 200);
     }
 
@@ -583,9 +622,27 @@ final class Handler
     public function deleteReviews($Ids)
     {
         global $wpdb;
+        $table = $wpdb->prefix . 'bitwelzp_form_details';
         $result = '';
         foreach ($Ids as $id) {
-            $result = $wpdb->delete($wpdb->prefix . 'bitwelzp_form_details', ['id' => $id]);
+            $id = absint($id);
+            if (!$id) {
+                continue;
+            }
+
+            $row = $wpdb->get_row($wpdb->prepare("SELECT form_details FROM {$table} WHERE id = %d", $id));
+            $result = $wpdb->delete($table, ['id' => $id]);
+
+            if ($result) {
+                $details = ($row !== null) ? json_decode($row->form_details) : null;
+                LogHandler::save(
+                    'review_delete',
+                    'review',
+                    $id,
+                    is_object($details) ? $details : null,
+                    null
+                );
+            }
         }
 
         wp_send_json_success($result);
@@ -599,6 +656,7 @@ final class Handler
             wp_send_json_error('Review not found', 404);
         }
         $new_form_details = json_decode($get_form_details[0]->form_details);
+        $oldStatus = $new_form_details->status;
 
         if ($new_form_details->status === 'pending') {
             $new_form_details->status = 'approved';
@@ -619,6 +677,14 @@ final class Handler
         if (is_wp_error($result)) {
             wp_send_json_error('Updating Failed');
         }
+
+        LogHandler::save(
+            'review_status',
+            'review',
+            $id,
+            ['status' => $oldStatus],
+            ['status' => $new_form_details->status]
+        );
 
         if (count($get_form_details)) {
             $new_form_details->editRowId = $id;
@@ -645,6 +711,13 @@ final class Handler
         }
 
         $requestData->inputData->employee_name = $employee_name;
+
+        //Snapshot the review before overwriting it, for the activity log's previous/current diff
+        $previousReview = static::$_formDetailsModel->get('*', ['id' => $requestData->editRowId]);
+        $previousReview = (!is_wp_error($previousReview) && !empty($previousReview))
+            ? json_decode($previousReview[0]->form_details)
+            : null;
+
         $result = static::$_formDetailsModel->update(
             [
                 'form_details' => wp_json_encode($requestData->inputData),
@@ -660,6 +733,14 @@ final class Handler
         if (is_wp_error($result)) {
             wp_send_json_error('Updating Failed');
         } else {
+            LogHandler::save(
+                'review_edit',
+                'review',
+                $requestData->editRowId,
+                $previousReview,
+                $requestData->inputData
+            );
+
             $form_details = $this->allReviewsQuery();
             $requestData->inputData->editRowId = $requestData->editRowId;
             $updateReview = $this->updateReviewIntoAnalytics($requestData->inputData);
@@ -752,6 +833,14 @@ final class Handler
         if (is_wp_error($result)) {
             wp_send_json_error('Updating Failed');
         }
+
+        LogHandler::save(
+            'employee_page_status',
+            'employee',
+            $zoho_id,
+            ['page_status' => $employee_data_by_id[0]->page_status ?? 'inactive'],
+            ['page_status' => $status]
+        );
 
         $employee_data = static::$_zohoPeoplesEmployeesModel->get('*', $this->activeClinicianCondition(), null, null, 'id', 'DESC');
         wp_send_json_success($employee_data, 200);

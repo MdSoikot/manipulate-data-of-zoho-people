@@ -1,98 +1,101 @@
 <?php
+
 namespace BitCode\WELZP\Admin\Log;
 
 use BitCode\WELZP\Core\Database\LogModel;
+use BitCode\WELZP\Core\Util\IpTool;
+
 final class Handler
 {
-    public function __construct()
+    //Fetch all activity logs, newest first
+    public function get()
     {
-        //
-    }
-
-    public function get($data)
-    {
-        if (!isset($data->id)) {
-            wp_send_json_error('Integration Id cann\'t be empty');
-        }
-        $logModel = new LogModel();
-        $countResult = $logModel->count(['integration_id' => $data->id]);
-        if (is_wp_error($countResult)) {
-            wp_send_json_success([
-                'count' => 0,
-                'data' => [],
-            ]);
-        }
-        $count = $countResult[0]->count;
-        if ($count < 1) {
-            wp_send_json_success([
-                'count' => 0,
-                'data' => [],
-            ]); 
-        }
-        $offset = 0;
-        $limit = 10;
-        if (isset($data->offset)) {
-            $offset = $data->offset;
-        }
-        if (isset($data->limit)) {
-            $limit = $data->limit;
-        }
-        $result = $logModel->get('*', ['integration_id' => $data->id], $limit, $offset, 'id', 'desc');
+        $result = (new LogModel())->get('*', [], null, null, 'id', 'DESC');
         if (is_wp_error($result)) {
-            wp_send_json_success([
-                'count' => 0,
-                'data' => [],
-            ]);
+            wp_send_json_success([]);
         }
-        wp_send_json_success([
-            'count' => intval($count),
-            'data' => $result,
-        ]);
+        //Model results are keyed by primary key; reindex so JSON encodes as an array
+        wp_send_json_success(array_values($result));
     }
 
-    public static function save($form_id,$integration_id,$api_type,$response_type,$response_obj)
+    /**
+     * Record an activity log entry. Never interrupts the caller's flow.
+     *
+     * @param string            $action      machine key, e.g. employee_delete, review_add
+     * @param string            $entityType  employee | review | integration
+     * @param string|int        $entityId    id of the affected record ('' when n/a)
+     * @param array|object|null $beforeState record state before the change
+     * @param array|object|null $afterState  record state after the change
+     */
+    public static function save($action, $entityType, $entityId, $beforeState = null, $afterState = null)
     {
-        $logModel = new LogModel();
-        $logModel->insert(
+        $userId = get_current_user_id();
+        if ($userId) {
+            $user = wp_get_current_user();
+            $userName = $user->display_name ? $user->display_name : $user->user_login;
+        } else {
+            $userName = (function_exists('wp_doing_cron') && wp_doing_cron()) ? 'System (Cron)' : 'Guest';
+        }
+
+        $beforeState = static::sanitizeState($beforeState);
+        $afterState = static::sanitizeState($afterState);
+
+        (new LogModel())->insert(
             [
-                'form_id' => $form_id,
-                'integration_id' => $integration_id,
-                'api_type' => $api_type,
-                'response_type' => $response_type,
-                'response_obj' => $response_obj,
-                'created_at' => current_time("mysql")
+                'action'       => $action,
+                'entity_type'  => $entityType,
+                'entity_id'    => is_null($entityId) ? '' : (string) $entityId,
+                'before_state' => is_null($beforeState) ? null : wp_json_encode($beforeState),
+                'after_state'  => is_null($afterState) ? null : wp_json_encode($afterState),
+                'user_id'      => $userId,
+                'user_name'    => $userName,
+                'ip'           => IpTool::getIP(),
+                'created_at'   => current_time('mysql'),
             ]
         );
     }
-    
-    public static function delete($data)
+
+    //Normalize a state snapshot to an array and drop keys that carry no audit value
+    private static function sanitizeState($state)
     {
-        if (empty($data->id) && empty($data->integration_id)) {
-            wp_send_json_error('Integration Id or Log Id required');
+        if (is_null($state)) {
+            return null;
         }
-        $condition = null;
-        if (!empty($data->id)) {
-            if (is_array($data->id)) {
-                $condition = [
-                    'id' =>  $data->id
-                ];
-            } else {
-                $condition = [
-                    'id' => $data->id
-                ];
-            }
+
+        if (\is_object($state)) {
+            $state = (array) $state;
         }
-        if (!empty($data->integration_id)) {
-            $condition = [
-                'integration_id' => $data->integration_id
-            ];
+
+        if (!\is_array($state)) {
+            return ['value' => (string) $state];
         }
+
+        unset($state['_ajax_nonce'], $state['nonce'], $state['editRowId']);
+
+        return $state;
+    }
+
+    //Delete selected log entries
+    public function delete($data)
+    {
+        if (empty($data->ids)) {
+            wp_send_json_error(__('Log Id required', 'bitwelzp'));
+        }
+
         $logModel = new LogModel();
-        $deleteStatus = $logModel->bulkDelete($condition);
+        $deleteStatus = $logModel->bulkDelete(['id' => array_map('absint', (array) $data->ids)]);
 
         if (is_wp_error($deleteStatus)) {
             wp_send_json_error($deleteStatus->get_error_code());
         }
         wp_send_json_success(__('Log deleted successfully', 'bitwelzp'));
+    }
+
+    //Delete every log entry
+    public function clear()
+    {
+        global $wpdb;
+        $wpdb->query("DELETE FROM `{$wpdb->prefix}bitwelzp_log_details`");
+        wp_send_json_success(__('All logs cleared', 'bitwelzp'));
     }
 }

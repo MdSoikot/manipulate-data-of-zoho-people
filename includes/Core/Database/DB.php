@@ -72,12 +72,38 @@ final class DB
 
             "CREATE TABLE IF NOT EXISTS `{$wpdb->prefix}bitwelzp_form_details` (
                 `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-                `form_details` LONGTEXT DEFAULT NULL, 
+                `form_details` LONGTEXT DEFAULT NULL,
                 `created_at` date DEFAULT NULL,
                 `updated_at` date DEFAULT NULL,
                 PRIMARY KEY (`id`)
             ) $collate;",
+
+            "CREATE TABLE IF NOT EXISTS `{$wpdb->prefix}bitwelzp_log_details` (
+                `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+                `action` varchar(100) DEFAULT NULL,
+                `entity_type` varchar(50) DEFAULT NULL,
+                `entity_id` varchar(255) DEFAULT NULL,
+                `before_state` LONGTEXT DEFAULT NULL,
+                `after_state` LONGTEXT DEFAULT NULL,
+                `user_id` bigint(20) DEFAULT NULL,
+                `user_name` varchar(255) DEFAULT NULL,
+                `ip` varchar(100) DEFAULT NULL,
+                `created_at` datetime DEFAULT NULL,
+                PRIMARY KEY (`id`)
+            ) $collate;",
         );
+
+        //Rebuild the log table when it predates the activity-log schema
+        $logTable = $wpdb->prefix . 'bitwelzp_log_details';
+        if (
+            $wpdb->get_var($wpdb->prepare('SHOW TABLES LIKE %s', $logTable)) === $logTable
+            && (
+                !$wpdb->get_var("SHOW COLUMNS FROM `$logTable` LIKE 'before_state'")
+                || $wpdb->get_var("SHOW COLUMNS FROM `$logTable` LIKE 'title'")
+            )
+        ) {
+            $wpdb->query("DROP TABLE `$logTable`");
+        }
 
         include_once ABSPATH . 'wp-admin/includes/upgrade.php';
         foreach ($table_schema as $table) {

@@ -3,7 +3,6 @@
 namespace BitCode\WELZP\Integration;
 
 use BitCode\WELZP\Core\Database\IntegrationModel;
-use BitCode\WELZP\Admin\Log\Handler as Log;
 use BitCode\WELZP\Core\Util\IpTool;
 
 final class IntegrationHandler
@@ -164,7 +163,6 @@ final class IntegrationHandler
         if (is_wp_error($delStatus)) {
             return $delStatus;
         }
-        Log::delete((object)['integration_id' => $integrationID]);
         return $delStatus;
     }
 }

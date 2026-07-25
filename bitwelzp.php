@@ -4,7 +4,7 @@
  * Plugin Name: Integration of Zoho People
  * Plugin URI:  https://wellqor.com/
  * Description:
- * Version:     1.0.2
+ * Version:     1.0.3
  * Author:      WellQor
  * Author URI:  https://wellqor.com/
  * Text Domain: bitwelzp
@@ -23,7 +23,7 @@ global $bitwelzp_db_version;
 $bitwelzp_db_version = '1.2';
 
 // Define most essential constants.
-define('BITWELZP_VERSION', '1.0.2');
+define('BITWELZP_VERSION', '1.0.3');
 define('BITWELZP_PLUGIN_MAIN_FILE', __FILE__);
 
 require_once plugin_dir_path(__FILE__) . 'includes/loader.php';
