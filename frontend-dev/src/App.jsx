@@ -9,7 +9,7 @@ import { HashRouter as Router, Routes, Route, NavLink, Link } from 'react-router
 import { __ } from './Utils/i18nwrap'
 import './resource/icons/style.css'
 import Loader from './components/Loaders/Loader'
-import logo from './resource/img/integ/crm.svg'
+import logo from './resource/img/integ/zoho-people.png'
 import TableLoader from './components/Loaders/TableLoader'
 import Settings from './pages/Settings'
 import Authorization from './pages/Authorization'
