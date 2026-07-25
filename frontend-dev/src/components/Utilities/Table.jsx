@@ -99,8 +99,13 @@ function Table(props) {
       fetchData,
       columns,
       data,
-      manualPagination: typeof props.pageCount !== 'undefined',
-      pageCount: props.pageCount,
+      // spread, not `pageCount: undefined` — useTable re-assigns options onto the
+      // instance every render, and with React 18 the reducer runs after that
+      // assign, so an undefined pageCount blocks gotoPage/nextPage
+      ...(typeof props.pageCount !== 'undefined' && {
+        manualPagination: true,
+        pageCount: props.pageCount,
+      }),
       initialState: { hiddenColumns: savedHiddenIds(props.tableName) },
       autoResetPage: false,
       autoResetHiddenColumns: false,
@@ -162,7 +167,7 @@ function Table(props) {
     }
   }, [fetchData, pageIndex, pageSize])
   useEffect(() => {
-    if (pageIndex > pageCount) {
+    if (pageCount > 0 && pageIndex >= pageCount) {
       gotoPage(0)
     }
   }, [gotoPage, pageCount, pageIndex])
