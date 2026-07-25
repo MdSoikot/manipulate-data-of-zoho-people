@@ -91,9 +91,13 @@ $bitwelzp_i18n_strings = array(
 
     'Licensed In' => __('Licensed In', 'bitwelzp'),
 
-    'Page Status' => __('Page Status', 'bitwelzp'),
+    'Created At' => __('Created At', 'bitwelzp'),
+
+    'Updated At' => __('Updated At', 'bitwelzp'),
 
     'Zoho ID' => __('Zoho ID', 'bitwelzp'),
+
+    'Page Status' => __('Page Status', 'bitwelzp'),
 
     'New Empolyee Added and Data Updated' => __('New Empolyee Added and Data Updated', 'bitwelzp'),
 
@@ -105,7 +109,7 @@ $bitwelzp_i18n_strings = array(
 
     'Please complete the authorization first' => __('Please complete the authorization first', 'bitwelzp'),
 
-    'Fetch data' => __('Fetch data', 'bitwelzp'),
+    'Sync from Zoho' => __('Sync from Zoho', 'bitwelzp'),
 
     'Successfully deleted' => __('Successfully deleted', 'bitwelzp'),
 
@@ -114,10 +118,6 @@ $bitwelzp_i18n_strings = array(
     'Post ID' => __('Post ID', 'bitwelzp'),
 
     'Review Form Link' => __('Review Form Link', 'bitwelzp'),
-
-    'Authorized ✔' => __('Authorized ✔', 'bitwelzp'),
-
-    'Authorize' => __('Authorize', 'bitwelzp'),
 
     'Update' => __('Update', 'bitwelzp'),
 
@@ -151,6 +151,10 @@ $bitwelzp_i18n_strings = array(
 
     'Client secret...' => __('Client secret...', 'bitwelzp'),
 
+    'Authorized ✔' => __('Authorized ✔', 'bitwelzp'),
+
+    'Authorize' => __('Authorize', 'bitwelzp'),
+
     'Lost In Space' => __('Lost In Space', 'bitwelzp'),
 
     'Redirecting Home in' => __('Redirecting Home in', 'bitwelzp'),
@@ -158,8 +162,6 @@ $bitwelzp_i18n_strings = array(
     'Go Home' => __('Go Home', 'bitwelzp'),
 
     'Status' => __('Status', 'bitwelzp'),
-
-    'Created At' => __('Created At', 'bitwelzp'),
 
     'Employee Name' => __('Employee Name', 'bitwelzp'),
 
@@ -174,6 +176,54 @@ $bitwelzp_i18n_strings = array(
     'Age Range' => __('Age Range', 'bitwelzp'),
 
     'Gender' => __('Gender', 'bitwelzp'),
+
+    'Field' => __('Field', 'bitwelzp'),
+
+    'Previous' => __('Previous', 'bitwelzp'),
+
+    'Current' => __('Current', 'bitwelzp'),
+
+    'Employee Deleted' => __('Employee Deleted', 'bitwelzp'),
+
+    'Page Status Changed' => __('Page Status Changed', 'bitwelzp'),
+
+    'Employee Sync' => __('Employee Sync', 'bitwelzp'),
+
+    'Review Added' => __('Review Added', 'bitwelzp'),
+
+    'Review Updated' => __('Review Updated', 'bitwelzp'),
+
+    'No state details recorded for this entry.' => __('No state details recorded for this entry.', 'bitwelzp'),
+
+    'Review Deleted' => __('Review Deleted', 'bitwelzp'),
+
+    'Review Status Changed' => __('Review Status Changed', 'bitwelzp'),
+
+    'Action' => __('Action', 'bitwelzp'),
+
+    'Authorization Saved' => __('Authorization Saved', 'bitwelzp'),
+
+    'Entity' => __('Entity', 'bitwelzp'),
+
+    'User' => __('User', 'bitwelzp'),
+
+    'Authorization Updated' => __('Authorization Updated', 'bitwelzp'),
+
+    'IP' => __('IP', 'bitwelzp'),
+
+    'Date' => __('Date', 'bitwelzp'),
+
+    'All logs cleared' => __('All logs cleared', 'bitwelzp'),
+
+    'Clear All' => __('Clear All', 'bitwelzp'),
+
+    'Clear All Logs' => __('Clear All Logs', 'bitwelzp'),
+
+    'Are you sure? Every log entry will be permanently deleted.' => __('Are you sure? Every log entry will be permanently deleted.', 'bitwelzp'),
+
+    'Previous State' => __('Previous State', 'bitwelzp'),
+
+    'Current State' => __('Current State', 'bitwelzp'),
 
     'Failed to toggle' => __('Failed to toggle', 'bitwelzp'),
 

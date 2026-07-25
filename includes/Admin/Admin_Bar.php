@@ -75,11 +75,14 @@ class Admin_Bar
             // app.scss is a dedicated entry, served as a style-injecting module in dev
             wp_enqueue_script('bitwelzp-styles-dev', $dev_origin . '/src/resource/sass/app.scss', array(), null, true);
         } else {
+            // no ?ver on the entry: lazy chunks import "./index.js" without a query
+            // string, and a differing URL would load a second module instance
+            // (duplicate React -> minified error #321)
             wp_enqueue_script(
                 'bitwelzp-admin-script',
                 BITWELZP_ASSET_JS_URI . '/index.js',
                 $deps,
-                BITWELZP_VERSION,
+                null,
                 true
             );
 
