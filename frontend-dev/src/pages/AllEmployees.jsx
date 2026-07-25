@@ -16,6 +16,7 @@ function AllEmployees({ newFormId }) {
   const [integrationDetails] = useAtom($integrationDetails)
   const integConfig = integrationDetails.integ_config
   const [isLoading, setisLoading] = useState(false)
+  const [togglingId, setTogglingId] = useState(null)
   const [tableData, setTableData] = useState(bitwelzp.all_employees)
 
   // adminURL is not localized on older deployed builds — derive it from ajaxURL
@@ -316,15 +317,18 @@ function AllEmployees({ newFormId }) {
   ]))
 
   const handleActive = (selectedRowId) => {
-    bitsFetch(selectedRowId, 'page_active').then((response) => {
-      if (response) {
-        setTableData(response.data)
-        setSnackbar({
-          show: true,
-          msg: __('Successfully Updated', 'bitwelzp'),
-        })
-      }
-    })
+    setTogglingId(selectedRowId)
+    bitsFetch(selectedRowId, 'page_active')
+      .then((response) => {
+        if (response) {
+          setTableData(response.data)
+          setSnackbar({
+            show: true,
+            msg: __('Successfully Updated', 'bitwelzp'),
+          })
+        }
+      })
+      .finally(() => setTogglingId(null))
   }
 
   const setTableCols = useCallback((newCols) => {
@@ -347,15 +351,18 @@ function AllEmployees({ newFormId }) {
           className={`status-badge ${
             e.row.original.page_status === 'active' ? 'active' : 'inactive'
           }`}
+          style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}
+          disabled={togglingId === e.row.original.id}
           onClick={() => handleActive(e.row.original.id)}
         >
           {e.row.original.page_status === 'active' ? 'active' : 'inactive'}
+          {togglingId === e.row.original.id && <LoaderSm size="14" clr="#022217" />}
         </button>
       ),
     })
     setCols([...ncols])
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [newFormId])
+  }, [newFormId, togglingId])
 
   const fetchData = () => {
     setisLoading(true)
