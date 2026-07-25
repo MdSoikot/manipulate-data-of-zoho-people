@@ -142,7 +142,7 @@ function FormDetails({ newFormId }) {
     selectedRowIds.map((item) => {
       Ids.push(item.original.id)
     })
-    bitsFetch(Ids, 'delete_form_details').then((response) => {
+    return bitsFetch(Ids, 'delete_form_details').then((response) => {
       if (response) {
         const filteredData = tableData.filter((row) => !Ids.includes(row.id))
         setTableData(filteredData)

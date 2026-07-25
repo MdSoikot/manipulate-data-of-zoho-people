@@ -72,6 +72,7 @@ function ColumnHide({ cols, setCols, tableCol, tableAllCols }) {
 
 function Table(props) {
   const [confMdl, setconfMdl] = useState({ show: false, btnTxt: '' })
+  const [deleting, setDeleting] = useState(false)
   const { columns, data, fetchData, report, handleDelete } = props
   const { getTableProps,
     getTableBodyProps,
@@ -193,7 +194,15 @@ function Table(props) {
   }
 
   const showDelModal = () => {
-    confMdl.action = () => { handleDelete(selectedFlatRows); closeConfMdl() }
+    confMdl.action = async () => {
+      setDeleting(true)
+      try {
+        await handleDelete(selectedFlatRows)
+      } finally {
+        setDeleting(false)
+        closeConfMdl()
+      }
+    }
     confMdl.btnTxt = __('Delete', 'bitwelzp')
     confMdl.btn2Txt = null
     confMdl.btnClass = ''
@@ -218,6 +227,7 @@ function Table(props) {
         btn2Txt={confMdl.btn2Txt}
         btn2Action={confMdl.btn2Action}
         btnClass={confMdl.btnClass}
+        loading={deleting}
       />
       <div className="btcd-t-actions">
         <div className="flx">

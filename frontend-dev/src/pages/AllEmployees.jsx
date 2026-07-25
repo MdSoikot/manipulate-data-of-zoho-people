@@ -430,7 +430,7 @@ function AllEmployees({ newFormId }) {
     selectedRowIds.map((item) => {
       Ids.push(item.original.id)
     })
-    bitsFetch(Ids, 'delete_employees').then((response) => {
+    return bitsFetch(Ids, 'delete_employees').then((response) => {
       if (response) {
         const filteredData = tableData.filter((row) => !Ids.includes(row.id))
         setTableData(filteredData)

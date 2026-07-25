@@ -230,7 +230,7 @@ function Logs() {
 
   const handleDelete = (selectedRowIds) => {
     const ids = selectedRowIds.map((item) => item.original.id)
-    bitsFetch({ ids }, 'log/delete').then((response) => {
+    return bitsFetch({ ids }, 'log/delete').then((response) => {
       if (response?.success) {
         setTableData((prev) => prev.filter((row) => !ids.includes(row.id)))
         setSelectedLog((prev) => (prev && ids.includes(prev.id) ? null : prev))
