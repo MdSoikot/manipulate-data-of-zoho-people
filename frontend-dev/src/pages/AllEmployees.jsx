@@ -413,7 +413,7 @@ function AllEmployees({ newFormId }) {
       type="button"
       className="btn btcd-btn-lg green sh-sm flx"
     >
-      {__('Fetch data', 'bitwelzp')}
+      {__('Sync from Zoho', 'bitwelzp')}
       {isLoading && <LoaderSm size="20" clr="#022217" className="ml-2" />}
     </button>
   )
