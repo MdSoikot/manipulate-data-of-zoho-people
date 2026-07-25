@@ -24,6 +24,7 @@ final class Deactivation
     public function deactive()
     {
         wp_clear_scheduled_hook('cronDailyEvent');
+        wp_clear_scheduled_hook('cronMonthlyLogCleanup');
 
         $routes = get_option('bitwelzp_routes');
         if ($routes && isset($routes['root'])) {

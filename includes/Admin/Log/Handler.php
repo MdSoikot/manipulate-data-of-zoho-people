@@ -91,6 +91,19 @@ final class Handler
         wp_send_json_success(__('Log deleted successfully', 'bitwelzp'));
     }
 
+    //Cron callback: purge log entries older than the retention window
+    public static function purgeOld($days = 30)
+    {
+        global $wpdb;
+        $wpdb->query(
+            $wpdb->prepare(
+                "DELETE FROM `{$wpdb->prefix}bitwelzp_log_details` WHERE `created_at` < %s",
+                //created_at is stored via current_time('mysql'), so the cutoff must be site-local too
+                gmdate('Y-m-d H:i:s', current_time('timestamp') - $days * DAY_IN_SECONDS)
+            )
+        );
+    }
+
     //Delete every log entry
     public function clear()
     {
